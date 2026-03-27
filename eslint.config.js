@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // setState in useEffect is valid for modal reset patterns and prop-driven state sync
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

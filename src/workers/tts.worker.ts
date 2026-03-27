@@ -37,6 +37,7 @@ function post(msg: Record<string, unknown>, transfer?: Transferable[]) {
 async function detectWebGPU(): Promise<boolean> {
   try {
     if (!('gpu' in navigator)) return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- WebGPU types not available in worker context
     const adapter = await (navigator as any).gpu.requestAdapter();
     return !!adapter;
   } catch {
@@ -106,6 +107,7 @@ async function preCacheCommonWords(voice: string, speed: number): Promise<void> 
     if (audioCache.has(key)) continue;
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- voice string from runtime, kokoro-js expects union type
       const audio = await tts!.generate(word, { voice: voice as any, speed });
       const wav = audio.toWav();
       audioCache.set(key, wav);
