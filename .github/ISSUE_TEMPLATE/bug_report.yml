@@ -1,0 +1,75 @@
+name: Bug Report
+description: Something isn't working
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make FreeVoice better.
+        Please fill out this form completely — it helps us fix things faster.
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - iPad (Safari)
+        - iPad (Chrome)
+        - iPhone (Safari)
+        - Android tablet (Chrome)
+        - Android phone (Chrome)
+        - Windows PC (Chrome)
+        - Windows PC (Edge)
+        - Mac (Safari)
+        - Mac (Chrome)
+        - Chromebook
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      placeholder: "e.g. iPadOS 17.4, Android 14, Windows 11"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open FreeVoice
+        2. Tap the Feelings tab
+        3. Tap "Happy"
+        4. Nothing happens
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: How bad is this?
+      options:
+        - App is unusable — child cannot communicate
+        - Major feature broken
+        - Minor annoyance
+        - Visual/cosmetic only
+    validations:
+      required: true

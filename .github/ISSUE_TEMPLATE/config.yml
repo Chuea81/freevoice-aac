@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: FreeVoice App
+    url: https://freevoice.app
+    about: Open the live app
+  - name: ARASAAC Symbol Search
+    url: https://arasaac.org/pictograms/search
+    about: Search for symbols to request

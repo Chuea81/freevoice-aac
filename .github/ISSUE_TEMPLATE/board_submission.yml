@@ -1,0 +1,42 @@
+name: Community Board Submission
+description: Share a custom board for others to use
+labels: ["community-board"]
+body:
+  - type: input
+    id: board-name
+    attributes:
+      label: Board name
+      placeholder: "e.g. Doctor Visit, Restaurant, Birthday Party"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: age-range
+    attributes:
+      label: Best for what age range?
+      options:
+        - All ages
+        - Toddlers (2–4)
+        - Young children (4–7)
+        - Older children (7–12)
+        - Teens
+        - Adults
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the board
+      placeholder: "What context is it for? What communication needs does it address?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: json
+    attributes:
+      label: Board JSON
+      description: Paste your exported board JSON here
+      render: json
+    validations:
+      required: true

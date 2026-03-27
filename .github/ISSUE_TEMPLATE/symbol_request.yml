@@ -1,0 +1,44 @@
+name: Symbol Request
+description: Request a new symbol or category
+labels: ["symbol-request"]
+body:
+  - type: input
+    id: symbol
+    attributes:
+      label: What symbol or word do you need?
+      placeholder: "e.g. 'Occupational Therapist', 'Sensory Break Room'"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Which category does it belong in?
+      options:
+        - Home / General
+        - Feelings / Emotions
+        - Food & Drinks
+        - School
+        - Body / Health / Medical
+        - Social / People
+        - Play / Activities
+        - Bedtime / Routine
+        - New category needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: When would this symbol be used?
+      description: Help us understand the communication context.
+      placeholder: "e.g. In therapy sessions when the child needs to ask for a sensory break"
+    validations:
+      required: true
+
+  - type: input
+    id: arasaac-link
+    attributes:
+      label: ARASAAC symbol link (if you found one)
+      description: Search at arasaac.org/pictograms/search and paste the URL if found
+      placeholder: "https://arasaac.org/pictograms/search?searchText=..."

@@ -1,0 +1,50 @@
+{
+  "name": "FreeVoice AAC",
+  "short_name": "FreeVoice",
+  "description": "Free AAC communication app for nonverbal and minimally verbal children. No subscription. No account. Works offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0C1428",
+  "theme_color": "#0C1428",
+  "categories": ["education", "health", "utilities", "accessibility"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/board-portrait.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FreeVoice symbol board — Feelings category"
+    },
+    {
+      "src": "/screenshots/board-landscape.png",
+      "sizes": "2532x1170",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "FreeVoice in landscape mode on iPad"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open FreeVoice",
+      "short_name": "Open",
+      "description": "Open the AAC communication board",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ]
+}
