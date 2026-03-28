@@ -1,0 +1,34 @@
+{
+  "speech": {
+    "speak": "说话",
+    "undo": "撤销",
+    "clear": "清除",
+    "type": "输入",
+    "placeholder": "点击符号来说话…"
+  },
+  "nav": {
+    "home": "主页",
+    "feelings": "感受",
+    "food": "食物",
+    "play": "玩耍",
+    "myWords": "我的词语"
+  },
+  "fastPhrases": {
+    "help": "帮助",
+    "wait": "等等",
+    "look": "看",
+    "done": "完成",
+    "more": "更多",
+    "stop": "停",
+    "break": "休息",
+    "please": "请",
+    "thankYou": "谢谢",
+    "hurts": "疼",
+    "bathroom": "厕所",
+    "hug": "抱抱"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言"
+  }
+}

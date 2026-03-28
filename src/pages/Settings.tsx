@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore, type LabelPosition, type ColorScheme, type SkinTone } from '../store/settingsStore';
 import { useParentStore } from '../store/parentStore';
 import { useBoardStore } from '../store/boardStore';
@@ -7,6 +8,7 @@ import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
 
 const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
   { value: 'default', label: 'Default', swatch: '👋' },
@@ -18,6 +20,7 @@ const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
 ];
 
 export function Settings({ onBack }: { onBack: () => void }) {
+  const { t, i18n } = useTranslation();
   const settings = useSettingsStore();
   const parentStore = useParentStore();
   const boardStore = useBoardStore();
@@ -307,12 +310,34 @@ export function Settings({ onBack }: { onBack: () => void }) {
           </div>
         </section>
 
+        {/* ── LANGUAGE ── */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">{t('settings.language')}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px' }}>
+            {SUPPORTED_LANGUAGES.map(lang => (
+              <button
+                key={lang}
+                onClick={() => { i18n.changeLanguage(lang); localStorage.setItem('fv_language', lang); }}
+                className={`voice-option${i18n.language === lang ? ' active' : ''}`}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 20 }}>{LANGUAGE_FLAGS[lang]}</span>
+                  <span className="voice-option-name">{LANGUAGE_NAMES[lang]}</span>
+                  {SPRINT_2_LANGUAGES.includes(lang) && (
+                    <span style={{ fontSize: 9, fontWeight: 900, background: 'rgba(79,195,247,0.15)', color: '#7DD3FC', padding: '2px 6px', borderRadius: 4, marginLeft: 'auto' }}>BETA</span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* ── SECURITY ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Security</h2>
+          <h2 className="settings-section-title">{t('settings.security')}</h2>
           <div className="settings-row">
-            <label>Change PIN</label>
-            <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>Change PIN</button>
+            <label>{t('settings.changePin')}</label>
+            <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>{t('settings.changePin')}</button>
           </div>
         </section>
 

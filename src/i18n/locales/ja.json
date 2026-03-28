@@ -1,0 +1,34 @@
+{
+  "speech": {
+    "speak": "話す",
+    "undo": "元に戻す",
+    "clear": "クリア",
+    "type": "入力",
+    "placeholder": "シンボルをタップして話しましょう…"
+  },
+  "nav": {
+    "home": "ホーム",
+    "feelings": "きもち",
+    "food": "たべもの",
+    "play": "あそび",
+    "myWords": "マイワード"
+  },
+  "fastPhrases": {
+    "help": "たすけて",
+    "wait": "まって",
+    "look": "みて",
+    "done": "おわり",
+    "more": "もっと",
+    "stop": "やめて",
+    "break": "きゅうけい",
+    "please": "おねがい",
+    "thankYou": "ありがとう",
+    "hurts": "いたい",
+    "bathroom": "トイレ",
+    "hug": "だいすき"
+  },
+  "settings": {
+    "title": "せってい",
+    "language": "ことば"
+  }
+}

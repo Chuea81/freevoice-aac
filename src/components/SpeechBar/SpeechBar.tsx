@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 
@@ -8,6 +9,7 @@ export function SpeechBar() {
   const clearTokens = useBoardStore((s) => s.clearTokens);
   const addToken = useBoardStore((s) => s.addToken);
   const { speak, cancel } = useTTS();
+  const { t } = useTranslation();
   const outputRef = useRef<HTMLDivElement>(null);
   const speakBtnRef = useRef<HTMLButtonElement>(null);
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,7 +74,7 @@ export function SpeechBar() {
       >
         {outputTokens.length === 0 && !showKeyboard ? (
           <span className="speech-placeholder">
-            Tap symbols to speak...
+            {t('speech.placeholder')}
           </span>
         ) : (
           outputTokens.map((token, i) => (
@@ -98,7 +100,7 @@ export function SpeechBar() {
       </div>
 
       <button ref={speakBtnRef} className="bar-btn" id="btn-speak" onClick={speakAll} aria-label="Speak sentence">
-        <span className="btn-icon" aria-hidden="true">🔊</span>SPEAK
+        <span className="btn-icon" aria-hidden="true">🔊</span>{t('speech.speak')}
       </button>
 
       <button
@@ -108,13 +110,13 @@ export function SpeechBar() {
           setShowKeyboard(!showKeyboard);
           if (!showKeyboard) setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        aria-label="Toggle keyboard input"
+        aria-label={t('speech.type')}
       >
-        <span className="btn-icon" aria-hidden="true">⌨️</span>TYPE
+        <span className="btn-icon" aria-hidden="true">⌨️</span>{t('speech.type')}
       </button>
 
-      <button className="bar-btn" id="btn-back" onClick={removeLastToken} aria-label="Undo last word">
-        <span className="btn-icon" aria-hidden="true">⌫</span>UNDO
+      <button className="bar-btn" id="btn-back" onClick={removeLastToken} aria-label={t('speech.undo')}>
+        <span className="btn-icon" aria-hidden="true">⌫</span>{t('speech.undo')}
       </button>
 
       <button
@@ -125,9 +127,9 @@ export function SpeechBar() {
         onMouseLeave={handleClearUp}
         onTouchStart={handleClearDown}
         onTouchEnd={handleClearUp}
-        aria-label="Clear all words (hold to confirm)"
+        aria-label={t('speech.clear')}
       >
-        <span className="btn-icon" aria-hidden="true">🗑️</span>CLEAR
+        <span className="btn-icon" aria-hidden="true">🗑️</span>{t('speech.clear')}
       </button>
     </div>
   );

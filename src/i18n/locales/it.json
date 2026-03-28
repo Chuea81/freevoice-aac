@@ -1,0 +1,34 @@
+{
+  "speech": {
+    "speak": "PARLA",
+    "undo": "ANNULLA",
+    "clear": "CANCELLA",
+    "type": "SCRIVI",
+    "placeholder": "Tocca i simboli per parlare…"
+  },
+  "nav": {
+    "home": "HOME",
+    "feelings": "EMOZIONI",
+    "food": "CIBO",
+    "play": "GIOCA",
+    "myWords": "LE MIE PAROLE"
+  },
+  "fastPhrases": {
+    "help": "Aiuto",
+    "wait": "Aspetta",
+    "look": "Guarda",
+    "done": "Fatto",
+    "more": "Ancora",
+    "stop": "Ferma",
+    "break": "Pausa",
+    "please": "Per favore",
+    "thankYou": "Grazie",
+    "hurts": "Fa male",
+    "bathroom": "Bagno",
+    "hug": "Abbraccio"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua"
+  }
+}

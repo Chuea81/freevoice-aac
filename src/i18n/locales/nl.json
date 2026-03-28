@@ -1,0 +1,34 @@
+{
+  "speech": {
+    "speak": "SPREKEN",
+    "undo": "ONGEDAAN",
+    "clear": "WISSEN",
+    "type": "TYPEN",
+    "placeholder": "Tik op symbolen om te spreken…"
+  },
+  "nav": {
+    "home": "HOME",
+    "feelings": "GEVOELENS",
+    "food": "ETEN",
+    "play": "SPELEN",
+    "myWords": "MIJN WOORDEN"
+  },
+  "fastPhrases": {
+    "help": "Help",
+    "wait": "Wacht",
+    "look": "Kijk",
+    "done": "Klaar",
+    "more": "Meer",
+    "stop": "Stop",
+    "break": "Pauze",
+    "please": "Alsjeblieft",
+    "thankYou": "Dank je",
+    "hurts": "Doet pijn",
+    "bathroom": "Toilet",
+    "hug": "Knuffel"
+  },
+  "settings": {
+    "title": "Instellingen",
+    "language": "Taal"
+  }
+}

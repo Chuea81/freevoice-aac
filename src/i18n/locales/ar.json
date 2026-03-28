@@ -1,0 +1,34 @@
+{
+  "speech": {
+    "speak": "تحدث",
+    "undo": "تراجع",
+    "clear": "مسح",
+    "type": "اكتب",
+    "placeholder": "انقر على الرموز للتحدث…"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "feelings": "المشاعر",
+    "food": "طعام",
+    "play": "لعب",
+    "myWords": "كلماتي"
+  },
+  "fastPhrases": {
+    "help": "مساعدة",
+    "wait": "انتظر",
+    "look": "انظر",
+    "done": "تم",
+    "more": "المزيد",
+    "stop": "توقف",
+    "break": "استراحة",
+    "please": "من فضلك",
+    "thankYou": "شكراً",
+    "hurts": "يؤلم",
+    "bathroom": "حمام",
+    "hug": "عناق"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة"
+  }
+}

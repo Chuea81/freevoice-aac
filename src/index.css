@@ -1516,3 +1516,14 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   22. RTL LAYOUT SUPPORT (Arabic)
+   ═══════════════════════════════════════════════════ */
+[dir="rtl"] #speech-bar { flex-direction: row-reverse; }
+[dir="rtl"] #breadcrumb { flex-direction: row-reverse; }
+[dir="rtl"] .corewords-bar { flex-direction: row-reverse; }
+[dir="rtl"] .quickfires-strip { flex-direction: row-reverse; }
+[dir="rtl"] .crumb-sep { transform: scaleX(-1); }
+[dir="rtl"] .settings-row { flex-direction: row-reverse; }
+[dir="rtl"] .modal-actions { flex-direction: row-reverse; }
