@@ -163,15 +163,17 @@ export function useTTS() {
           clearTimeout(bridgeTimer);
 
           if (webSpeechPlayed) {
-            // Web Speech already started — cancel and play Kokoro
-            window.speechSynthesis.cancel();
-            await new Promise(r => setTimeout(r, 50));
+            // Web Speech already playing — don't overlap with Kokoro.
+            // The audio is now cached, so next tap will be instant Kokoro.
+            resolve();
+            return;
           }
 
           try {
             await playArrayBuffer(buffer, speechVolume);
           } catch {
-            // AudioContext failed — Web Speech already played or will play
+            // AudioContext failed — fall back to Web Speech
+            await speakWithWebSpeech(processed, webSpeechVoiceURI, speechRate, speechPitch, speechVolume);
           }
           resolve();
         });
