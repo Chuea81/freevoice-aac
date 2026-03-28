@@ -53,6 +53,12 @@ interface BoardState {
   createBoard: (name: string, emoji: string, parentId: string | null) => Promise<string>;
   deleteBoard: (boardId: string) => Promise<void>;
 
+  // Move symbol between boards
+  moveSymbolToBoard: (symbolId: string, targetBoardId: string) => Promise<void>;
+
+  // Get all boards for picker
+  getAllBoards: () => Promise<DbBoard[]>;
+
   // Vocab filter
   toggleSymbolHidden: (id: string) => Promise<void>;
 
@@ -205,6 +211,19 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       await db.boards.delete(boardId);
       await db.symbols.where('boardId').equals(boardId).delete();
     });
+  },
+
+  // Move symbol between boards
+  moveSymbolToBoard: async (symbolId, targetBoardId) => {
+    const count = await db.symbols.where('boardId').equals(targetBoardId).count();
+    await db.symbols.update(symbolId, { boardId: targetBoardId, order: count });
+    // Reload current board to remove the moved symbol
+    get().loadSymbols(get().currentBoardId);
+  },
+
+  // Get all boards for picker
+  getAllBoards: async () => {
+    return db.boards.orderBy('order').toArray();
   },
 
   // Vocab filter

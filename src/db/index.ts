@@ -56,6 +56,22 @@ class FreeVoiceDB extends Dexie {
       settings: 'key',
       symbolCache: 'keyword, cachedAt',
     });
+
+    // v2: Clear stale symbolCache (may contain B&W or wrong ARASAAC URLs)
+    // and clear old symbol imageUrls so hardcoded arasaacId symbols get fresh images
+    this.version(2).stores({
+      boards: 'id, parentId, order',
+      symbols: 'id, boardId, order, [boardId+order]',
+      settings: 'key',
+      symbolCache: 'keyword, cachedAt',
+    }).upgrade(async (tx) => {
+      // Clear the entire symbol cache — forces fresh fetches
+      await tx.table('symbolCache').clear();
+      // Clear imageUrl on all default symbols so they re-fetch with correct IDs
+      await tx.table('symbols')
+        .where('id').startsWith('default-')
+        .modify({ imageUrl: undefined });
+    });
   }
 }
 

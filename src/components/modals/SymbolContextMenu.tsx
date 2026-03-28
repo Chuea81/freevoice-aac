@@ -4,11 +4,12 @@ interface Props {
   open: boolean;
   label: string;
   onEdit: () => void;
+  onMove: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
-export function SymbolContextMenu({ open, label, onEdit, onDelete, onClose }: Props) {
+export function SymbolContextMenu({ open, label, onEdit, onMove, onDelete, onClose }: Props) {
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
@@ -21,6 +22,9 @@ export function SymbolContextMenu({ open, label, onEdit, onDelete, onClose }: Pr
         <h3 className="context-menu-title">{label}</h3>
         <button className="context-menu-btn edit" onClick={onEdit}>
           ✏️ Edit
+        </button>
+        <button className="context-menu-btn edit" onClick={onMove}>
+          📂 Move to Board...
         </button>
         <button className="context-menu-btn delete" onClick={onDelete}>
           🗑️ Delete

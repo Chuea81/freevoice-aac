@@ -5,6 +5,7 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { SymbolCard } from '../SymbolCard/SymbolCard';
 import { CustomWordModal } from '../modals/CustomWordModal';
 import { SymbolContextMenu } from '../modals/SymbolContextMenu';
+import { BoardPicker } from '../modals/BoardPicker';
 import type { Symbol as DbSymbol } from '../../db';
 
 interface Props {
@@ -17,6 +18,7 @@ export function SymbolGrid({ isParentMode }: Props) {
   const navigateToBoard = useBoardStore((s) => s.navigateToBoard);
   const addToken = useBoardStore((s) => s.addToken);
   const deleteCustomSymbol = useBoardStore((s) => s.deleteCustomSymbol);
+  const moveSymbolToBoard = useBoardStore((s) => s.moveSymbolToBoard);
   const autoSpeak = useSettingsStore((s) => s.autoSpeak);
   const gridColumns = useSettingsStore((s) => s.gridColumns);
   const symbolSize = useSettingsStore((s) => s.symbolSize);
@@ -27,12 +29,14 @@ export function SymbolGrid({ isParentMode }: Props) {
   const [contextSymbol, setContextSymbol] = useState<DbSymbol | null>(null);
   const [contextOpen, setContextOpen] = useState(false);
   const [addToBoardId, setAddToBoardId] = useState<string | null>(null);
+  const [movePickerOpen, setMovePickerOpen] = useState(false);
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
   const isCustomBoard = currentBoardId === 'custom';
   const allowEdit = isCustomBoard || isParentMode;
+  const showAddButton = isCustomBoard || isParentMode;
 
   const handleTap = useCallback(
     (symbol: DbSymbol) => {
@@ -44,9 +48,7 @@ export function SymbolGrid({ isParentMode }: Props) {
         navigateToBoard(symbol.targetBoardId, symbol.label, symbol.emoji);
       } else {
         addToken(symbol.emoji, symbol.phrase);
-        if (autoSpeak) {
-          speak(symbol.phrase);
-        }
+        if (autoSpeak) speak(symbol.phrase);
       }
     },
     [navigateToBoard, addToken, speak, autoSpeak],
@@ -73,9 +75,23 @@ export function SymbolGrid({ isParentMode }: Props) {
     setContextOpen(false);
     if (contextSymbol) {
       setEditingSymbol(contextSymbol);
+      setAddToBoardId(currentBoardId);
       setModalOpen(true);
     }
-  }, [contextSymbol]);
+  }, [contextSymbol, currentBoardId]);
+
+  const handleMove = useCallback(() => {
+    setContextOpen(false);
+    setMovePickerOpen(true);
+  }, []);
+
+  const handleMoveSelect = useCallback(async (targetBoardId: string) => {
+    if (contextSymbol) {
+      await moveSymbolToBoard(contextSymbol.id, targetBoardId);
+    }
+    setMovePickerOpen(false);
+    setContextSymbol(null);
+  }, [contextSymbol, moveSymbolToBoard]);
 
   const handleDelete = useCallback(async () => {
     if (contextSymbol && confirm(`Remove "${contextSymbol.label}"?`)) {
@@ -90,8 +106,6 @@ export function SymbolGrid({ isParentMode }: Props) {
     setEditingSymbol(null);
     setAddToBoardId(null);
   }, []);
-
-  const showAddButton = isCustomBoard || isParentMode;
 
   if (symbols.length === 0 && !showAddButton) {
     return (
@@ -110,21 +124,6 @@ export function SymbolGrid({ isParentMode }: Props) {
     <>
       <div id="grid-area" className={`scroll-thin${sizeClass}`}>
         <div id="symbol-grid" className={gridColumns > 0 ? `cols-${gridColumns}` : undefined}>
-          {showAddButton && (
-            <button
-              className="symbol-card add-word-card"
-              onClick={() => {
-                setEditingSymbol(null);
-                setAddToBoardId(currentBoardId);
-                setModalOpen(true);
-              }}
-            >
-              <div className="symbol-card-highlight" />
-              <span className="symbol-emoji">➕</span>
-              <span className="symbol-label">Add Word</span>
-            </button>
-          )}
-
           {symbols.map((symbol) => (
             <div
               key={symbol.id}
@@ -139,9 +138,24 @@ export function SymbolGrid({ isParentMode }: Props) {
             </div>
           ))}
 
+          {/* Add Symbol card — always LAST in grid, only in edit mode */}
+          {showAddButton && (
+            <button
+              className="symbol-card add-word-card"
+              onClick={() => {
+                setEditingSymbol(null);
+                setAddToBoardId(currentBoardId);
+                setModalOpen(true);
+              }}
+            >
+              <span className="symbol-emoji">➕</span>
+              <span className="symbol-label">Add Symbol</span>
+            </button>
+          )}
+
           {showAddButton && symbols.length === 0 && (
             <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
-              <p>Tap ➕ to add words to this board!</p>
+              <p>Tap ➕ to add symbols to this board!</p>
             </div>
           )}
         </div>
@@ -151,15 +165,24 @@ export function SymbolGrid({ isParentMode }: Props) {
         open={modalOpen}
         onClose={handleCloseModal}
         editSymbol={editingSymbol}
-        boardId={addToBoardId || 'custom'}
+        boardId={addToBoardId || currentBoardId}
       />
 
       <SymbolContextMenu
         open={contextOpen}
         label={contextSymbol?.label || ''}
         onEdit={handleEdit}
+        onMove={handleMove}
         onDelete={handleDelete}
         onClose={() => { setContextOpen(false); setContextSymbol(null); }}
+      />
+
+      <BoardPicker
+        open={movePickerOpen}
+        title={`Move "${contextSymbol?.label || ''}" to...`}
+        currentBoardId={currentBoardId}
+        onSelect={handleMoveSelect}
+        onClose={() => { setMovePickerOpen(false); setContextSymbol(null); }}
       />
     </>
   );

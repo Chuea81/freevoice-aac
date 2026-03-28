@@ -1,15 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useBoardStore } from '../store/boardStore';
-import { fetchArasaacForSymbols } from '../services/arasaac';
+import { fetchArasaacForSymbols, getArasaacImageUrl } from '../services/arasaac';
+import { db } from '../db';
 
 /**
  * Background ARASAAC image fetcher.
  * When the current board's symbols change, identifies symbols without imageUrl
- * (excluding categories and user-uploaded photos) and fetches ARASAAC images.
- * Updates are written to IndexedDB and the board is reloaded to pick them up.
- *
- * PRD 3.1: ARASAAC API fetch by keyword, cache to IndexedDB, emoji fallback if offline.
- * PRD Offline Requirement: Never show broken images.
+ * and fetches ARASAAC images. Symbols with hardcoded arasaacId get direct URLs
+ * (no API search needed). Others fall back to keyword search.
  */
 export function useArasaac() {
   const symbols = useBoardStore((s) => s.symbols);
@@ -19,14 +17,10 @@ export function useArasaac() {
   const lastBoardRef = useRef('');
 
   useEffect(() => {
-    // Skip if no symbols or same board already being fetched
     if (symbols.length === 0) return;
     if (fetchingRef.current && lastBoardRef.current === currentBoardId) return;
 
-    // Find symbols that need ARASAAC images:
-    // - Not a category card
-    // - No imageUrl set (no user photo, no prior ARASAAC fetch)
-    // - Has a label to search for
+    // Find symbols that need images
     const needsFetch = symbols.filter(
       (s) => !s.isCategory && !s.imageUrl && s.label,
     );
@@ -38,11 +32,25 @@ export function useArasaac() {
 
     const fetchImages = async () => {
       try {
-        const toFetch = needsFetch.map((s) => ({ id: s.id, label: s.label }));
-        const results = await fetchArasaacForSymbols(toFetch);
+        let updated = false;
 
-        // If we got any images, reload the board to show them
-        if (results.size > 0) {
+        // Phase 1: Symbols with hardcoded arasaacId — direct URL, no API call
+        const withId = needsFetch.filter((s) => s.arasaacId);
+        for (const sym of withId) {
+          const imageUrl = getArasaacImageUrl(sym.arasaacId!);
+          await db.symbols.update(sym.id, { imageUrl });
+          updated = true;
+        }
+
+        // Phase 2: Symbols without arasaacId — keyword search via API
+        const withoutId = needsFetch.filter((s) => !s.arasaacId);
+        if (withoutId.length > 0) {
+          const toFetch = withoutId.map((s) => ({ id: s.id, label: s.label }));
+          const results = await fetchArasaacForSymbols(toFetch);
+          if (results.size > 0) updated = true;
+        }
+
+        if (updated) {
           loadSymbols(currentBoardId);
         }
       } finally {
@@ -50,8 +58,7 @@ export function useArasaac() {
       }
     };
 
-    // Delay slightly to not block initial render
-    const timer = setTimeout(fetchImages, 500);
+    const timer = setTimeout(fetchImages, 300);
     return () => clearTimeout(timer);
   }, [symbols, currentBoardId, loadSymbols]);
 }
