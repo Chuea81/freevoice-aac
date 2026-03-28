@@ -138,7 +138,7 @@
       <div><label>Category *</label><select id="input-category"><option value="">Select category...</option></select></div>
       <div><label>Sub-category</label><select id="input-subcategory"><option value="">None</option></select></div>
       <div><label>Spoken Phrase</label><input type="text" id="input-phrase" placeholder="e.g. I want a tamale"><div style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:700">Auto-fills as "I want [label]" if blank</div></div>
-      <div><label>Extra Image Detail (optional)</label><textarea id="input-extra" placeholder="e.g. Show it wrapped in a corn husk. Mexican style. Steam rising."></textarea></div>
+      <div><label>Extra Image Detail (optional) <span id="prompt-badge" style="display:none;background:#27AE60;color:white;font-size:9px;padding:2px 8px;border-radius:100px;margin-left:6px;letter-spacing:0.5px;vertical-align:middle">✓ PROMPT READY</span></label><textarea id="input-extra" placeholder="e.g. Show it wrapped in a corn husk. Mexican style. Steam rising."></textarea></div>
       <div><label>ARASAAC Fallback ID (optional)</label><input type="text" id="input-arasaac" placeholder="e.g. 35533"><div style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:700">Used if custom image fails to load</div></div>
       <div><label>Generation Prompt Preview</label><div class="prompt-preview" id="prompt-preview">Fill in label and category to see prompt...</div></div>
       <button class="btn btn-generate" id="btn-generate" onclick="generateSymbol()">✨ Generate Symbol</button>
@@ -213,6 +213,7 @@
 const API = 'http://localhost:3333/api';
 let currentImageBase64 = null;
 let currentLabel = null;
+let geminiPrompts = {}; // label → pre-written Gemini prompt from audit
 
 async function init() {
   try {
@@ -224,10 +225,16 @@ async function init() {
     document.getElementById('status-dot').style.background = '#E11D48';
     document.getElementById('status-text').textContent = 'Server not running — run npm run admin';
   }
+  // Load pre-written Gemini prompts
+  try {
+    geminiPrompts = await fetch(`${API}/gemini-prompts`).then(r => r.json());
+    console.log('[Admin] Loaded', Object.keys(geminiPrompts).length, 'Gemini prompts:', Object.keys(geminiPrompts).slice(0, 5).join(', '), '...');
+  } catch (e) { console.warn('[Admin] Failed to load Gemini prompts:', e); }
   await loadApproved();
   ['input-label','input-category','input-extra'].forEach(id =>
     document.getElementById(id).addEventListener('input', updatePromptPreview));
   document.getElementById('input-label').addEventListener('input', autoFillPhrase);
+  document.getElementById('input-label').addEventListener('input', autoFillGeminiPrompt);
 }
 
 function buildCategorySelects(cats) {
@@ -248,6 +255,60 @@ function autoFillPhrase() {
   if (!phrase.dataset.manualEdit) phrase.placeholder = label ? `I want ${label.toLowerCase()}` : 'e.g. I want a tamale';
 }
 document.getElementById('input-phrase')?.addEventListener('input', function() { this.dataset.manualEdit = this.value ? 'true' : ''; });
+
+function findGeminiPrompt(label) {
+  if (!label) return null;
+  const lower = label.toLowerCase().trim();
+  // Normalize: & ↔ and, strip extra spaces
+  const normalize = (s) => s.toLowerCase().trim().replace(/&/g, 'and').replace(/\s+/g, ' ');
+  const normalizedInput = normalize(label);
+  // 1. Exact match
+  if (geminiPrompts[label]) return geminiPrompts[label];
+  // 2. Case-insensitive match
+  for (const [k, v] of Object.entries(geminiPrompts)) {
+    if (k.toLowerCase() === lower) return v;
+  }
+  // 3. Normalized match (& vs and)
+  for (const [k, v] of Object.entries(geminiPrompts)) {
+    if (normalize(k) === normalizedInput) return v;
+  }
+  // 4. Singular/plural (Tamale → Tamales, Biscuit → Biscuits)
+  for (const [k, v] of Object.entries(geminiPrompts)) {
+    const kl = k.toLowerCase();
+    if (kl === lower + 's' || kl + 's' === lower) return v;
+  }
+  return null;
+}
+
+function autoFillGeminiPrompt() {
+  const label = document.getElementById('input-label').value.trim();
+  const extra = document.getElementById('input-extra');
+  const badge = document.getElementById('prompt-badge');
+  // Reset manual edit flag when label changes
+  if (extra.dataset.lastAutoLabel && extra.dataset.lastAutoLabel !== label) {
+    extra.dataset.manualEdit = '';
+  }
+  const match = findGeminiPrompt(label);
+  console.log('[Gemini Prompt]', label, '→', match ? match.substring(0, 60) + '...' : 'no match', '| map has', Object.keys(geminiPrompts).length, 'keys');
+  if (match && !extra.dataset.manualEdit) {
+    extra.value = match;
+    extra.dataset.lastAutoLabel = label;
+    extra.style.borderColor = 'rgba(39,174,96,0.6)';
+    badge.style.display = 'inline';
+    updatePromptPreview();
+  } else {
+    badge.style.display = 'none';
+    if (!extra.dataset.manualEdit) {
+      extra.value = '';
+      extra.style.borderColor = '';
+      updatePromptPreview();
+    }
+  }
+}
+document.getElementById('input-extra')?.addEventListener('input', function() {
+  this.dataset.manualEdit = this.value ? 'true' : '';
+  if (!this.value) document.getElementById('prompt-badge').style.display = 'none';
+});
 
 function updatePromptPreview() {
   const label = document.getElementById('input-label').value.trim();

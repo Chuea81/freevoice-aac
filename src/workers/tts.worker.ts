@@ -44,15 +44,16 @@ async function loadModel(dtypeHint = 'q8') {
         device: device as 'webgpu' | 'wasm',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         progress_callback: (progress: any) => {
-          // progress.progress can be 0-100 (percentage) or 0-1 (fraction)
-          // or undefined during 'initiate' phase
           let pct = 0;
           if (typeof progress.progress === 'number') {
+            // progress.progress can be 0-100 or 0-1 depending on version
             pct = progress.progress > 1 ? progress.progress : progress.progress * 100;
           }
+          // During 'initiate' phase, show 1% so it doesn't look frozen
+          if (progress.status === 'initiate' && pct === 0) pct = 1;
           post({
             type: 'LOAD_PROGRESS',
-            progress: pct,
+            progress: Math.round(pct),
             status: progress.status || 'loading',
             device,
           });

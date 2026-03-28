@@ -63,15 +63,10 @@ export default defineConfig({
               networkTimeoutSeconds: 5,
             },
           },
-          {
-            urlPattern: /^https:\/\/huggingface\.co\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'kokoro-model',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // Kokoro model files — DO NOT cache with Workbox.
+          // kokoro-js uses its own Cache API / IndexedDB internally.
+          // Workbox CacheFirst was intercepting downloads and breaking
+          // progress reporting (stuck at 0%).
         ],
         navigateFallback: '/app/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/terms/],
