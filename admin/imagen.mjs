@@ -1,5 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dir = dirname(fileURLToPath(import.meta.url));
+config({ path: join(__dir, '.env') });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -46,13 +51,13 @@ Create a single clear AAC communication symbol for "${label}".
 The image should be immediately recognizable to a child.
   `.trim();
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash-exp-image-generation',
-  });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
 
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { responseModalities: ['image', 'text'] },
+    generationConfig: {
+      responseModalities: ['image'],
+    },
   });
 
   const response = result.response;
@@ -62,5 +67,21 @@ The image should be immediately recognizable to a child.
     }
   }
 
-  throw new Error('No image returned from Gemini');
+  // Fallback: try gemini-2.5-flash-image for image generation
+  try {
+    const fallbackModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
+    const fbResult = await fallbackModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: { responseModalities: ['image', 'text'] },
+    });
+    for (const part of fbResult.response.candidates[0].content.parts) {
+      if (part.inlineData?.mimeType?.startsWith('image/')) {
+        return { imageBase64: part.inlineData.data, mimeType: part.inlineData.mimeType, prompt };
+      }
+    }
+  } catch (fbErr) {
+    console.error('Fallback model also failed:', fbErr.message);
+  }
+
+  throw new Error('No image returned from any model');
 }

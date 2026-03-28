@@ -4,10 +4,11 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { generateSymbol } from './imagen.mjs';
 import { approveSymbol, getExistingSymbols, getCategories } from './writer.mjs';
-import 'dotenv/config';
+import { config } from 'dotenv';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT  = join(__dir, '..');
+config({ path: join(__dir, '.env') });
 
 const app = express();
 app.use(cors());
