@@ -471,7 +471,7 @@ body {
 }
 
 /* Character images — full bleed, no white container */
-/* Character/custom images — fixed size, clipped edges */
+/* Character sprite images — constrained with clip-path for border artifacts */
 .symbol-character-img {
   width: clamp(72px, 72%, 110px);
   height: clamp(72px, 72%, 110px);
@@ -481,6 +481,18 @@ body {
   flex-shrink: 0;
   -webkit-clip-path: inset(6px round 4px);
   clip-path: inset(6px round 4px);
+}
+
+/* Custom admin-generated images — fill entire card, navy bg matches */
+.symbol-custom-img {
+  position: absolute;
+  inset: 3px 1px 0 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 3px);
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0 0 19px 19px;
+  z-index: 0;
 }
 
 /* Legacy .symbol-image for fallback */
@@ -517,7 +529,8 @@ body {
   word-break: break-word;
   hyphens: auto;
   max-width: 100%;
-  z-index: 1;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
 }
 
 /* Card speak pulse */
