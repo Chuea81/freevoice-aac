@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/assemble-dist.mjs",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",

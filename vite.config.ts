@@ -6,6 +6,7 @@ import { readFileSync } from 'fs'
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 export default defineConfig({
+  base: '/app/',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -22,11 +23,9 @@ export default defineConfig({
       injectRegister: 'auto',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // Never cache Kokoro model files via Workbox — kokoro-js handles its own caching
         globIgnores: ['**/tts.worker-*.js', '**/kokoroWorker-*.js', '**/*.wasm', '**/onnx*', '**/*.onnx', '**/kokoro*'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
-          // Google Fonts — stale while revalidate
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
@@ -45,7 +44,6 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // ARASAAC symbol images — cache first, 90 day expiry
           {
             urlPattern: /^https:\/\/static\.arasaac\.org\/pictograms\/.*/i,
             handler: 'CacheFirst',
@@ -55,7 +53,6 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // ARASAAC API search results — network first, 24hr cache
           {
             urlPattern: /^https:\/\/api\.arasaac\.org\/.*/i,
             handler: 'NetworkFirst',
@@ -66,7 +63,6 @@ export default defineConfig({
               networkTimeoutSeconds: 5,
             },
           },
-          // HuggingFace model files — cache first (downloaded once)
           {
             urlPattern: /^https:\/\/huggingface\.co\/.*/i,
             handler: 'CacheFirst',
@@ -77,12 +73,12 @@ export default defineConfig({
             },
           },
         ],
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//],
+        navigateFallback: '/app/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/terms/],
         skipWaiting: true,
         clientsClaim: true,
       },
-      manifest: false, // Using our own public/manifest.json
+      manifest: false,
       devOptions: {
         enabled: false,
       },
@@ -91,6 +87,7 @@ export default defineConfig({
   build: {
     sourcemap: false,
     target: ['es2020', 'safari15', 'chrome110'],
+    outDir: 'dist/app',
   },
   server: {
     port: 5174,

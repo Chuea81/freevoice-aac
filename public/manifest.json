@@ -2,7 +2,7 @@
   "name": "FreeVoice AAC",
   "short_name": "FreeVoice",
   "description": "Free AAC communication app for nonverbal and minimally verbal children. No subscription. No account. Works offline.",
-  "start_url": "/",
+  "start_url": "/app/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
@@ -11,7 +11,7 @@
   "categories": ["education", "health", "utilities", "accessibility"],
   "lang": "en-US",
   "dir": "ltr",
-  "scope": "/",
+  "scope": "/app/",
   "icons": [
     { "src": "/icons/icon-72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
@@ -43,7 +43,7 @@
       "name": "Open FreeVoice",
       "short_name": "Open",
       "description": "Open the AAC communication board",
-      "url": "/",
+      "url": "/app/",
       "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
     }
   ]
