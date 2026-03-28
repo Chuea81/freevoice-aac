@@ -9,30 +9,31 @@ config({ path: join(__dir, '.env') });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const BASE_STYLE_PROMPT = `
-Flat cartoon illustration style.
-Thick black outlines.
-Vibrant saturated colors.
-Simple and iconic — readable at 80x80 pixels.
-Centered subject, no background clutter.
-Dark navy blue background (#0C1428).
-Rounded square composition.
-Same style as a children's AAC communication app symbol.
-No text, no labels, no letters in the image.
-Child-friendly, expressive, clear.
+Detailed realistic illustration of the actual object, person, or scene.
+NOT an emoji. NOT a flat icon. NOT a simple glyph.
+Rendered with depth, lighting, and texture like a high-quality children's book illustration.
+Vibrant saturated colors with soft shading and highlights.
+Centered subject filling most of the frame.
+Dark navy blue background (#0C1428) with subtle gradient.
+No text, no labels, no letters, no watermarks in the image.
+Square composition. Single clear subject.
+Style reference: Pixar-quality illustration, warm and inviting.
+Appropriate for children ages 3-12.
 `.trim();
 
 const CATEGORY_STYLE_HINTS = {
-  food: 'Delicious-looking food illustration. Warm inviting colors. Steam if hot.',
-  drinks: 'Drink illustration with clear vessel. Show the liquid color. Condensation if cold.',
-  emotions: 'Expressive cartoon face. Big clear emotion. Simple round face, large eyes.',
-  people: 'Cartoon character. Friendly expression. Simple clothing.',
-  places: 'Simple building or location icon. Recognizable silhouette.',
-  activities: 'Action in progress. Dynamic pose or movement suggested.',
-  body: 'Clear body part or health symbol. Medical-friendly but not scary.',
-  school: 'School supply or education symbol. Colorful and approachable.',
-  social: 'Clear communication action. Gesture or social scenario.',
-  nature: 'Nature element. Bright and colorful.',
-  default: 'Clear iconic symbol. Colorful. Child-friendly.',
+  food: 'Photorealistic food illustration. Show the actual dish/item with appetizing detail — texture of bread, shine of sauce, steam rising from hot food. Warm lighting.',
+  drinks: 'Realistic drink in a clear glass or cup. Show the actual liquid color, ice cubes, condensation droplets, garnish. Photographic quality.',
+  emotions: 'Expressive child character showing this emotion clearly. Full face with big eyes, detailed expression. Pixar/Disney style character, not emoji.',
+  people: 'Realistic illustrated person. Clear features, natural pose, recognizable role or relationship.',
+  places: 'Realistic illustration of the actual place. Show architectural details, environment, atmosphere.',
+  activities: 'Realistic illustration of the activity in progress. Show equipment, movement, environment.',
+  body: 'Medical-grade but friendly illustration. Accurate anatomy, soft colors, not scary.',
+  school: 'Realistic school supply or classroom scene. Actual objects with texture and detail.',
+  social: 'Realistic scene showing social interaction. Clear body language and facial expressions.',
+  nature: 'Beautiful realistic nature illustration. Rich colors, detailed flora/fauna.',
+  animals: 'Realistic but friendly animal portrait. Detailed fur/feathers, expressive eyes, natural pose.',
+  default: 'Detailed realistic illustration. Rich colors, clear subject, child-friendly.',
 };
 
 export async function generateSymbol({ label, category = 'default', extraPrompt = '' }) {
