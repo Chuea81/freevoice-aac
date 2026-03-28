@@ -1,5 +1,6 @@
 // Slices character sprite sheets into individual emotion PNGs.
 // Reads manifest.json for character list, auto-detects grid layout.
+// Handles sprite sheets with text labels under each cell (crops them out).
 // Run: node scripts/slice-sprites.mjs
 // Requires: npm install -D sharp
 
@@ -23,102 +24,65 @@ const LABELS = [
 ];
 
 const TOTAL = LABELS.length; // 24
+const COLS = 10;
+const ROWS = 3;
 
-// Auto-detect grid layout from image dimensions
-function detectGrid(width, height) {
-  const ratio = width / height;
-
-  // Try common layouts and pick the one whose cells are closest to square
-  const candidates = [
-    { cols: 10, rows: 3 },  // 10×3 = 30 cells (24 used)
-    { cols: 8, rows: 3 },   // 8×3 = 24 cells
-    { cols: 6, rows: 4 },   // 6×4 = 24 cells
-    { cols: 12, rows: 2 },  // 12×2 = 24 cells
-  ];
-
-  let best = candidates[0];
-  let bestScore = Infinity;
-
-  for (const c of candidates) {
-    const cellW = width / c.cols;
-    const cellH = height / c.rows;
-    // Score: how close to square (1:1 ratio) the cells are
-    const cellRatio = cellW / cellH;
-    const score = Math.abs(cellRatio - 1);
-    if (score < bestScore) {
-      bestScore = score;
-      best = c;
-    }
-  }
-
-  console.log(`  Grid detected: ${best.cols}×${best.rows} (ratio ${ratio.toFixed(2)}, cell squareness ${(1 - bestScore).toFixed(2)})`);
-  return best;
-}
+// How much of each cell height is the character image (rest is text label)
+// The sprite sheets have labels like "HAPPY", "SAD" under each character.
+// Crop to top 78% to remove the text.
+const IMAGE_PORTION = 0.78;
 
 async function main() {
-  // Read manifest
   const manifestPath = join(PUBLIC, 'manifest.json');
   if (!existsSync(manifestPath)) {
-    console.error('❌ manifest.json not found at', manifestPath);
+    console.error('❌ manifest.json not found');
     process.exit(1);
   }
 
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-  const characters = manifest.characters;
-  console.log(`Found ${characters.length} characters in manifest.\n`);
+  console.log(`Found ${manifest.characters.length} characters.\n`);
 
   let totalSliced = 0;
   let warnings = 0;
 
-  for (const char of characters) {
-    const sheetPath = join(PUBLIC, 'sprites', `${char.id}_sheet.png`);
-
+  for (const char of manifest.characters) {
+    // Try .png then .jpg
+    let sheetPath = join(PUBLIC, 'sprites', `${char.id}_sheet.png`);
     if (!existsSync(sheetPath)) {
-      console.log(`⚠ Sprite sheet not found for ${char.id}: ${sheetPath}`);
-      console.log(`  Skipping ${char.name}.\n`);
+      sheetPath = join(PUBLIC, 'sprites', `${char.id}_sheet.jpg`);
+    }
+    if (!existsSync(sheetPath)) {
+      console.log(`⚠ No sprite sheet for ${char.id} — skipping ${char.name}\n`);
       continue;
     }
 
     const sheetSize = statSync(sheetPath).size;
-    console.log(`Processing ${char.name} (${char.id}) — sheet: ${(sheetSize / 1024).toFixed(0)}KB`);
+    console.log(`Processing ${char.name} (${char.id}) — ${(sheetSize / 1024).toFixed(0)}KB`);
 
-    const image = sharp(sheetPath);
-    const metadata = await image.metadata();
+    const metadata = await sharp(sheetPath).metadata();
     const { width, height } = metadata;
-    console.log(`  Sheet dimensions: ${width}×${height}`);
+    console.log(`  Sheet: ${width}×${height}`);
 
-    const { cols, rows } = detectGrid(width, height);
-    const cellW = Math.floor(width / cols);
-    const cellH = Math.floor(height / rows);
-    console.log(`  Cell size: ${cellW}×${cellH}`);
+    const cellW = Math.floor(width / COLS);
+    const cellH = Math.floor(height / ROWS);
+    const imgH = Math.floor(cellH * IMAGE_PORTION); // Crop out text label
+    console.log(`  Cell: ${cellW}×${cellH}, image crop: ${cellW}×${imgH}`);
 
-    // Create output directory
     const outDir = join(PUBLIC, 'symbols', char.id, 'emotions');
     await mkdir(outDir, { recursive: true });
 
-    // Slice each emotion
     for (let i = 0; i < TOTAL; i++) {
       const label = LABELS[i];
-      const col = i % cols;
-      const row = Math.floor(i / cols);
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
 
       const left = col * cellW;
       const top = row * cellH;
 
-      // Ensure we don't exceed image bounds
-      const extractW = Math.min(cellW, width - left);
-      const extractH = Math.min(cellH, height - top);
-
-      if (left >= width || top >= height) {
-        console.log(`  ⚠ ${label}: out of bounds (${left},${top}), skipping`);
-        warnings++;
-        continue;
-      }
-
       const outPath = join(outDir, `${label}.png`);
 
       await sharp(sheetPath)
-        .extract({ left, top, width: extractW, height: extractH })
+        .extract({ left, top, width: cellW, height: imgH })
         .resize(500, 500, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .png()
         .toFile(outPath);
@@ -132,17 +96,16 @@ async function main() {
       } else {
         console.log(`  ✓ ${label}.png — ${sizeKB}KB`);
       }
-
       totalSliced++;
     }
 
-    // Also create preview from the "happy" cell (first cell)
+    // Preview from "happy" cell
     const previewDir = join(PUBLIC, 'preview');
     await mkdir(previewDir, { recursive: true });
     const previewPath = join(previewDir, `${char.id}.png`);
 
     await sharp(sheetPath)
-      .extract({ left: 0, top: 0, width: cellW, height: cellH })
+      .extract({ left: 0, top: 0, width: cellW, height: imgH })
       .resize(200, 200, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toFile(previewPath);
@@ -152,13 +115,23 @@ async function main() {
   }
 
   console.log(`\n✅ Sliced ${totalSliced} emotion images.`);
-  if (warnings > 0) {
-    console.log(`⚠ ${warnings} warnings — check files marked above.`);
+  if (warnings > 0) console.log(`⚠ ${warnings} warnings.`);
+
+  // Clean up Gemini source files from emotions folder
+  console.log('\nCleaning up source Gemini files...');
+  const { readdirSync, unlinkSync } = await import('fs');
+  for (const char of manifest.characters) {
+    const emotionsDir = join(PUBLIC, 'symbols', char.id, 'emotions');
+    if (!existsSync(emotionsDir)) continue;
+    for (const file of readdirSync(emotionsDir)) {
+      if (file.startsWith('Gemini_')) {
+        unlinkSync(join(emotionsDir, file));
+        console.log(`  🗑 Removed ${file}`);
+      }
+    }
   }
-  console.log('🧑 MANUAL: Verify each sliced image looks correct visually.');
+
+  console.log('\n✅ Done! Verify images visually.');
 }
 
-main().catch(err => {
-  console.error('❌ Error:', err);
-  process.exit(1);
-});
+main().catch(err => { console.error('❌', err); process.exit(1); });
