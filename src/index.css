@@ -368,6 +368,7 @@ body {
   gap: 10px;
   width: 100%;
   align-content: start;
+  align-items: start;
 }
 
 @media (min-width: 600px) and (orientation: landscape) {
@@ -397,7 +398,8 @@ body {
 .symbol-card {
   background: var(--bg-card);
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-top: 3px solid var(--card-color, rgba(255,255,255,0.08));
   position: relative;
   overflow: hidden;
   display: flex;
@@ -416,16 +418,7 @@ body {
   transition: transform 120ms ease-out, filter 120ms ease-out;
 }
 
-/* 3px colored top stripe — category identity via --card-color CSS var */
-.symbol-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--card-color, transparent);
-  border-radius: 20px 20px 0 0;
-  pointer-events: none;
-}
+/* Remove ::before — top stripe is now border-top on the card itself */
 
 /* Old highlight div — now just a spacer, invisible */
 .symbol-card-highlight {
@@ -478,17 +471,16 @@ body {
 }
 
 /* Character images — full bleed, no white container */
-/* Character/custom images — contain in card, clip outer 4px to hide border artifacts */
+/* Character/custom images — fixed size, clipped edges */
 .symbol-character-img {
-  width: 85%;
-  height: 75%;
+  width: clamp(52px, 58%, 92px);
+  height: clamp(52px, 58%, 92px);
   object-fit: contain;
-  object-position: center bottom;
   z-index: 1;
-  border-radius: 8px;
+  border-radius: 6px;
   flex-shrink: 0;
-  -webkit-clip-path: inset(8px round 6px);
-  clip-path: inset(8px round 6px);
+  -webkit-clip-path: inset(6px round 4px);
+  clip-path: inset(6px round 4px);
 }
 
 /* Legacy .symbol-image for fallback */
