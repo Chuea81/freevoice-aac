@@ -97,10 +97,8 @@ function speakWithWebSpeech(
 
 export function useTTS() {
   const {
-    activeTier,
     kokoroStatus,
     kokoroVoice,
-    webSpeechVoiceURI,
     speechRate,
     speechPitch,
     speechVolume,
@@ -135,14 +133,24 @@ export function useTTS() {
     }
   }, [kokoroVoice]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fix 4: speak() with Web Speech bridge for instant first-tap response
+  // speak() — reads current state from store at call time (not stale closure)
   const speak = useCallback(async (text: string): Promise<void> => {
     if (!text.trim()) return;
+
+    // Read FRESH state from store — avoids stale closure when called from voice preview
+    const s = useTTSStore.getState();
+    const tier = s.activeTier;
+    const status = s.kokoroStatus;
+    const voice = s.kokoroVoice;
+    const wsVoiceURI = s.webSpeechVoiceURI;
+    const rate = s.speechRate;
+    const pitch = s.speechPitch;
+    const volume = s.speechVolume;
 
     const processed = getPronunciation(text);
 
     // Tier 1: Kokoro (best quality) with Web Speech bridge
-    if (activeTier === 'kokoro' && kokoroStatus === 'ready') {
+    if (tier === 'kokoro' && status === 'ready') {
       return new Promise<void>((resolve) => {
         let webSpeechPlayed = false;
         let kokoroResponded = false;
@@ -156,12 +164,12 @@ export function useTTS() {
             webSpeechPlayed = true;
             window.speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(processed);
-            u.rate = speechRate;
-            u.pitch = speechPitch;
-            u.volume = speechVolume;
-            if (webSpeechVoiceURI) {
+            u.rate = rate;
+            u.pitch = pitch;
+            u.volume = volume;
+            if (wsVoiceURI) {
               const voices = window.speechSynthesis.getVoices();
-              const match = voices.find(v => v.voiceURI === webSpeechVoiceURI);
+              const match = voices.find(v => v.voiceURI === wsVoiceURI);
               if (match) u.voice = match;
             }
             window.speechSynthesis.speak(u);
@@ -181,10 +189,9 @@ export function useTTS() {
           }
 
           try {
-            await playArrayBuffer(buffer, speechVolume);
+            await playArrayBuffer(buffer, volume);
           } catch {
-            // AudioContext failed — fall back to Web Speech
-            await speakWithWebSpeech(processed, webSpeechVoiceURI, speechRate, speechPitch, speechVolume);
+            await speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume);
           }
           resolve();
         });
@@ -192,8 +199,8 @@ export function useTTS() {
         getWorker().postMessage({
           type: 'SPEAK',
           text: processed,
-          voice: kokoroVoice,
-          speed: speechRate,
+          voice,
+          speed: rate,
           id,
         });
 
@@ -202,7 +209,7 @@ export function useTTS() {
           if (pendingCallbacks.has(id)) {
             pendingCallbacks.delete(id);
             if (!webSpeechPlayed) {
-              speakWithWebSpeech(processed, webSpeechVoiceURI, speechRate, speechPitch, speechVolume).then(resolve);
+              speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume).then(resolve);
             } else {
               resolve();
             }
@@ -212,8 +219,8 @@ export function useTTS() {
     }
 
     // Tier 2 & 3: Web Speech API
-    return speakWithWebSpeech(processed, webSpeechVoiceURI, speechRate, speechPitch, speechVolume);
-  }, [activeTier, kokoroStatus, kokoroVoice, webSpeechVoiceURI, speechRate, speechPitch, speechVolume, getPronunciation]);
+    return speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume);
+  }, [getPronunciation]);
 
   // Auditory Touch preview — always Web Speech, slightly quieter/faster
   const speakPreview = useCallback((text: string): void => {
