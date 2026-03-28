@@ -4,6 +4,7 @@ import { useParentStore } from '../store/parentStore';
 import { useBoardStore } from '../store/boardStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { db } from '../db';
+import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 
 const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
   { value: 'default', label: 'Default', swatch: '👋' },
@@ -28,42 +29,57 @@ export function Settings({ onBack }: { onBack: () => void }) {
   const [newBoardEmoji, setNewBoardEmoji] = useState('📁');
 
   const handleExport = useCallback(async () => {
-    const boards = await db.boards.toArray();
-    const symbols = await db.symbols.toArray();
-    const allSettings = await db.settings.toArray();
-    const data = { version: 1, exportedAt: new Date().toISOString(), boards, symbols, settings: allSettings };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `freevoice-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    await exportProfile();
   }, []);
 
-  const handleImport = useCallback(() => {
+  const handleImportReplace = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      try {
-        const data = JSON.parse(await file.text());
-        if (!data.boards || !data.symbols) { alert('Invalid file.'); return; }
-        const replace = confirm('Replace all boards?\n\nOK = Replace\nCancel = Merge');
-        await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
-          if (replace) { await db.boards.clear(); await db.symbols.clear(); await db.settings.clear(); }
-          await db.boards.bulkPut(data.boards);
-          await db.symbols.bulkPut(data.symbols);
-          if (data.settings) await db.settings.bulkPut(data.settings);
-        });
+      if (!confirm('This will replace ALL your boards and settings.\nYour current data will be backed up first.\n\nContinue?')) return;
+      const result = await importProfile(file);
+      if (result.success) {
         useSettingsStore.getState().loadFromDb();
-        alert('Import successful!');
-      } catch { alert('Failed to import.'); }
+        alert('Import successful! A backup of your previous data was saved.');
+        window.location.reload();
+      } else {
+        alert(result.error || 'Import failed.');
+      }
     };
     input.click();
   }, []);
+
+  const handleImportMerge = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const result = await mergeImport(file);
+      if (result.success) {
+        alert(`Merged ${result.count} symbols into your boards.`);
+        window.location.reload();
+      } else {
+        alert(result.error || 'Merge failed.');
+      }
+    };
+    input.click();
+  }, []);
+
+  const handleShareBoard = useCallback(async () => {
+    const url = await shareBoardAsUrl(boardStore.currentBoardId);
+    if (!url) { alert('Could not share this board.'); return; }
+    if (navigator.share) {
+      navigator.share({ title: 'FreeVoice Board', url }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(url);
+      alert('Board share link copied to clipboard!');
+    }
+  }, [boardStore]);
 
   const handleCreateBoard = useCallback(async () => {
     if (!newBoardName.trim()) return;
@@ -240,16 +256,24 @@ export function Settings({ onBack }: { onBack: () => void }) {
           </div>
         </section>
 
-        {/* ── DATA ── */}
+        {/* ── BACKUP & RESTORE ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Data</h2>
+          <h2 className="settings-section-title">Backup & Restore</h2>
           <div className="settings-row">
-            <label>Export Boards</label>
+            <label>Export All Data</label>
             <button className="settings-action-btn" onClick={handleExport}>Export JSON</button>
           </div>
           <div className="settings-row">
-            <label>Import Boards</label>
-            <button className="settings-action-btn" onClick={handleImport}>Import JSON</button>
+            <label>Import (Replace All)</label>
+            <button className="settings-action-btn" onClick={handleImportReplace}>Import JSON</button>
+          </div>
+          <div className="settings-row">
+            <label>Import (Merge)</label>
+            <button className="settings-action-btn" onClick={handleImportMerge}>Merge JSON</button>
+          </div>
+          <div className="settings-row">
+            <label>Share Current Board</label>
+            <button className="settings-action-btn" onClick={handleShareBoard}>Share Link</button>
           </div>
           <div className="settings-row">
             <label>Reset Symbol Images</label>

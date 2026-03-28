@@ -14,6 +14,7 @@ import { SymbolSearch } from '../components/modals/SymbolSearch';
 import { OnboardingWizard } from '../components/modals/OnboardingWizard';
 import { UpdatePrompt } from '../components/UpdatePrompt/UpdatePrompt';
 import { useArasaac } from '../hooks/useArasaac';
+import { importBoardFromUrl } from '../utils/backup';
 
 interface Props {
   onOpenParentMode: () => void;
@@ -50,6 +51,23 @@ export function Board({ onOpenParentMode }: Props) {
   useEffect(() => {
     seedDatabase();
   }, [seedDatabase]);
+
+  // Check for shared board in URL params
+  useEffect(() => {
+    if (!isSeeded) return;
+    const params = new URLSearchParams(window.location.search);
+    const boardParam = params.get('board');
+    if (boardParam) {
+      importBoardFromUrl(boardParam).then((result) => {
+        if (result.success) {
+          alert(`Board "${result.boardName}" added!`);
+          // Clean URL
+          window.history.replaceState({}, '', window.location.pathname);
+          window.location.reload();
+        }
+      });
+    }
+  }, [isSeeded]);
 
   // Show onboarding on first launch
   useEffect(() => {

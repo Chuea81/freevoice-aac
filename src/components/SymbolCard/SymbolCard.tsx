@@ -76,7 +76,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     }
 
     setResolvedUrl(null);
-  }, [symbol.id, symbol.arasaacId, symbol.imageUrl, symbol.isCategory, symbol.label]);
+  }, [symbol.id, symbol.arasaacId, symbol.imageUrl, symbol.isCategory, symbol.label]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasImage = !!resolvedUrl && !imgFailed;
 
