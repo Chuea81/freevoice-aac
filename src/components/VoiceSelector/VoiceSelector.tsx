@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTTSStore, type KokoroVoice } from '../../store/ttsStore';
 import { classifyWebSpeechVoices } from '../../utils/voiceDetection';
 import { useTTS } from '../../hooks/useTTS';
+
+const PREVIEW_PHRASE = 'Hi, I want to play outside please';
 
 const KOKORO_VOICES: Array<{ id: KokoroVoice; label: string; description: string }> = [
   { id: 'af_heart',   label: 'Heart',   description: 'Warm · American Female · Recommended' },
@@ -27,8 +29,14 @@ export function VoiceSelector() {
     speechVolume, setSpeechVolume,
   } = useTTSStore();
 
-  const { speak, downloadKokoro } = useTTS();
+  const { speak, downloadKokoro, cancel } = useTTS();
   const [webVoices, setWebVoices] = useState<ReturnType<typeof classifyWebSpeechVoices>>([]);
+
+  // Preview voice on selection — like picking an alarm sound
+  const previewVoice = useCallback((delay = 100) => {
+    cancel();
+    setTimeout(() => speak(PREVIEW_PHRASE), delay);
+  }, [speak, cancel]);
 
   useEffect(() => {
     const load = () => {
@@ -77,7 +85,7 @@ export function VoiceSelector() {
             {KOKORO_VOICES.map((v) => (
               <button
                 key={v.id}
-                onClick={() => { setKokoroVoice(v.id); setActiveTier('kokoro'); }}
+                onClick={() => { setKokoroVoice(v.id); setActiveTier('kokoro'); previewVoice(200); }}
                 className={`voice-option${activeTier === 'kokoro' && kokoroVoice === v.id ? ' active' : ''}`}
               >
                 <div className="voice-option-name">{v.label}</div>
@@ -105,6 +113,7 @@ export function VoiceSelector() {
                 onClick={() => {
                   setWebSpeechVoiceURI(v.voice.voiceURI);
                   setActiveTier('personal');
+                  previewVoice();
                 }}
                 className={`voice-option wide${activeTier === 'personal' ? ' active' : ''}`}
               >
@@ -127,6 +136,7 @@ export function VoiceSelector() {
                 onClick={() => {
                   setWebSpeechVoiceURI(v.voice.voiceURI);
                   setActiveTier('webspeech');
+                  previewVoice();
                 }}
                 className={`voice-option wide${activeTier === 'webspeech' && webSpeechVoiceURI === v.voice.voiceURI ? ' active' : ''}`}
               >
