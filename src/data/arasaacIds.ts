@@ -8,9 +8,7 @@
  * Character emotions are handled by the character system, not this file.
  */
 export const ARASAAC_IDS: Record<string, number> = {
-  // ── Ambiguous words — ARASAAC pictograms (positive IDs) ──
-  'NAILS': 2783, 'BATH': 2272, 'WASH HANDS': 8975, 'WASH FACE': 8975,
-  'BRUSH TEETH': 2694, 'HAIR': 2695, 'NUTS': 2674, 'RULER': 2815,
+  // All emoji — no ARASAAC exceptions
 
   // ── Everything else: emoji (ID=0) ──
   'AFTER': 0, 'AFTERNOON': 0, 'AGAIN': 0, 'AMUSEMENT PARK': 0, 'ANGRY': 0, 'ANIMALS': 0,
