@@ -45,16 +45,14 @@ export const ARASAAC_IDS: Record<string, number> = {
   'RULER': 2815,
 
   // ── Drinks: use custom icons (ID=-1 = custom image path) ──
-  'WATER': -1,
-  'MILK': -1,
-  'JUICE': -1,
-  'ORANGE JUICE': -1,
-  'TEA': -1,
-  'SODA': -1,
-  'CHOCOLATE MILK': -1,
-  'SMOOTHIE': -1,
-  'LEMONADE': -1,
-  'COCONUT WATER': -1,
+  'WATER': -1, 'MILK': -1, 'JUICE': -1, 'ORANGE JUICE': -1, 'TEA': -1,
+  'SODA': -1, 'CHOCOLATE MILK': -1, 'SMOOTHIE': -1, 'LEMONADE': -1, 'COCONUT WATER': -1,
+  'ICED COFFEE': -1, 'MILKSHAKE': -1, 'BOBA TEA': -1, 'HOT COFFEE': -1, 'HOT CHOCOLATE': -1,
+  'MILK COFFEE': -1, 'KOMBUCHA': -1, 'ENERGY DRINK': -1, 'CRANBERRY JUICE': -1,
+  'APPLE JUICE': -1, 'FRAPPUCCINO': -1, 'SPARKLING WATER': -1, 'ROOT BEER': -1,
+  'ICED TEA': -1, 'HOT CIDER': -1, 'MANGO LASSI': -1, 'AGUA FRESCA': -1, 'SPORTS DRINK': -1,
+  'GRAPE JUICE': -1, 'PINEAPPLE JUICE': -1, 'PEACH JUICE': -1, 'FRUIT PUNCH': -1,
+  'TOMATO JUICE': -1, 'VEGETABLE JUICE': -1, 'MILK CARTON': -1, 'WATER BOTTLE': -1,
 };
 
 /**
@@ -68,6 +66,7 @@ function customPath(category: string, filename: string): string {
 }
 
 export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {
+  // Row 1
   'WATER': customPath('drinks', 'water'),
   'MILK': customPath('drinks', 'milk'),
   'JUICE': customPath('drinks', 'juice'),
@@ -78,4 +77,33 @@ export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {
   'SMOOTHIE': customPath('drinks', 'smoothie'),
   'LEMONADE': customPath('drinks', 'lemonade'),
   'COCONUT WATER': customPath('drinks', 'coconut_water'),
+  // Row 2
+  'ICED COFFEE': customPath('drinks', 'iced_coffee'),
+  'MILKSHAKE': customPath('drinks', 'milkshake'),
+  'BOBA TEA': customPath('drinks', 'boba_tea'),
+  'HOT COFFEE': customPath('drinks', 'hot_coffee'),
+  'HOT CHOCOLATE': customPath('drinks', 'hot_chocolate'),
+  'MILK COFFEE': customPath('drinks', 'milk_coffee'),
+  'KOMBUCHA': customPath('drinks', 'kombucha'),
+  'ENERGY DRINK': customPath('drinks', 'energy_drink'),
+  'CRANBERRY JUICE': customPath('drinks', 'cranberry_juice'),
+  // Row 3
+  'APPLE JUICE': customPath('drinks', 'apple_juice'),
+  'FRAPPUCCINO': customPath('drinks', 'frappuccino'),
+  'SPARKLING WATER': customPath('drinks', 'sparkling_water'),
+  'ROOT BEER': customPath('drinks', 'root_beer'),
+  'ICED TEA': customPath('drinks', 'iced_tea'),
+  'HOT CIDER': customPath('drinks', 'hot_cider'),
+  'MANGO LASSI': customPath('drinks', 'mango_lassi'),
+  'AGUA FRESCA': customPath('drinks', 'agua_fresca'),
+  'SPORTS DRINK': customPath('drinks', 'sports_drink'),
+  // Row 4
+  'GRAPE JUICE': customPath('drinks', 'grape_juice'),
+  'PINEAPPLE JUICE': customPath('drinks', 'pineapple_juice'),
+  'PEACH JUICE': customPath('drinks', 'peach_juice'),
+  'FRUIT PUNCH': customPath('drinks', 'fruit_punch'),
+  'TOMATO JUICE': customPath('drinks', 'tomato_juice'),
+  'VEGETABLE JUICE': customPath('drinks', 'vegetable_juice'),
+  'MILK CARTON': customPath('drinks', 'milk_carton'),
+  'WATER BOTTLE': customPath('drinks', 'water_bottle'),
 };
