@@ -191,10 +191,19 @@
           </div>
           <div id="bulk-preview-card" class="preview-card" style="margin:0 auto 16px"></div>
           <div id="bulk-status" style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:16px"></div>
-          <div id="bulk-actions" style="display:none;display:flex;gap:8px;justify-content:center">
-            <button onclick="bulkApprove()" class="btn btn-approve" style="width:auto;padding:10px 24px">✅ Approve</button>
-            <button onclick="bulkRegenerate()" class="btn" style="width:auto;padding:10px 24px;background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border)">↺ Redo</button>
-            <button onclick="bulkSkip()" class="btn btn-reject" style="width:auto;padding:10px 24px">Skip →</button>
+          <div id="bulk-actions" style="display:none;flex-direction:column;gap:8px;align-items:center">
+            <div style="display:flex;gap:8px">
+              <button onclick="bulkApprove()" class="btn btn-approve" style="width:auto;padding:10px 24px">✅ Approve</button>
+              <button onclick="bulkSkip()" class="btn btn-reject" style="width:auto;padding:10px 24px">Skip →</button>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+              <button onclick="bulkRedo('')" class="regen-btn">↺ Redo</button>
+              <button onclick="bulkRedo('more colorful and vibrant')" class="regen-btn">🎨 Colorful</button>
+              <button onclick="bulkRedo('simpler, more iconic, less detail')" class="regen-btn">✂️ Simpler</button>
+              <button onclick="bulkRedo('more cartoon style, rounder, cuter')" class="regen-btn">😄 Cartoon</button>
+              <button onclick="bulkRedo('more realistic, detailed')" class="regen-btn">📷 Detailed</button>
+              <button onclick="bulkRedo('bigger subject, fill the frame')" class="regen-btn">🔍 Bigger</button>
+            </div>
           </div>
         </div>
         <!-- Step 3: Done -->
@@ -412,24 +421,8 @@ async function bulkNext() {
 
   document.getElementById('bulk-review-count').textContent = `${bulkIndex + 1} of ${bulkQueue.length} — ${sym.label}`;
   document.getElementById('bulk-bar').style.width = `${((bulkIndex) / bulkQueue.length) * 100}%`;
-  document.getElementById('bulk-actions').style.display = 'none';
-  document.getElementById('bulk-status').textContent = `Generating "${sym.label}"...`;
-  document.getElementById('bulk-preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px;width:32px;height:32px;border-width:3px"></div><p style="font-size:13px;font-weight:700">${sym.label}</p></div>`;
 
-  try {
-    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:sym.label, category:''}) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
-    bulkCurrentImage = data.imageBase64;
-    document.getElementById('bulk-preview-card').innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="${sym.label}" style="width:140px;height:140px;object-fit:contain;border-radius:12px"><span class="preview-label">${sym.label.toUpperCase()}</span>`;
-    document.getElementById('bulk-status').textContent = `Review "${sym.label}"`;
-    document.getElementById('bulk-actions').style.display = 'flex';
-  } catch(e) {
-    document.getElementById('bulk-preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">❌</div><p style="font-size:12px">Failed</p></div>`;
-    document.getElementById('bulk-status').textContent = e.message?.substring(0,100);
-    document.getElementById('bulk-actions').style.display = 'flex';
-  }
+  await bulkGenerate('');
 }
 
 async function bulkApprove() {
@@ -453,9 +446,32 @@ function bulkSkip() {
   bulkNext();
 }
 
-async function bulkRegenerate() {
+async function bulkRedo(hint = '') {
   document.getElementById('bulk-actions').style.display = 'none';
-  await bulkNext(); // re-generates the same symbol
+  await bulkGenerate(hint);
+}
+
+async function bulkGenerate(extraHint = '') {
+  const sym = bulkCurrentSym;
+  bulkCurrentImage = null;
+
+  document.getElementById('bulk-status').textContent = `Generating "${sym.label}"${extraHint ? ' (' + extraHint + ')' : ''}...`;
+  document.getElementById('bulk-preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px;width:32px;height:32px;border-width:3px"></div><p style="font-size:13px;font-weight:700">${sym.label}</p></div>`;
+
+  try {
+    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:sym.label, category:'', extraPrompt:extraHint}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    bulkCurrentImage = data.imageBase64;
+    document.getElementById('bulk-preview-card').innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="${sym.label}" style="width:140px;height:140px;object-fit:contain;border-radius:12px"><span class="preview-label">${sym.label.toUpperCase()}</span>`;
+    document.getElementById('bulk-status').textContent = `Review "${sym.label}"`;
+    document.getElementById('bulk-actions').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('bulk-preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">❌</div><p style="font-size:12px">Failed</p></div>`;
+    document.getElementById('bulk-status').textContent = e.message?.substring(0,100);
+    document.getElementById('bulk-actions').style.display = 'flex';
+  }
 }
 
 // ── TABS ──────────────────────────────────────────────────────
