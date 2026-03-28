@@ -28,10 +28,11 @@ const ROWS = 3;
 // Cell is 376×373. The usable character art area is roughly centered,
 // with colored card borders on all sides and a text label at the bottom.
 // We take a 280×280 square from the center-top of each cell.
-// The sprite cells have thick rounded-corner card borders (up to 45px)
-// and text labels at the bottom (~55px). Extract only the inner content.
-const INSET = 50;           // pixels to trim from left, right, top
-const INSET_BOTTOM = 65;    // pixels to trim from bottom (text label)
+// The sprite cells have thick rounded-corner card borders (up to 60px)
+// and text labels at the bottom (~65px). Extract only the inner content.
+// Using 65px all sides to guarantee clean results across all sheets.
+const INSET = 94;           // pixels to trim from all sides — max border is ~90px on corners
+const INSET_BOTTOM = 100;   // pixels to trim from bottom (text label + border)
 
 async function main() {
   const manifestPath = join(PUBLIC, 'manifest.json');
