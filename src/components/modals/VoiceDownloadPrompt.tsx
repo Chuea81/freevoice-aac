@@ -3,27 +3,26 @@ import { useTTSStore } from '../../store/ttsStore';
 import { useTTS } from '../../hooks/useTTS';
 
 export function VoiceDownloadPrompt() {
-  const { kokoroStatus, kokoroDeclined } = useTTSStore();
+  const { kokoroStatus, kokoroDeclined, kokoroDownloaded } = useTTSStore();
   const setKokoroDeclined = useTTSStore((s) => s.setKokoroDeclined);
   const { downloadKokoro } = useTTS();
   const [visible, setVisible] = useState(false);
 
-  // Don't show immediately — wait 3 seconds so it doesn't compete with board loading
+  // Don't show if already downloaded (persisted), declined, or currently downloading/ready
   useEffect(() => {
-    if (kokoroStatus === 'idle' && !kokoroDeclined) {
+    if (kokoroStatus === 'idle' && !kokoroDeclined && !kokoroDownloaded) {
       const timer = setTimeout(() => setVisible(true), 3000);
       return () => clearTimeout(timer);
     }
     setVisible(false);
-  }, [kokoroStatus, kokoroDeclined]);
+  }, [kokoroStatus, kokoroDeclined, kokoroDownloaded]);
 
   const handleDismiss = useCallback(() => {
     setKokoroDeclined(true);
     setVisible(false);
   }, [setKokoroDeclined]);
 
-  // Only show if: idle (never downloaded), not declined, and delay passed
-  if (!visible || kokoroStatus !== 'idle' || kokoroDeclined) return null;
+  if (!visible || kokoroStatus !== 'idle' || kokoroDeclined || kokoroDownloaded) return null;
 
   return (
     <div className="voice-download-banner">

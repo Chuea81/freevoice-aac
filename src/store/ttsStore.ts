@@ -21,6 +21,7 @@ export interface TTSState {
   kokoroProgress: number; // 0-100
   kokoroError: string | null;
   kokoroDeclined: boolean; // User said "not now" to download prompt
+  kokoroDownloaded: boolean; // Model was successfully downloaded (persisted)
   kokoroDevice: 'webgpu' | 'wasm' | null; // Which device loaded
 
   // Voice selection
@@ -39,6 +40,7 @@ export interface TTSState {
   setKokoroProgress: (p: number) => void;
   setKokoroError: (e: string | null) => void;
   setKokoroDeclined: (v: boolean) => void;
+  setKokoroDownloaded: (v: boolean) => void;
   setKokoroDevice: (d: 'webgpu' | 'wasm') => void;
   setActiveTier: (tier: VoiceTier) => void;
   setKokoroVoice: (voice: KokoroVoice) => void;
@@ -56,6 +58,7 @@ export const useTTSStore = create<TTSState>()(
       kokoroProgress: 0,
       kokoroError: null,
       kokoroDeclined: false,
+      kokoroDownloaded: false,
       kokoroDevice: null,
       activeTier: 'webspeech', // Start on Web Speech; upgrade to Kokoro after download
       kokoroVoice: 'af_heart', // Warmest, most natural — best default for a child's AAC
@@ -69,6 +72,7 @@ export const useTTSStore = create<TTSState>()(
       setKokoroProgress: (p) => set({ kokoroProgress: p }),
       setKokoroError: (e) => set({ kokoroError: e }),
       setKokoroDeclined: (v) => set({ kokoroDeclined: v }),
+      setKokoroDownloaded: (v) => set({ kokoroDownloaded: v }),
       setKokoroDevice: (d) => set({ kokoroDevice: d }),
       setActiveTier: (tier) => set({ activeTier: tier }),
       setKokoroVoice: (voice) => set({ kokoroVoice: voice }),
@@ -86,6 +90,7 @@ export const useTTSStore = create<TTSState>()(
         kokoroVoice: s.kokoroVoice,
         webSpeechVoiceURI: s.webSpeechVoiceURI,
         kokoroDeclined: s.kokoroDeclined,
+        kokoroDownloaded: s.kokoroDownloaded,
         speechRate: s.speechRate,
         speechPitch: s.speechPitch,
         speechVolume: s.speechVolume,

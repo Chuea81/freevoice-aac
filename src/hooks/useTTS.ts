@@ -39,6 +39,7 @@ function getWorker(): Worker {
       if (msg.type === 'LOAD_COMPLETE') {
         useTTSStore.getState().setKokoroStatus('ready');
         useTTSStore.getState().setKokoroDevice(msg.device);
+        useTTSStore.getState().setKokoroDownloaded(true);
         useTTSStore.getState().setActiveTier('kokoro');
       }
       if (msg.type === 'LOAD_ERROR') {
@@ -110,6 +111,16 @@ export function useTTS() {
   // Unlock iOS speech synthesis on mount
   useEffect(() => {
     unlockIOSSpeech();
+  }, []);
+
+  // Auto-reload Kokoro if it was previously downloaded (model cached by browser)
+  useEffect(() => {
+    const { kokoroDownloaded, kokoroStatus } = useTTSStore.getState();
+    if (kokoroDownloaded && kokoroStatus === 'idle') {
+      useTTSStore.getState().setKokoroStatus('downloading');
+      const { kokoroVoice, speechRate } = useTTSStore.getState();
+      getWorker().postMessage({ type: 'LOAD', dtype: 'q8', voice: kokoroVoice, speed: speechRate });
+    }
   }, []);
 
   // Fix 3: Clear cache and re-warm when voice changes
