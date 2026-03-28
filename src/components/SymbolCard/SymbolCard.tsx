@@ -1,9 +1,10 @@
-import { useCallback, useState, useRef, type MouseEvent, type CSSProperties } from 'react';
+import { useCallback, useState, useRef, useEffect, type MouseEvent, type CSSProperties } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
+import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
 import type { Symbol as DbSymbol } from '../../db';
 
-// Fitzgerald Key color mapping (TDSnap analysis)
+// Fitzgerald Key color mapping
 const FITZGERALD_COLORS: Record<string, string> = {
   verb: '#86EFAC',
   noun: '#FDBA74',
@@ -13,7 +14,7 @@ const FITZGERALD_COLORS: Record<string, string> = {
   preposition: '#CE93D8',
 };
 
-// Deterministic card accent color — stable across re-renders
+// Deterministic card accent color
 const CARD_COLORS = [
   '#F59E0B', '#4FC3F7', '#81C784', '#CE93D8', '#80CBC4',
   '#F48FB1', '#FFCC80', '#AED581', '#90CAF9', '#FF8A65',
@@ -24,6 +25,12 @@ function getCardColor(id: string): string {
   return CARD_COLORS[hash % CARD_COLORS.length];
 }
 
+/** Check if imageUrl is a user-uploaded photo (not ARASAAC) */
+function isUserPhoto(url?: string): boolean {
+  if (!url) return false;
+  return url.startsWith('data:') || url.startsWith('blob:');
+}
+
 interface Props {
   symbol: DbSymbol;
   onTap: (symbol: DbSymbol) => void;
@@ -32,7 +39,7 @@ interface Props {
 
 export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
-  const hasImage = !!symbol.imageUrl && !imgFailed;
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
   const dwellTime = useSettingsStore((s) => s.dwellTime);
   const labelPosition = useSettingsStore((s) => s.labelPosition);
@@ -42,7 +49,37 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Card accent color — used for ::before stripe via CSS var
+  // Resolve image URL at render time:
+  // Priority: user photo > arasaacId (direct URL) > symbolCache (keyword) > emoji fallback
+  useEffect(() => {
+    setImgFailed(false);
+
+    // User-uploaded photo — use directly
+    if (isUserPhoto(symbol.imageUrl)) {
+      setResolvedUrl(symbol.imageUrl!);
+      return;
+    }
+
+    // arasaacId — direct URL, synchronous, no async needed
+    if (symbol.arasaacId) {
+      setResolvedUrl(getArasaacImageUrl(symbol.arasaacId));
+      return;
+    }
+
+    // No arasaacId — check symbolCache asynchronously
+    if (!symbol.isCategory) {
+      let cancelled = false;
+      resolveArasaacUrl(symbol).then((url) => {
+        if (!cancelled) setResolvedUrl(url);
+      });
+      return () => { cancelled = true; };
+    }
+
+    setResolvedUrl(null);
+  }, [symbol.id, symbol.arasaacId, symbol.imageUrl, symbol.isCategory, symbol.label]);
+
+  const hasImage = !!resolvedUrl && !imgFailed;
+
   const accentColor = colorScheme === 'fitzgerald' && symbol.wordType && FITZGERALD_COLORS[symbol.wordType]
     ? FITZGERALD_COLORS[symbol.wordType]
     : getCardColor(symbol.id);
@@ -115,8 +152,6 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       aria-label={symbol.isCategory ? `${symbol.label} category` : `Speak ${symbol.phrase}`}
       role="button"
     >
-      {/* ::before handles the 3px stripe via --card-color CSS var */}
-
       {symbol.isCategory && (
         <span className="symbol-card-nav-indicator" aria-hidden="true">▶</span>
       )}
@@ -126,7 +161,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       {hasImage ? (
         <div className="symbol-image-container">
           <img
-            src={symbol.imageUrl}
+            src={resolvedUrl!}
             alt={symbol.label}
             loading="lazy"
             decoding="async"

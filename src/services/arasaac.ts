@@ -6,7 +6,7 @@ import { db } from '../db';
 
 const API_BASE = 'https://api.arasaac.org/v1';
 const IMAGE_BASE = 'https://static.arasaac.org/pictograms';
-const CACHE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days (PRD 6.2)
+const CACHE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 interface ArasaacSearchResult {
   _id: number;
@@ -16,15 +16,15 @@ interface ArasaacSearchResult {
 /**
  * Search ARASAAC for a pictogram matching the keyword.
  * Returns the pictogram image URL or null if not found / offline.
+ * Results are cached in the symbolCache table (NOT the symbols table).
  */
 export async function searchArasaacImage(
   keyword: string,
   locale: string = 'en',
 ): Promise<{ imageUrl: string; arasaacId: number } | null> {
-  // 1. Check cache first
+  // 1. Check symbolCache first
   const cached = await db.symbolCache.get(keyword.toLowerCase());
   if (cached && Date.now() - cached.cachedAt < CACHE_MAX_AGE_MS) {
-    // Extract arasaacId from cached URL
     const idMatch = cached.imageUrl.match(/\/(\d+)\//);
     return {
       imageUrl: cached.imageUrl,
@@ -43,17 +43,14 @@ export async function searchArasaacImage(
     const results: ArasaacSearchResult[] = await res.json();
     if (!results || results.length === 0) return null;
 
-    // Pick the best match — prefer exact keyword match, fallback to first result
     const exact = results.find((r) =>
       r.keywords.some((k) => k.keyword.toLowerCase() === keyword.toLowerCase()),
     );
     const best = exact || results[0];
     const pictId = best._id;
-
-    // Build image URL (500px PNG, no color overrides)
     const imageUrl = `${IMAGE_BASE}/${pictId}/${pictId}_500.png`;
 
-    // 3. Cache the result
+    // 3. Cache in symbolCache table (NOT in symbols table)
     await db.symbolCache.put({
       keyword: keyword.toLowerCase(),
       imageUrl,
@@ -62,29 +59,47 @@ export async function searchArasaacImage(
 
     return { imageUrl, arasaacId: pictId };
   } catch {
-    // Network error, timeout, or offline — return null (emoji fallback)
     return null;
   }
 }
 
 /**
  * Get the ARASAAC image URL for a pictogram by its ID.
- * Used when we already know the arasaacId.
+ * Used when we already know the arasaacId (hardcoded in defaultBoards).
  */
 export function getArasaacImageUrl(arasaacId: number): string {
   return `${IMAGE_BASE}/${arasaacId}/${arasaacId}_500.png`;
 }
 
 /**
- * Batch-fetch ARASAAC images for symbols that don't have imageUrl yet.
- * Updates the symbols in IndexedDB. Non-blocking, best-effort.
+ * Resolve the ARASAAC image URL for a symbol.
+ * Priority: arasaacId (direct URL) > symbolCache (keyword lookup) > null (emoji fallback)
+ * This is called at render time by SymbolCard. Never writes to the symbols table.
+ */
+export async function resolveArasaacUrl(symbol: { label: string; arasaacId?: number }): Promise<string | null> {
+  // 1. Hardcoded arasaacId — direct URL, no search needed
+  if (symbol.arasaacId) {
+    return getArasaacImageUrl(symbol.arasaacId);
+  }
+
+  // 2. Check symbolCache by keyword
+  const cached = await db.symbolCache.get(symbol.label.toLowerCase());
+  if (cached && Date.now() - cached.cachedAt < CACHE_MAX_AGE_MS) {
+    return cached.imageUrl;
+  }
+
+  return null;
+}
+
+/**
+ * Batch-fetch ARASAAC images for symbols without arasaacId.
+ * Writes results to symbolCache table ONLY (never to symbols table).
  */
 export async function fetchArasaacForSymbols(
   symbolIds: { id: string; label: string }[],
 ): Promise<Map<string, string>> {
   const results = new Map<string, string>();
 
-  // Process in small batches to avoid hammering the API
   const BATCH_SIZE = 5;
   for (let i = 0; i < symbolIds.length; i += BATCH_SIZE) {
     const batch = symbolIds.slice(i, i + BATCH_SIZE);
@@ -92,11 +107,9 @@ export async function fetchArasaacForSymbols(
       const result = await searchArasaacImage(label);
       if (result) {
         results.set(id, result.imageUrl);
-        // Persist the imageUrl and arasaacId to the symbol in DB
-        await db.symbols.update(id, {
-          imageUrl: result.imageUrl,
-          arasaacId: result.arasaacId,
-        });
+        // NOTE: We intentionally do NOT write to db.symbols here.
+        // symbolCache is the only persistence layer for ARASAAC URLs.
+        // SymbolCard resolves the URL at render time via resolveArasaacUrl().
       }
     });
     await Promise.all(promises);

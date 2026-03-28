@@ -17,15 +17,15 @@ export interface Symbol {
   emoji: string;
   label: string;
   phrase: string;
-  imageUrl?: string;         // ARASAAC URL or user-uploaded blob URL
-  arasaacId?: number;        // ARASAAC pictogram ID for future fetching
+  imageUrl?: string;         // User-uploaded photos ONLY (data: or blob: URLs)
+  arasaacId?: number;        // Hardcoded ARASAAC pictogram ID — resolved at render time
   color: string;
   order: number;
   isCategory: boolean;
-  targetBoardId?: string;    // for category cards that navigate to another board
-  hidden?: boolean;          // vocab filter: hidden from Use Mode, visible in Edit Mode
-  audioBlob?: ArrayBuffer;   // recorded voice per button (TDSnap analysis)
-  wordType?: string;         // for Fitzgerald Key coloring: noun, verb, adjective, pronoun, social, descriptor
+  targetBoardId?: string;
+  hidden?: boolean;
+  audioBlob?: ArrayBuffer;
+  wordType?: string;
 }
 
 export interface Setting {
@@ -41,6 +41,13 @@ export interface SymbolCache {
 
 // ── Database ──
 
+const SCHEMA = {
+  boards: 'id, parentId, order',
+  symbols: 'id, boardId, order, [boardId+order]',
+  settings: 'key',
+  symbolCache: 'keyword, cachedAt',
+};
+
 class FreeVoiceDB extends Dexie {
   boards!: Table<Board, string>;
   symbols!: Table<Symbol, string>;
@@ -50,27 +57,26 @@ class FreeVoiceDB extends Dexie {
   constructor() {
     super('FreeVoiceDB');
 
-    this.version(1).stores({
-      boards: 'id, parentId, order',
-      symbols: 'id, boardId, order, [boardId+order]',
-      settings: 'key',
-      symbolCache: 'keyword, cachedAt',
-    });
+    this.version(1).stores(SCHEMA);
 
-    // v2: Clear stale symbolCache (may contain B&W or wrong ARASAAC URLs)
-    // and clear old symbol imageUrls so hardcoded arasaacId symbols get fresh images
-    this.version(2).stores({
-      boards: 'id, parentId, order',
-      symbols: 'id, boardId, order, [boardId+order]',
-      settings: 'key',
-      symbolCache: 'keyword, cachedAt',
-    }).upgrade(async (tx) => {
-      // Clear the entire symbol cache — forces fresh fetches
+    this.version(2).stores(SCHEMA).upgrade(async (tx) => {
       await tx.table('symbolCache').clear();
-      // Clear imageUrl on all default symbols so they re-fetch with correct IDs
       await tx.table('symbols')
         .where('id').startsWith('default-')
         .modify({ imageUrl: undefined });
+    });
+
+    // v3: Full cleanup — ARASAAC URLs no longer stored in symbols.imageUrl.
+    // Clear ALL ARASAAC URLs from symbols table (keep user photos).
+    // Clear symbolCache to force fresh fetches.
+    this.version(3).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+      // Clear imageUrl on ALL symbols except user-uploaded photos
+      await tx.table('symbols').toCollection().modify((sym: Symbol) => {
+        if (sym.imageUrl && !sym.imageUrl.startsWith('data:') && !sym.imageUrl.startsWith('blob:')) {
+          sym.imageUrl = undefined;
+        }
+      });
     });
   }
 }

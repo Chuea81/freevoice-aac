@@ -1,13 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { useBoardStore } from '../store/boardStore';
-import { fetchArasaacForSymbols, getArasaacImageUrl } from '../services/arasaac';
-import { db } from '../db';
+import { fetchArasaacForSymbols } from '../services/arasaac';
 
 /**
  * Background ARASAAC image fetcher.
- * When the current board's symbols change, identifies symbols without imageUrl
- * and fetches ARASAAC images. Symbols with hardcoded arasaacId get direct URLs
- * (no API search needed). Others fall back to keyword search.
+ * Populates the symbolCache table for symbols that don't have a hardcoded arasaacId.
+ * Does NOT write to the symbols table — SymbolCard resolves images at render time.
  */
 export function useArasaac() {
   const symbols = useBoardStore((s) => s.symbols);
@@ -20,9 +18,10 @@ export function useArasaac() {
     if (symbols.length === 0) return;
     if (fetchingRef.current && lastBoardRef.current === currentBoardId) return;
 
-    // Find symbols that need images
+    // Only fetch for symbols WITHOUT arasaacId (those use direct URLs in SymbolCard)
+    // and WITHOUT user-uploaded imageUrl (data: URLs from camera)
     const needsFetch = symbols.filter(
-      (s) => !s.isCategory && !s.imageUrl && s.label,
+      (s) => !s.isCategory && !s.arasaacId && !isUserPhoto(s.imageUrl) && s.label,
     );
 
     if (needsFetch.length === 0) return;
@@ -30,27 +29,12 @@ export function useArasaac() {
     fetchingRef.current = true;
     lastBoardRef.current = currentBoardId;
 
-    const fetchImages = async () => {
+    const doFetch = async () => {
       try {
-        let updated = false;
-
-        // Phase 1: Symbols with hardcoded arasaacId — direct URL, no API call
-        const withId = needsFetch.filter((s) => s.arasaacId);
-        for (const sym of withId) {
-          const imageUrl = getArasaacImageUrl(sym.arasaacId!);
-          await db.symbols.update(sym.id, { imageUrl });
-          updated = true;
-        }
-
-        // Phase 2: Symbols without arasaacId — keyword search via API
-        const withoutId = needsFetch.filter((s) => !s.arasaacId);
-        if (withoutId.length > 0) {
-          const toFetch = withoutId.map((s) => ({ id: s.id, label: s.label }));
-          const results = await fetchArasaacForSymbols(toFetch);
-          if (results.size > 0) updated = true;
-        }
-
-        if (updated) {
+        const toFetch = needsFetch.map((s) => ({ id: s.id, label: s.label }));
+        const results = await fetchArasaacForSymbols(toFetch);
+        // Reload board so SymbolCard picks up newly cached URLs
+        if (results.size > 0) {
           loadSymbols(currentBoardId);
         }
       } finally {
@@ -58,7 +42,13 @@ export function useArasaac() {
       }
     };
 
-    const timer = setTimeout(fetchImages, 300);
+    const timer = setTimeout(doFetch, 300);
     return () => clearTimeout(timer);
   }, [symbols, currentBoardId, loadSymbols]);
+}
+
+/** User-uploaded photos are data: URLs or blob: URLs — not ARASAAC */
+function isUserPhoto(url?: string): boolean {
+  if (!url) return false;
+  return url.startsWith('data:') || url.startsWith('blob:');
 }

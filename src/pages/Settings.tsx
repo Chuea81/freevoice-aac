@@ -251,6 +251,18 @@ export function Settings({ onBack }: { onBack: () => void }) {
             <label>Import Boards</label>
             <button className="settings-action-btn" onClick={handleImport}>Import JSON</button>
           </div>
+          <div className="settings-row">
+            <label>Reset Symbol Images</label>
+            <button className="settings-action-btn" onClick={async () => {
+              await db.symbolCache.clear();
+              await db.symbols.toCollection().modify((sym) => {
+                if (sym.imageUrl && !sym.imageUrl.startsWith('data:') && !sym.imageUrl.startsWith('blob:')) {
+                  sym.imageUrl = undefined;
+                }
+              });
+              window.location.reload();
+            }}>Reset & Reload</button>
+          </div>
         </section>
 
         {/* ── SECURITY ── */}
