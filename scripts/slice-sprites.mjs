@@ -28,11 +28,11 @@ const COLS = 10;
 const ROWS = 3;
 
 // Crop ratios for each cell:
-// - Skip top 5% (label bleed from row above)
-// - Skip bottom 15% (text label like "HAPPY")
-// - Keep the middle 80% which is the character art
-const TOP_SKIP = 0.05;
-const BOTTOM_SKIP = 0.15;
+// - Skip top 10% (label bleed from row above)
+// - Skip bottom 18% (text label like "HAPPY")
+// - Keep the middle 72% which is the character art only
+const TOP_SKIP = 0.10;
+const BOTTOM_SKIP = 0.18;
 
 async function main() {
   const manifestPath = join(PUBLIC, 'manifest.json');

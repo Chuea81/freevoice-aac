@@ -478,16 +478,15 @@ body {
 }
 
 /* Character images — full bleed, no white container */
-/* Character images — fill card, crop to fit */
+/* Character images — contain within top portion, label sits below */
 .symbol-character-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  z-index: 0;
+  width: 85%;
+  height: 75%;
+  object-fit: contain;
+  object-position: center bottom;
+  z-index: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 /* Legacy .symbol-image for fallback */
@@ -524,8 +523,7 @@ body {
   word-break: break-word;
   hyphens: auto;
   max-width: 100%;
-  z-index: 2;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  z-index: 1;
 }
 
 /* Card speak pulse */
