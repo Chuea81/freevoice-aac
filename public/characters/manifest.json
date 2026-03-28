@@ -15,13 +15,13 @@
     {
       "id": "char_002",
       "name": "Jordan",
-      "gender": "boy",
+      "gender": "girl",
       "skinTone": "dark",
       "hairType": "curly",
       "hairColor": "black",
       "previewImage": "/characters/preview/char_002.png",
       "supportedCategories": ["emotions"],
-      "description": "Boy with dark skin and black curly hair"
+      "description": "African American girl with dark skin and black curly hair"
     },
     {
       "id": "char_003",

@@ -29,8 +29,8 @@ const ROWS = 3;
 
 // How much of each cell height is the character image (rest is text label)
 // The sprite sheets have labels like "HAPPY", "SAD" under each character.
-// Crop to top 78% to remove the text.
-const IMAGE_PORTION = 0.78;
+// Crop to top 87% to remove just the text, keep full character.
+const IMAGE_PORTION = 0.87;
 
 async function main() {
   const manifestPath = join(PUBLIC, 'manifest.json');
