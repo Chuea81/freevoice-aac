@@ -121,6 +121,17 @@
       "previewImage": "/characters/preview/char_011.png",
       "supportedCategories": ["emotions"],
       "description": "Boy with medium-dark skin and straight black hair"
+    },
+    {
+      "id": "char_012",
+      "name": "Sasha",
+      "gender": "girl",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "blonde",
+      "previewImage": "/characters/preview/char_012.png",
+      "supportedCategories": ["emotions"],
+      "description": "Eastern European girl with light skin and blonde hair"
     }
   ]
 }
