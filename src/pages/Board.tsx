@@ -58,12 +58,8 @@ export function Board({ onOpenParentMode }: Props) {
     }
   }, [loaded, onboardingDone, isSeeded]);
 
-  // Prevent double-tap zoom on iOS
-  useEffect(() => {
-    const handler = (e: TouchEvent) => e.preventDefault();
-    document.addEventListener('touchend', handler, { passive: false });
-    return () => document.removeEventListener('touchend', handler);
-  }, []);
+  // Double-tap zoom prevention is handled by CSS touch-action: manipulation
+  // (set globally in index.css). No JS preventDefault needed.
 
   if (!isSeeded) {
     return (
