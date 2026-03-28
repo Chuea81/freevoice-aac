@@ -88,6 +88,17 @@
       "previewImage": "/characters/preview/char_008.png",
       "supportedCategories": ["emotions"],
       "description": "Latina girl with medium skin and black curly hair"
+    },
+    {
+      "id": "char_009",
+      "name": "Kai",
+      "gender": "neutral",
+      "skinTone": "medium",
+      "hairType": "wavy",
+      "hairColor": "brown",
+      "previewImage": "/characters/preview/char_009.png",
+      "supportedCategories": ["emotions"],
+      "description": "Gender-neutral child with medium skin and wavy brown hair"
     }
   ]
 }
