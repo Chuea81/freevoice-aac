@@ -28,6 +28,14 @@ app.get('/api/symbols', async (req, res) => {
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET /api/boards — returns all boards with their symbols from defaultBoards.ts
+app.get('/api/boards', async (req, res) => {
+  try {
+    const { getBoardsWithSymbols } = await import('./writer.mjs');
+    res.json(await getBoardsWithSymbols());
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/generate', async (req, res) => {
   try {
     const { label, category, style, phrase, extraPrompt } = req.body;

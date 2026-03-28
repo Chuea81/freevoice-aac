@@ -47,6 +47,39 @@ export async function getExistingSymbols() {
   }
 }
 
+// Get all boards with their symbols by importing defaultBoards at runtime
+export async function getBoardsWithSymbols() {
+  // Dynamically read and parse the boards from the TS source
+  const content = await readFile(BOARDS_FILE, 'utf8');
+
+  // Extract board definitions using regex
+  const boards = [];
+  const boardRegex = /id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*emoji:\s*'([^']*)',/g;
+  let match;
+  while ((match = boardRegex.exec(content)) !== null) {
+    boards.push({ id: match[1], name: match[2], emoji: match[3], symbols: [] });
+  }
+
+  // Extract symbols per board — find items arrays
+  for (const board of boards) {
+    const boardPattern = new RegExp(
+      `id:\\s*'${board.id}'[^]*?items:\\s*\\[([^\\]]*(?:\\{[^}]*\\}[^\\]]*)*)]`,
+      's'
+    );
+    const bm = boardPattern.exec(content);
+    if (bm) {
+      const itemsStr = bm[1];
+      const itemRegex = /\{\s*emoji:\s*'([^']*)',\s*label:\s*'([^']*)'/g;
+      let im;
+      while ((im = itemRegex.exec(itemsStr)) !== null) {
+        board.symbols.push({ emoji: im[1], label: im[2] });
+      }
+    }
+  }
+
+  return boards;
+}
+
 export async function approveSymbol({ label, category, subcategory, phrase, imageBase64, arasaacFallbackId }) {
   await mkdir(SYMBOLS_DIR, { recursive: true });
 

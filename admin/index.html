@@ -85,6 +85,33 @@
   .toast.show { opacity:1; transform:none; }
   .toast.success { border-color:rgba(39,174,96,0.4); }
   .toast.error   { border-color:rgba(225,29,72,0.4); }
+
+  /* Tabs */
+  .tab-row { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .tab-btn-admin { flex:1; padding:12px 16px; background:transparent; border:none; border-bottom:2px solid transparent; font-family:'Nunito',sans-serif; font-size:12px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .tab-btn-admin.active { color:var(--amber); border-bottom-color:var(--amber); background:rgba(245,158,11,0.05); }
+
+  /* Board browser */
+  .board-browser { flex:1; overflow-y:auto; padding:0; display:none; }
+  .board-browser.active { display:block; }
+  .board-section { border-bottom:1px solid var(--border); }
+  .board-header { padding:12px 20px; display:flex; align-items:center; gap:10px; cursor:pointer; transition:background 0.1s; }
+  .board-header:hover { background:rgba(255,255,255,0.03); }
+  .board-header .board-emoji { font-size:20px; }
+  .board-header .board-name { font-size:14px; font-weight:800; color:var(--text); flex:1; }
+  .board-header .board-count { font-size:11px; font-weight:800; color:var(--muted); background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:100px; }
+  .board-header .board-arrow { color:var(--muted); font-size:12px; transition:transform 0.2s; }
+  .board-header.open .board-arrow { transform:rotate(90deg); }
+  .board-symbols { display:none; padding:4px 16px 12px; }
+  .board-symbols.open { display:grid; grid-template-columns:repeat(auto-fill, minmax(80px,1fr)); gap:6px; }
+  .board-sym {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:8px 4px 6px; display:flex; flex-direction:column; align-items:center; gap:4px;
+    cursor:pointer; transition:all 0.1s; overflow:hidden;
+  }
+  .board-sym:hover { border-color:var(--amber); background:rgba(245,158,11,0.06); }
+  .board-sym .sym-emoji { font-size:22px; }
+  .board-sym .sym-label { font-size:8px; font-weight:900; text-transform:uppercase; color:var(--muted); text-align:center; line-height:1.2; word-break:break-word; }
 </style>
 </head>
 <body>
@@ -100,8 +127,11 @@
 
 <div class="main">
   <div class="left-panel">
-    <div class="panel-title">New Symbol</div>
-    <div class="form-body">
+    <div class="tab-row">
+      <button class="tab-btn-admin active" onclick="switchTab('create')">✨ New Symbol</button>
+      <button class="tab-btn-admin" onclick="switchTab('browse')">📋 Browse Boards</button>
+    </div>
+    <div class="form-body" id="tab-create">
       <div><label>Symbol Label *</label><input type="text" id="input-label" placeholder="e.g. Tamale, Abuela, Jollof Rice" autocomplete="off"></div>
       <div><label>Category *</label><select id="input-category"><option value="">Select category...</option></select></div>
       <div><label>Sub-category</label><select id="input-subcategory"><option value="">None</option></select></div>
@@ -115,6 +145,7 @@
         <button class="btn btn-reject" id="btn-reject" onclick="rejectSymbol()" disabled>✗ Reject</button>
       </div>
     </div>
+    <div class="board-browser" id="tab-browse"></div>
   </div>
 
   <div class="right-panel">
@@ -276,6 +307,58 @@ function toast(msg, type = 'success') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = `toast ${type} show`;
   setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn-admin').forEach((b,i) => b.classList.toggle('active', (tab==='create'?0:1)===i));
+  document.getElementById('tab-create').style.display = tab==='create' ? 'flex' : 'none';
+  const browse = document.getElementById('tab-browse');
+  browse.classList.toggle('active', tab==='browse');
+  if (tab==='browse' && !browse.dataset.loaded) { loadBoards(); browse.dataset.loaded='1'; }
+}
+
+// ── BOARD BROWSER ─────────────────────────────────────────────
+async function loadBoards() {
+  const browse = document.getElementById('tab-browse');
+  browse.innerHTML = '<div style="padding:20px;color:var(--muted);font-weight:700">Loading boards...</div>';
+  try {
+    const boards = await fetch(`${API}/boards`).then(r=>r.json());
+    browse.innerHTML = boards.map(b => `
+      <div class="board-section">
+        <div class="board-header" onclick="toggleBoard(this)">
+          <span class="board-emoji">${b.emoji}</span>
+          <span class="board-name">${b.name}</span>
+          <span class="board-count">${b.symbols.length}</span>
+          <span class="board-arrow">▶</span>
+        </div>
+        <div class="board-symbols" data-board="${b.id}">
+          ${b.symbols.map(s => `
+            <div class="board-sym" onclick="prefillFromBoard('${s.label.replace(/'/g,"\\'")}','${b.id}')">
+              <span class="sym-emoji">${s.emoji}</span>
+              <span class="sym-label">${s.label}</span>
+            </div>
+          `).join('')}
+          ${b.symbols.length===0?'<div style="grid-column:1/-1;padding:12px;color:var(--muted);font-size:12px;font-weight:700">Empty board</div>':''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { browse.innerHTML = '<div style="padding:20px;color:#FCA5A5;font-weight:700">Failed to load boards</div>'; }
+}
+
+function toggleBoard(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function prefillFromBoard(label, boardId) {
+  switchTab('create');
+  document.getElementById('input-label').value = label;
+  document.getElementById('input-category').value = boardId;
+  document.getElementById('input-category').dispatchEvent(new Event('change'));
+  autoFillPhrase();
+  updatePromptPreview();
+  toast(`Loaded "${label}" — generate to replace`, 'success');
 }
 
 init();
