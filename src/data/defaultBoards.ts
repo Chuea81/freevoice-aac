@@ -228,46 +228,44 @@ const BOARD_DEFS: BoardDef[] = [
   {
     id: 'drinks', name: 'Drinks', emoji: '🥤', parentId: 'food',
     items: [
-      // Row 1
-      { emoji: '💧', label: 'Water', phrase: 'Water', wordType: 'noun' },
-      { emoji: '🥛', label: 'Milk', phrase: 'Milk', wordType: 'noun' },
-      { emoji: '🧃', label: 'Juice', phrase: 'Juice', wordType: 'noun' },
-      { emoji: '🍊', label: 'Orange Juice', phrase: 'Orange juice', wordType: 'noun' },
-      { emoji: '🍵', label: 'Tea', phrase: 'Tea', wordType: 'noun' },
-      { emoji: '🥤', label: 'Soda', phrase: 'Soda', wordType: 'noun' },
+      { emoji: '💧', label: 'Water', phrase: 'Water please', wordType: 'noun' },
+      { emoji: '🥛', label: 'Milk', phrase: 'Milk please', wordType: 'noun' },
+      { emoji: '🧃', label: 'Juice', category: 'juice-types' },
+      { emoji: '🥤', label: 'Soda', category: 'soda-types' },
       { emoji: '🍫', label: 'Chocolate Milk', phrase: 'Chocolate milk', wordType: 'noun' },
-      { emoji: '🧋', label: 'Smoothie', phrase: 'Smoothie', wordType: 'noun' },
       { emoji: '🍹', label: 'Lemonade', phrase: 'Lemonade', wordType: 'noun' },
-      { emoji: '🥥', label: 'Coconut Water', phrase: 'Coconut water', wordType: 'noun' },
-      // Row 2
-      { emoji: '☕', label: 'Iced Coffee', phrase: 'Iced coffee', wordType: 'noun' },
-      { emoji: '🥤', label: 'Milkshake', phrase: 'Milkshake', wordType: 'noun' },
-      { emoji: '🧋', label: 'Boba Tea', phrase: 'Boba tea', wordType: 'noun' },
-      { emoji: '☕', label: 'Hot Coffee', phrase: 'Hot coffee', wordType: 'noun' },
+      { emoji: '🧋', label: 'Smoothie', phrase: 'Smoothie', wordType: 'noun' },
       { emoji: '🍫', label: 'Hot Chocolate', phrase: 'Hot chocolate', wordType: 'noun' },
-      { emoji: '🥛', label: 'Milk Coffee', phrase: 'Milk coffee', wordType: 'noun' },
-      { emoji: '🍵', label: 'Kombucha', phrase: 'Kombucha', wordType: 'noun' },
-      { emoji: '⚡', label: 'Energy Drink', phrase: 'Energy drink', wordType: 'noun' },
-      { emoji: '🍒', label: 'Cranberry Juice', phrase: 'Cranberry juice', wordType: 'noun' },
-      // Row 3
-      { emoji: '🍎', label: 'Apple Juice', phrase: 'Apple juice', wordType: 'noun' },
-      { emoji: '☕', label: 'Frappuccino', phrase: 'Frappuccino', wordType: 'noun' },
-      { emoji: '💧', label: 'Sparkling Water', phrase: 'Sparkling water', wordType: 'noun' },
-      { emoji: '🍺', label: 'Root Beer', phrase: 'Root beer', wordType: 'noun' },
-      { emoji: '🧊', label: 'Iced Tea', phrase: 'Iced tea', wordType: 'noun' },
-      { emoji: '🍎', label: 'Hot Cider', phrase: 'Hot cider', wordType: 'noun' },
-      { emoji: '🥭', label: 'Mango Lassi', phrase: 'Mango lassi', wordType: 'noun' },
-      { emoji: '🧃', label: 'Agua Fresca', phrase: 'Agua fresca', wordType: 'noun' },
-      { emoji: '🏃', label: 'Sports Drink', phrase: 'Sports drink', wordType: 'noun' },
-      // Row 4
-      { emoji: '🍇', label: 'Grape Juice', phrase: 'Grape juice', wordType: 'noun' },
-      { emoji: '🍍', label: 'Pineapple Juice', phrase: 'Pineapple juice', wordType: 'noun' },
-      { emoji: '🍑', label: 'Peach Juice', phrase: 'Peach juice', wordType: 'noun' },
+      { emoji: '🥤', label: 'Milkshake', phrase: 'Milkshake', wordType: 'noun' },
       { emoji: '🍹', label: 'Fruit Punch', phrase: 'Fruit punch', wordType: 'noun' },
-      { emoji: '🍅', label: 'Tomato Juice', phrase: 'Tomato juice', wordType: 'noun' },
-      { emoji: '🥬', label: 'Vegetable Juice', phrase: 'Vegetable juice', wordType: 'noun' },
-      { emoji: '🥛', label: 'Milk Carton', phrase: 'Milk carton', wordType: 'noun' },
-      { emoji: '💧', label: 'Water Bottle', phrase: 'Water bottle', wordType: 'noun' },
+      { emoji: '🍵', label: 'Iced Tea', phrase: 'Iced tea', wordType: 'noun' },
+    ],
+  },
+
+  // ═══ JUICE TYPES ═══
+  {
+    id: 'juice-types', name: 'Juice', emoji: '🧃', parentId: 'drinks',
+    items: [
+      { emoji: '🍊', label: 'Orange Juice', phrase: 'Orange juice please', wordType: 'noun' },
+      { emoji: '🍎', label: 'Apple Juice', phrase: 'Apple juice please', wordType: 'noun' },
+      { emoji: '🍇', label: 'Grape Juice', phrase: 'Grape juice please', wordType: 'noun' },
+      { emoji: '🍍', label: 'Pineapple Juice', phrase: 'Pineapple juice', wordType: 'noun' },
+      { emoji: '🥭', label: 'Mango Juice', phrase: 'Mango juice', wordType: 'noun' },
+      { emoji: '🍒', label: 'Cranberry Juice', phrase: 'Cranberry juice', wordType: 'noun' },
+      { emoji: '🍑', label: 'Peach Juice', phrase: 'Peach juice', wordType: 'noun' },
+    ],
+  },
+
+  // ═══ SODA TYPES ═══
+  {
+    id: 'soda-types', name: 'Soda', emoji: '🥤', parentId: 'drinks',
+    items: [
+      { emoji: '🥤', label: 'Coke', phrase: 'Coke please', wordType: 'noun' },
+      { emoji: '🥤', label: 'Sprite', phrase: 'Sprite please', wordType: 'noun' },
+      { emoji: '🥤', label: 'Fanta', phrase: 'Fanta please', wordType: 'noun' },
+      { emoji: '🥤', label: 'Root Beer', phrase: 'Root beer', wordType: 'noun' },
+      { emoji: '🥤', label: 'Ginger Ale', phrase: 'Ginger ale', wordType: 'noun' },
+      { emoji: '🥤', label: 'Dr Pepper', phrase: 'Dr Pepper', wordType: 'noun' },
     ],
   },
 
