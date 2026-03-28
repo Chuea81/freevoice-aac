@@ -1,54 +1,104 @@
 /**
- * Static label → ARASAAC pictogram ID lookup.
- * SymbolCard checks this FIRST before any DB lookup.
+ * Force emoji for ALL symbols — skip all ARASAAC lookups.
+ * ID = 0 means "use emoji from defaultBoards.ts, never search ARASAAC."
  *
- * ID = 0 means "use emoji fallback, skip all ARASAAC lookups."
- * Emotions use character system or emoji — never ARASAAC.
- * Everything else uses emoji from defaultBoards.ts.
+ * Exceptions (positive IDs): 8 ambiguous words where ARASAAC has the
+ * correct pictogram and emoji can't disambiguate the meaning.
+ *
+ * Character emotions are handled by the character system, not this file.
  */
 export const ARASAAC_IDS: Record<string, number> = {
-  // ── Emotions: use character system or emoji (ID=0) ──
-  'HAPPY': 0, 'SAD': 0, 'ANGRY': 0, 'SCARED': 0, 'TIRED': 0,
-  'SICK': 0, 'BORED': 0, 'LOVE': 0, 'FRUSTRATED': 0, 'GOOD': 0,
-  'WORRIED': 0, 'EXCITED': 0, 'NERVOUS': 0, 'CALM': 0, 'CONFUSED': 0,
-  'SURPRISED': 0, 'PROUD': 0, 'LONELY': 0, 'EMBARRASSED': 0,
-  'HURT FEELINGS': 0, 'SHY': 0, 'SILLY': 0, 'GRATEFUL': 0, 'DISAPPOINTED': 0,
+  // ── Ambiguous words — ARASAAC pictograms (positive IDs) ──
+  'NAILS': 2783, 'BATH': 2272, 'WASH HANDS': 8975, 'WASH FACE': 8975,
+  'BRUSH TEETH': 2694, 'HAIR': 2695, 'NUTS': 2674, 'RULER': 2815,
 
-  // ── ALL common symbols: force emoji, skip ARASAAC search ──
-  // Without this, useArasaac.ts does keyword searches and finds
-  // random inconsistent ARASAAC pictograms that look terrible.
-  // Emoji are better for everything except truly ambiguous words.
-  'FOOD': 0, 'DRINKS': 0, 'MEALS': 0, 'SNACKS': 0, 'FRUITS': 0,
-  'VEGETABLES': 0, 'DESSERTS': 0, 'PLAY': 0, 'SOCIAL': 0, 'BODY': 0,
-  'SCHOOL': 0, 'BEDTIME': 0, 'ANIMALS': 0, 'PLACES': 0, 'CLOTHING': 0,
-  'YES': 0, 'NO': 0, 'PLEASE': 0, 'THANK YOU': 0, 'HURTS': 0,
-  'HELP': 0, 'STOP': 0, 'MORE': 0, 'HI': 0, 'WAIT': 0, 'HELLO': 0,
-  'GOODBYE': 0, 'HUG': 0, 'FRIEND': 0, 'MOM': 0, 'DAD': 0,
-  'APPLE': 0, 'BANANA': 0, 'SANDWICH': 0, 'PIZZA': 0, 'CHICKEN': 0,
-  'CARROTS': 0, 'CHEESE': 0, 'MILK': 0, 'COOKIE': 0, 'STRAWBERRY': 0,
-  'BREAD': 0, 'EGG': 0, 'CAKE': 0, 'WATER': 0, 'JUICE': 0, 'SODA': 0,
-  'CHOCOLATE MILK': 0, 'LEMONADE': 0, 'SMOOTHIE': 0, 'HOT CHOCOLATE': 0,
-  'MILKSHAKE': 0, 'FRUIT PUNCH': 0, 'ICED TEA': 0, 'ORANGE JUICE': 0,
-  'APPLE JUICE': 0, 'GRAPE JUICE': 0, 'CEREAL': 0, 'PANCAKES': 0,
-  'PASTA': 0, 'SOUP': 0, 'TACO': 0, 'BURGER': 0, 'SALAD': 0,
-  'POPCORN': 0, 'ICE CREAM': 0, 'DONUT': 0, 'CHOCOLATE': 0,
-  'DOG': 0, 'CAT': 0, 'FISH': 0, 'BIRD': 0, 'BUNNY': 0, 'HORSE': 0,
-  'LION': 0, 'ELEPHANT': 0, 'BEAR': 0, 'MONKEY': 0, 'BUTTERFLY': 0,
-  'SOCCER': 0, 'BASKETBALL': 0, 'SWIMMING': 0, 'RUNNING': 0, 'DANCE': 0,
-  'BOOK': 0, 'MUSIC': 0, 'DRAW': 0, 'TV': 0, 'MOVIE': 0,
-  'DOCTOR': 0, 'TEACHER': 0, 'BATHROOM': 0, 'SLEEP': 0, 'HOME': 0,
-  'OUTSIDE': 0, 'PARK': 0, 'STORE': 0, 'HOSPITAL': 0,
-
-  // ── Ambiguous words only (correct ARASAAC pictograms) ──
-  'NAILS': 2783,
-  'BATH': 2272,
-  'WASH HANDS': 8975,
-  'WASH FACE': 8975,
-  'BRUSH TEETH': 2694,
-  'HAIR': 2695,
-  'NUTS': 2674,
-  'RULER': 2815,
+  // ── Everything else: emoji (ID=0) ──
+  'AFTER': 0, 'AFTERNOON': 0, 'AGAIN': 0, 'AMUSEMENT PARK': 0, 'ANGRY': 0, 'ANIMALS': 0,
+  'APPLE': 0, 'APPLE JUICE': 0, 'ART': 0, 'ARTIST': 0, 'AUNT': 0, 'BABY': 0,
+  'BACKPACK': 0, 'BACON': 0, 'BAD': 0, 'BANANA': 0, 'BAND-AID': 0, 'BANK': 0,
+  'BARBER': 0, 'BASEBALL': 0, 'BASKETBALL': 0, 'BATHROOM': 0, 'BEACH': 0,
+  'BEAR': 0, 'BED': 0, 'BEDTIME': 0, 'BEE': 0, 'BEFORE': 0, 'BIG': 0,
+  'BIKE': 0, 'BIRD': 0, 'BIRTHDAY CAKE': 0, 'BLACK': 0, 'BLANKET': 0, 'BLOW NOSE': 0,
+  'BLUE': 0, 'BLUEBERRY': 0, 'BOARD GAME': 0, 'BODY': 0, 'BONE HURTS': 0, 'BOOTS': 0,
+  'BORED': 0, 'BREAD': 0, 'BREADSTICK': 0, 'BREAK': 0, 'BROCCOLI': 0, 'BROTHER': 0, 'BROWN': 0,
+  'BUILD': 0, 'BUILDER': 0, 'BUNNY': 0, 'BURGER': 0, 'BURRITO': 0,
+  'BUTTERFLY': 0, 'CAKE': 0, 'CALENDAR': 0, 'CALM': 0, 'CAMPING': 0, 'CAN': 0,
+  'CAN I': 0, 'CANDY': 0, 'CARROT': 0, 'CARROTS': 0, 'CAT': 0, 'CEREAL': 0, 'CHANGE CLOTHES': 0,
+  'CHECK UP': 0, 'CHEESE': 0, 'CHEESE STICK': 0, 'CHEF': 0, 'CHERRY': 0, 'CHICKEN': 0, 'CHOCOLATE': 0,
+  'CHOCOLATE BAR': 0, 'CHOCOLATE MILK': 0, 'CHURCH': 0, 'CIRCLE': 0, 'CIRCUS': 0, 'CLEAN': 0,
+  'CLIMB': 0, 'CLIMBING': 0, 'CLOSE': 0, 'CLOTHING': 0, 'CLOUDY': 0, 'COKE': 0,
+  'COLD': 0, 'COLD OUTSIDE': 0, 'COME HERE': 0, 'COMMUNITY': 0, 'COMPUTER': 0, 'CONFUSED': 0,
+  'COOK': 0, 'COOKIE': 0, 'CORN': 0, 'COUSIN': 0, 'COW': 0, 'CRACKERS': 0,
+  'CRANBERRY JUICE': 0, 'CROISSANT': 0, 'CUCUMBER': 0, 'CUPCAKE': 0, 'CURRY': 0, 'CUT': 0,
+  'CYCLING': 0, 'DAD': 0, 'DANCE': 0, 'DANCE MUSIC': 0, 'DENTIST': 0, 'DESSERTS': 0,
+  'DIAMOND': 0, 'DIRTY': 0, 'DISAPPOINTED': 0, 'DIZZY': 0, 'DO NOT UNDERSTAND': 0, 'DOCTOR': 0,
+  'DOG': 0, 'DOLPHIN': 0, 'DONE': 0, 'DONUT': 0, 'DOOR OPEN': 0, 'DOWN': 0,
+  'DR PEPPER': 0, 'DRAW': 0, 'DRESS': 0, 'DRINK': 0, 'DRINKS': 0, 'DROP': 0,
+  'DRUMS': 0, 'DRY': 0, 'DUCK': 0, 'EARS': 0, 'EAT': 0, 'EIGHT': 0,
+  'EGG': 0, 'ELEPHANT': 0, 'EMBARRASSED': 0, 'EXCITED': 0, 'EXPERIMENT': 0, 'EYES': 0, 'FAMILY': 0,
+  'FANTA': 0, 'FARMER': 0, 'FAST': 0, 'FEEL': 0, 'FEELINGS': 0, 'FEVER': 0,
+  'FINISHED': 0, 'FIREFIGHTER': 0, 'FIRST': 0, 'FISH': 0, 'FISHING': 0, 'FIVE': 0,
+  'FOGGY': 0, 'FOOD': 0, 'FOOT': 0, 'FOOTBALL': 0, 'FOUR': 0, 'FOX': 0,
+  'FRIEND': 0, 'FROG': 0, 'FRUIT PUNCH': 0, 'FRUITS': 0, 'FRUSTRATED': 0, 'FUNNY': 0,
+  'GARDEN': 0, 'GET': 0, 'GINGER ALE': 0, 'GIRAFFE': 0, 'GIVE': 0, 'GLOVES': 0,
+  'GO': 0, 'GO AWAY': 0, 'GO HOME': 0, 'GOOD': 0, 'GOOD JOB': 0, 'GOODBYE': 0,
+  'GOODNIGHT': 0, 'GRANDMA': 0, 'GRANDPA': 0, 'GRAPE JUICE': 0, 'GRAPES': 0, 'GRATEFUL': 0,
+  'GREEN': 0, 'GROCERY STORE': 0, 'GUITAR': 0, 'GUMMY BEARS': 0, 'GYM': 0, 'GYMNASTICS': 0,
+  'HAMSTER': 0, 'HAND': 0, 'HAPPY': 0, 'HARD': 0, 'HARD TO BREATHE': 0,
+  'HAT': 0, 'HE': 0, 'HEAD': 0, 'HEART': 0, 'HELLO': 0, 'HELP': 0,
+  'HERE': 0, 'HI': 0, 'HIKING': 0, 'HOLD': 0, 'HOME': 0, 'HORSE': 0,
+  'HORSE RIDING': 0, 'HOSPITAL': 0, 'HOT': 0, 'HOT CHOCOLATE': 0, 'HOT DOG': 0, 'HOT OUTSIDE': 0,
+  'HOT PEPPER': 0, 'HOW': 0, 'HOW MANY': 0, 'HUG': 0, 'HUNDRED': 0, 'HURT': 0,
+  'HURT FEELINGS': 0, 'HURTS': 0, 'HYGIENE': 0, 'I': 0, 'ICE CREAM': 0, 'ICED TEA': 0,
+  'IN': 0, 'IS IT': 0, 'IT': 0, 'JACKET': 0, 'JUICE': 0, 'JUMP': 0,
+  'KIWI': 0, 'KNOW': 0, 'LADYBUG': 0, 'LAST': 0, 'LATER': 0, 'LEAVE ME ALONE': 0,
+  'LEG': 0, 'LEMON': 0, 'LEMONADE': 0, 'LETTUCE': 0, 'LIBRARY': 0, 'LIGHT OFF': 0,
+  'LIKE': 0, 'LION': 0, 'LISTEN': 0, 'LITTLE': 0, 'LONELY': 0, 'LOOK': 0,
+  'LOTION': 0, 'LOUD': 0, 'LOUDER': 0, 'LOVE': 0, 'LUNCH': 0, 'LUNCH BOX': 0,
+  'MAIL CARRIER': 0, 'MAKE': 0, 'MANGO': 0, 'MANGO JUICE': 0, 'MARTIAL ARTS': 0, 'MATH': 0,
+  'MEALS': 0, 'MEAN': 0, 'MECHANIC': 0, 'MEDICAL': 0, 'MEDICINE': 0, 'MILK': 0,
+  'MILKSHAKE': 0, 'MOM': 0, 'MONKEY': 0, 'MORE': 0, 'MORNING': 0, 'MOUNTAIN': 0,
+  'MOVIE': 0, 'MUSHROOM': 0, 'MUSIC': 0, 'MUSIC CLASS': 0, 'MY': 0,
+  'NATURE WALK': 0, 'NEED': 0, 'NEED BREAK': 0, 'NERVOUS': 0, 'NEW': 0, 'NEXT SONG': 0,
+  'NICE': 0, 'NIGHT': 0, 'NIGHT LIGHT': 0, 'NINE': 0, 'NO': 0, 'NOODLES': 0,
+  'NOSE': 0, 'NOT': 0, 'NOT READY': 0, 'NOW': 0, 'NUMBERS': 0, 'NURSE': 0,
+  'OFF': 0, 'OLD': 0, 'ON': 0, 'ONE': 0, 'ONION': 0,
+  'OPEN': 0, 'ORANGE': 0, 'ORANGE JUICE': 0, 'OUT': 0, 'OUTDOOR': 0, 'OUTSIDE': 0, 'PAJAMAS': 0,
+  'PANCAKES': 0, 'PANDA': 0, 'PANTS': 0, 'PARK': 0, 'PARROT': 0, 'PARTNER': 0,
+  'PASTA': 0, 'PEACH': 0, 'PEACH JUICE': 0, 'PEANUT BUTTER': 0, 'PEAR': 0, 'PEAS': 0,
+  'PENCIL': 0, 'PENGUIN': 0, 'PEPPER': 0, 'PET': 0, 'PIANO': 0, 'PIE': 0,
+  'PIG': 0, 'PILOT': 0, 'PINEAPPLE': 0, 'PINEAPPLE JUICE': 0, 'PINK': 0, 'PITA': 0,
+  'PIZZA': 0, 'PIZZA PLACE': 0, 'PLACES': 0, 'PLAY': 0, 'PLAYGROUND': 0, 'PLEASE': 0, 'POLICE': 0,
+  'POOL': 0, 'POPCORN': 0, 'POPSICLE': 0, 'POTATO': 0, 'PRETEND PLAY': 0, 'PRETTY': 0,
+  'PROUD': 0, 'PUDDING': 0, 'PULL': 0, 'PURPLE': 0, 'PUSH': 0, 'PUT': 0,
+  'PUT AWAY': 0, 'PUZZLE': 0, 'QUESTIONS': 0, 'QUIET': 0, 'RAINBOW': 0, 'RAINY': 0,
+  'RAISE HAND': 0, 'READ': 0, 'READING': 0, 'RECTANGLE': 0, 'RED': 0, 'REST': 0,
+  'RESTAURANT': 0, 'RICE CAKE': 0, 'ROOT BEER': 0, 'RUN': 0, 'RUNNING': 0,
+  'SAD': 0, 'SALAD': 0, 'SANDALS': 0, 'SANDWICH': 0, 'SAY': 0, 'SAY AGAIN': 0, 'SCARED': 0,
+  'SCARF': 0, 'SCARY': 0, 'SCHOOL': 0, 'SCIENCE': 0, 'SEE': 0, 'SEVEN': 0,
+  'SHARE': 0, 'SHARK': 0, 'SHE': 0, 'SHEEP': 0, 'SHIRT': 0, 'SHOES': 0,
+  'SHORTS': 0, 'SHOT': 0, 'SHOWER': 0, 'SHY': 0, 'SICK': 0, 'SILLY': 0,
+  'SING': 0, 'SISTER': 0, 'SIT DOWN': 0, 'SIX': 0, 'SKATING': 0, 'SLEEP': 0,
+  'SLEEPY': 0, 'SLOW': 0, 'SLOW DOWN': 0, 'SMALL': 0, 'SMILE': 0, 'SMOOTHIE': 0,
+  'SNACKS': 0, 'SNAKE': 0, 'SNOWY': 0, 'SOCCER': 0, 'SOCIAL': 0, 'SOCIAL STUDIES': 0,
+  'SOCKS': 0, 'SODA': 0, 'SOFT': 0, 'SOON': 0, 'SOUP': 0, 'SPORTS': 0,
+  'SPRITE': 0, 'SQUARE': 0, 'STADIUM': 0, 'STAR': 0, 'STEW': 0, 'STOP': 0,
+  'STOP MUSIC': 0, 'STORE': 0, 'STORM': 0, 'STORY': 0, 'STRAWBERRY': 0, 'STRONG': 0,
+  'STUFFED ANIMAL': 0, 'SUNNY': 0, 'SURPRISED': 0, 'SUSHI': 0, 'SWIM': 0, 'SWIMMING': 0,
+  'SWIMSUIT': 0, 'TACO': 0, 'TAKE': 0, 'TALK': 0, 'TANK TOP': 0, 'TEACHER': 0,
+  'TEETH': 0, 'TEN': 0, 'TENNIS': 0, 'TENT': 0, 'THANK YOU': 0, 'THAT': 0,
+  'THEN': 0, 'THERE': 0, 'THEY': 0, 'THINK': 0, 'THINKING': 0, 'THIS': 0,
+  'THREE': 0, 'THROW UP': 0, 'TIE': 0, 'TIRED': 0, 'TISSUE': 0, 'TODAY': 0,
+  'TOMATO': 0, 'TOMORROW': 0, 'TOO LOUD': 0, 'TOYS': 0, 'TRAIL MIX': 0, 'TRIANGLE': 0,
+  'TRUMPET': 0, 'TRY AGAIN': 0, 'TUMMY': 0, 'TURN': 0, 'TURTLE': 0, 'TV': 0,
+  'TWO': 0, 'UGLY': 0, 'UNCLE': 0, 'UNDERWEAR': 0, 'UNICORN': 0, 'UP': 0,
+  'UPSET': 0, 'VEGETABLES': 0, 'VIDEO GAMES': 0, 'VIOLIN': 0, 'WAFFLE': 0, 'WAIT': 0,
+  'WALK': 0, 'WANT': 0, 'WATER': 0, 'WATERMELON': 0,
+  'WE': 0, 'WET': 0, 'WHAT': 0, 'WHAT IS IT': 0, 'WHAT TIME': 0, 'WHEN': 0,
+  'WHERE': 0, 'WHERE IS IT': 0, 'WHITE': 0, 'WHO': 0, 'WHY': 0, 'WINDY': 0,
+  'WORRIED': 0, 'WRITE': 0, 'WRITING': 0, 'WRONG': 0, 'YELLOW': 0, 'YES': 0,
+  'YESTERDAY': 0, 'YOU': 0, 'ZERO': 0, 'ZOO': 0,
 };
 
-// No custom symbol images — everything uses emoji from defaultBoards.ts
+// No custom symbol images — emoji everywhere
 export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {};
