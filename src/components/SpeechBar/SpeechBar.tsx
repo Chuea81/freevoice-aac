@@ -12,7 +12,6 @@ export function SpeechBar() {
   const { t } = useTranslation();
   const outputRef = useRef<HTMLDivElement>(null);
   const speakBtnRef = useRef<HTMLButtonElement>(null);
-  const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [keyboardInput, setKeyboardInput] = useState('');
   const [showKeyboard, setShowKeyboard] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,20 +39,11 @@ export function SpeechBar() {
     }
   }, [outputTokens, speak, keyboardInput]);
 
-  const handleClearDown = useCallback(() => {
-    clearTimerRef.current = setTimeout(() => {
-      cancel(); // Stop any ongoing speech
-      clearTokens();
-      setKeyboardInput('');
-    }, 500);
+  const handleClear = useCallback(() => {
+    cancel();
+    clearTokens();
+    setKeyboardInput('');
   }, [clearTokens, cancel]);
-
-  const handleClearUp = useCallback(() => {
-    if (clearTimerRef.current) {
-      clearTimeout(clearTimerRef.current);
-      clearTimerRef.current = null;
-    }
-  }, []);
 
   const handleKeyboardSubmit = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && keyboardInput.trim()) {
@@ -122,11 +112,7 @@ export function SpeechBar() {
       <button
         className="bar-btn"
         id="btn-clear"
-        onMouseDown={handleClearDown}
-        onMouseUp={handleClearUp}
-        onMouseLeave={handleClearUp}
-        onTouchStart={handleClearDown}
-        onTouchEnd={handleClearUp}
+        onClick={handleClear}
         aria-label={t('speech.clear')}
       >
         <span className="btn-icon" aria-hidden="true">🗑️</span>{t('speech.clear')}
