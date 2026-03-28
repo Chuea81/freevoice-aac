@@ -22,6 +22,61 @@
       "previewImage": "/characters/preview/char_002.png",
       "supportedCategories": ["emotions"],
       "description": "Boy with dark skin and black curly hair"
+    },
+    {
+      "id": "char_003",
+      "name": "Sofia",
+      "gender": "girl",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "brown",
+      "previewImage": "/characters/preview/char_003.png",
+      "supportedCategories": ["emotions"],
+      "description": "Girl with light skin and brown hair"
+    },
+    {
+      "id": "char_004",
+      "name": "Miguel",
+      "gender": "boy",
+      "skinTone": "medium",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_004.png",
+      "supportedCategories": ["emotions"],
+      "description": "Latino boy with medium skin and black curly hair"
+    },
+    {
+      "id": "char_005",
+      "name": "Amara",
+      "gender": "girl",
+      "skinTone": "dark",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_005.png",
+      "supportedCategories": ["emotions"],
+      "description": "Girl with dark skin and black curly hair"
+    },
+    {
+      "id": "char_006",
+      "name": "Wei",
+      "gender": "boy",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_006.png",
+      "supportedCategories": ["emotions"],
+      "description": "Asian boy with light skin and straight black hair"
+    },
+    {
+      "id": "char_007",
+      "name": "Aiko",
+      "gender": "girl",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_007.png",
+      "supportedCategories": ["emotions"],
+      "description": "Asian girl with light skin and straight black hair"
     }
   ]
 }
