@@ -105,6 +105,27 @@ class FreeVoiceDB extends Dexie {
         }
       });
     });
+    // v5: Re-sync all default boards from source.
+    // Removes stale symbols (like loose food items on the Food board)
+    // and ensures board structure matches current defaultBoards.ts.
+    this.version(5).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+
+      // Delete all default-seeded symbols and re-seed from current source
+      const symbols = tx.table('symbols');
+      const boards = tx.table('boards');
+
+      // Remove all default symbols (keep user-created ones)
+      await symbols.where('id').startsWith('default-').delete();
+
+      // Re-insert from current defaultBoards.ts
+      const freshSymbols = getDefaultSymbols();
+      const freshBoards = getDefaultBoards();
+      await boards.bulkPut(freshBoards);
+      await symbols.bulkPut(freshSymbols);
+
+      console.log('[Migration v5] Re-synced all default boards and symbols');
+    });
   }
 }
 
