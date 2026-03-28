@@ -3,7 +3,7 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
 import { ARASAAC_IDS } from '../../data/arasaacIds';
-import { useCharacterImage, knownCharacterPaths } from '../../hooks/useCharacterImage';
+import { useCharacterImage } from '../../hooks/useCharacterImage';
 import type { SymbolCategory } from '../../types/character';
 import type { Symbol as DbSymbol } from '../../db';
 
@@ -61,7 +61,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   // Check for custom character image (emotions only for now)
   const category = boardToCategory(symbol.boardId);
   const characterImageUrl = useCharacterImage(symbol.label, category || 'emotions');
-  const hasCharacterImage = category !== null && !!characterImageUrl && knownCharacterPaths.has(characterImageUrl);
+  const hasCharacterImage = category !== null && !!characterImageUrl;
 
   // Resolve image URL at render time.
   // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
@@ -202,7 +202,6 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
           loading="lazy"
           decoding="async"
           onError={() => {
-            knownCharacterPaths.delete(characterImageUrl!);
             setImgFailed(true);
           }}
         />
