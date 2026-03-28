@@ -99,6 +99,17 @@
       "previewImage": "/characters/preview/char_009.png",
       "supportedCategories": ["emotions"],
       "description": "Gender-neutral child with medium skin and wavy brown hair"
+    },
+    {
+      "id": "char_010",
+      "name": "Leila",
+      "gender": "girl",
+      "skinTone": "medium-dark",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_010.png",
+      "supportedCategories": ["emotions"],
+      "description": "Girl with medium-dark skin and black curly hair"
     }
   ]
 }
