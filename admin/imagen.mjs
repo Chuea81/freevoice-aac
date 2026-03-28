@@ -9,31 +9,33 @@ config({ path: join(__dir, '.env') });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const BASE_STYLE_PROMPT = `
-Detailed realistic illustration of the actual object, person, or scene.
-NOT an emoji. NOT a flat icon. NOT a simple glyph.
-Rendered with depth, lighting, and texture like a high-quality children's book illustration.
-Vibrant saturated colors with soft shading and highlights.
-Centered subject filling most of the frame.
-Dark navy blue background (#0C1428) with subtle gradient.
-No text, no labels, no letters, no watermarks in the image.
-Square composition. Single clear subject.
-Style reference: Pixar-quality illustration, warm and inviting.
-Appropriate for children ages 3-12.
+AAC (Augmentative and Alternative Communication) pictogram symbol.
+Style reference: ARASAAC pictograms — the gold standard for AAC symbols.
+Simple, clear line drawing with bold black outlines and flat bright colors.
+Designed for nonverbal children to understand immediately.
+White or very light background on the subject area.
+Dark navy blue background (#0C1428) surrounding the symbol.
+Single centered subject. No clutter, no unnecessary detail.
+Thick consistent outlines. Flat color fills — no gradients, no shading.
+The symbol must be recognizable at 60x60 pixels by a 3-year-old.
+No text, no labels, no letters, no watermarks.
+Square composition. Subject fills 60-70% of the frame.
+Clinical AAC quality — proven, clear, universally understood.
 `.trim();
 
 const CATEGORY_STYLE_HINTS = {
-  food: 'Photorealistic food illustration. Show the actual dish/item with appetizing detail — texture of bread, shine of sauce, steam rising from hot food. Warm lighting.',
-  drinks: 'Realistic drink in a clear glass or cup. Show the actual liquid color, ice cubes, condensation droplets, garnish. Photographic quality.',
-  emotions: 'Expressive child character showing this emotion clearly. Full face with big eyes, detailed expression. Pixar/Disney style character, not emoji.',
-  people: 'Realistic illustrated person. Clear features, natural pose, recognizable role or relationship.',
-  places: 'Realistic illustration of the actual place. Show architectural details, environment, atmosphere.',
-  activities: 'Realistic illustration of the activity in progress. Show equipment, movement, environment.',
-  body: 'Medical-grade but friendly illustration. Accurate anatomy, soft colors, not scary.',
-  school: 'Realistic school supply or classroom scene. Actual objects with texture and detail.',
-  social: 'Realistic scene showing social interaction. Clear body language and facial expressions.',
-  nature: 'Beautiful realistic nature illustration. Rich colors, detailed flora/fauna.',
-  animals: 'Realistic but friendly animal portrait. Detailed fur/feathers, expressive eyes, natural pose.',
-  default: 'Detailed realistic illustration. Rich colors, clear subject, child-friendly.',
+  food: 'Simple food pictogram. Clear recognizable shape. Bright flat colors. Like an ARASAAC food symbol but cleaner.',
+  drinks: 'Simple drink pictogram. Clear vessel shape with visible liquid. Flat colors, bold outlines.',
+  emotions: 'Simple face showing emotion clearly. Round face, minimal features, big clear expression. ARASAAC emotion style.',
+  people: 'Simple person pictogram. Clear role identifier (uniform, tool, etc). ARASAAC person style.',
+  places: 'Simple building/location pictogram. Recognizable shape, minimal detail. ARASAAC style.',
+  activities: 'Simple action pictogram. Clear pose or equipment. ARASAAC activity style.',
+  body: 'Simple body part or health pictogram. Clear, clinical but friendly. ARASAAC body style.',
+  school: 'Simple school object pictogram. Recognizable shape. ARASAAC school supply style.',
+  social: 'Simple social interaction pictogram. Clear gesture or scene. ARASAAC style.',
+  nature: 'Simple nature pictogram. Clear shape, bright colors. ARASAAC style.',
+  animals: 'Simple animal pictogram. Recognizable species, friendly. Bold outlines, flat colors. ARASAAC animal style.',
+  default: 'Simple clear pictogram. Bold outlines, flat colors. ARASAAC style.',
 };
 
 export async function generateSymbol({ label, category = 'default', extraPrompt = '' }) {
