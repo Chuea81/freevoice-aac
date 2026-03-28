@@ -27,10 +27,12 @@ const TOTAL = LABELS.length; // 24
 const COLS = 10;
 const ROWS = 3;
 
-// How much of each cell height is the character image (rest is text label)
-// The sprite sheets have labels like "HAPPY", "SAD" under each character.
-// Crop to top 87% to remove just the text, keep full character.
-const IMAGE_PORTION = 0.87;
+// Crop ratios for each cell:
+// - Skip top 5% (label bleed from row above)
+// - Skip bottom 15% (text label like "HAPPY")
+// - Keep the middle 80% which is the character art
+const TOP_SKIP = 0.05;
+const BOTTOM_SKIP = 0.15;
 
 async function main() {
   const manifestPath = join(PUBLIC, 'manifest.json');
@@ -65,8 +67,9 @@ async function main() {
 
     const cellW = Math.floor(width / COLS);
     const cellH = Math.floor(height / ROWS);
-    const imgH = Math.floor(cellH * IMAGE_PORTION); // Crop out text label
-    console.log(`  Cell: ${cellW}×${cellH}, image crop: ${cellW}×${imgH}`);
+    const topOffset = Math.floor(cellH * TOP_SKIP);
+    const imgH = Math.floor(cellH * (1 - TOP_SKIP - BOTTOM_SKIP));
+    console.log(`  Cell: ${cellW}×${cellH}, crop: skip ${topOffset}px top, keep ${imgH}px`);
 
     const outDir = join(PUBLIC, 'symbols', char.id, 'emotions');
     await mkdir(outDir, { recursive: true });
@@ -77,7 +80,7 @@ async function main() {
       const row = Math.floor(i / COLS);
 
       const left = col * cellW;
-      const top = row * cellH;
+      const top = row * cellH + topOffset;
 
       const outPath = join(outDir, `${label}.png`);
 
@@ -105,7 +108,7 @@ async function main() {
     const previewPath = join(previewDir, `${char.id}.png`);
 
     await sharp(sheetPath)
-      .extract({ left: 0, top: 0, width: cellW, height: imgH })
+      .extract({ left: 0, top: topOffset, width: cellW, height: imgH })
       .resize(200, 200, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toFile(previewPath);
