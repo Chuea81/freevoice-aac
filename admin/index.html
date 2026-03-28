@@ -49,7 +49,8 @@
 
   .prompt-preview { background:#060C1A; border:1px solid var(--border); border-radius:10px; padding:12px; font-size:11px; color:var(--muted); line-height:1.6; max-height:80px; overflow-y:auto; }
 
-  .right-panel { display:grid; grid-template-rows:1fr auto; overflow:hidden; }
+  .right-panel { display:flex; flex-direction:column; overflow:hidden; }
+  .preview-area { flex:1; min-height:0; }
   .preview-area { display:flex; align-items:center; justify-content:center; padding:40px; background:var(--navy); }
   .preview-card {
     width:220px; height:220px; background:var(--card); border-radius:24px;
@@ -67,11 +68,11 @@
   .regen-btn { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.15s; }
   .regen-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
 
-  .approved-section { border-top:1px solid var(--border); background:var(--surface); }
+  .approved-section { border-top:1px solid var(--border); background:var(--surface); max-height:100px; flex-shrink:0; }
   .approved-header { padding:12px 20px; display:flex; align-items:center; gap:12px; }
   .approved-header h3 { font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
   .approved-count { background:rgba(39,174,96,0.15); color:#86EFAC; border:1px solid rgba(39,174,96,0.3); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:900; }
-  .approved-grid { display:flex; gap:8px; padding:0 20px 16px; overflow-x:auto; }
+  .approved-grid { display:flex; gap:8px; padding:0 20px 8px; overflow-x:auto; flex-wrap:nowrap; }
   .approved-thumb {
     width:70px; height:70px; flex-shrink:0; background:var(--card); border-radius:12px;
     border:1px solid var(--border); display:flex; flex-direction:column;
