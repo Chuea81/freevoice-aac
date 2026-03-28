@@ -3,12 +3,14 @@ import { useCharacterStore } from '../store/characterStore';
 import { knownCharacterPaths } from './useCharacterImage';
 import { buildKnownPaths, EMOTION_LABELS } from '../utils/characterUtils';
 
+const BASE = import.meta.env.BASE_URL || '/';
+
 export function useCharacterManifest() {
   const setCharacters = useCharacterStore((s) => s.setCharacters);
   const setManifestLoaded = useCharacterStore((s) => s.setManifestLoaded);
 
   useEffect(() => {
-    fetch('/characters/manifest.json')
+    fetch(`${BASE}characters/manifest.json`)
       .then(r => r.json())
       .then(manifest => {
         setCharacters(manifest.characters);
@@ -25,7 +27,6 @@ export function useCharacterManifest() {
         setManifestLoaded(true);
       })
       .catch(() => {
-        // Non-fatal — app works fine with ARASAAC/emoji if manifest missing
         setManifestLoaded(true);
       });
   }, [setCharacters, setManifestLoaded]);

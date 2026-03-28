@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
 import type { Gender, SkinTone } from '../../types/character';
 
+const BASE = import.meta.env.BASE_URL || '/';
+
 interface Props {
   onSelect: (characterId: string) => void;
   showSkipOption?: boolean;
@@ -135,7 +137,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
                   }}>✓</div>
                 )}
                 <img
-                  src={char.previewImage}
+                  src={`${BASE}${char.previewImage.replace(/^\//, '')}`}
                   alt={char.description}
                   style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '10px' }}
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}

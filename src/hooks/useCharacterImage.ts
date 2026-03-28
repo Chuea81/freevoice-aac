@@ -2,12 +2,14 @@ import { useCharacterStore } from '../store/characterStore';
 import { labelToFileName } from '../utils/characterUtils';
 import type { SymbolCategory } from '../types/character';
 
+const BASE = import.meta.env.BASE_URL || '/';
+
 // Module-level set populated when manifest loads
 export const knownCharacterPaths = new Set<string>();
 
 /**
  * Resolves the custom character image URL for a symbol.
- * Returns null if no custom image available (caller falls through to ARASAAC/emoji).
+ * Returns null if no custom image available.
  */
 export function useCharacterImage(
   label: string,
@@ -23,5 +25,5 @@ export function useCharacterImage(
   if (!character.supportedCategories.includes(category)) return null;
 
   const fileName = labelToFileName(label);
-  return `/characters/symbols/${selectedCharacterId}/${category}/${fileName}.png`;
+  return `${BASE}characters/symbols/${selectedCharacterId}/${category}/${fileName}.png`;
 }

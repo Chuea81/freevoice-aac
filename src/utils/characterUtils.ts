@@ -5,12 +5,14 @@ export function labelToFileName(label: string): string {
     .replace(/[^a-z0-9_]/g, '');
 }
 
+const BASE = import.meta.env.BASE_URL || '/';
+
 export function buildCharacterImagePath(
   characterId: string,
   category: string,
   label: string
 ): string {
-  return `/characters/symbols/${characterId}/${category}/${labelToFileName(label)}.png`;
+  return `${BASE}characters/symbols/${characterId}/${category}/${labelToFileName(label)}.png`;
 }
 
 export function buildKnownPaths(
