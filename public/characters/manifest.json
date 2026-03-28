@@ -110,6 +110,17 @@
       "previewImage": "/characters/preview/char_010.png",
       "supportedCategories": ["emotions"],
       "description": "Girl with medium-dark skin and black curly hair"
+    },
+    {
+      "id": "char_011",
+      "name": "Tariq",
+      "gender": "boy",
+      "skinTone": "medium-dark",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_011.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with medium-dark skin and straight black hair"
     }
   ]
 }
