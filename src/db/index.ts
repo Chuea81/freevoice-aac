@@ -67,12 +67,39 @@ class FreeVoiceDB extends Dexie {
     });
 
     // v3: Full cleanup — ARASAAC URLs no longer stored in symbols.imageUrl.
-    // Clear ALL ARASAAC URLs from symbols table (keep user photos).
-    // Clear symbolCache to force fresh fetches.
     this.version(3).stores(SCHEMA).upgrade(async (tx) => {
       await tx.table('symbolCache').clear();
-      // Clear imageUrl on ALL symbols except user-uploaded photos
       await tx.table('symbols').toCollection().modify((sym: Symbol) => {
+        if (sym.imageUrl && !sym.imageUrl.startsWith('data:') && !sym.imageUrl.startsWith('blob:')) {
+          sym.imageUrl = undefined;
+        }
+      });
+    });
+
+    // v4: Sync arasaacId from defaultBoards into existing Dexie records.
+    // Symbols were seeded before arasaacId was added to defaultBoards.ts,
+    // so existing DB records are missing the field. This writes it in.
+    this.version(4).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+
+      // Build a lookup: "boardId|lowercaseLabel" → arasaacId
+      const defaults = getDefaultSymbols();
+      const idMap = new Map<string, number>();
+      for (const sym of defaults) {
+        if (sym.arasaacId) {
+          idMap.set(`${sym.boardId}|${sym.label.toLowerCase()}`, sym.arasaacId);
+        }
+      }
+
+      // Walk every symbol in Dexie and patch arasaacId where it matches
+      await tx.table('symbols').toCollection().modify((sym: Symbol) => {
+        const key = `${sym.boardId}|${sym.label.toLowerCase()}`;
+        const id = idMap.get(key);
+        if (id && sym.arasaacId !== id) {
+          sym.arasaacId = id;
+          console.log('[Migration v4] Updated arasaacId for:', sym.label, id);
+        }
+        // Also clear any stale ARASAAC imageUrl (keep user photos)
         if (sym.imageUrl && !sym.imageUrl.startsWith('data:') && !sym.imageUrl.startsWith('blob:')) {
           sym.imageUrl = undefined;
         }
