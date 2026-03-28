@@ -40,43 +40,32 @@ export function PinModal() {
     }
   }, [step]);
 
-  const handleSubmit = useCallback(async () => {
-    if (pinMode === 'unlock') {
-      if (digits.length !== 4) return;
-      const ok = await verifyPin(digits);
-      if (!ok) {
-        setError('Wrong PIN');
-        setDigits('');
-      }
-    } else {
-      // set or change mode
-      if (step === 'enter') {
-        if (digits.length !== 4) return;
-        setStep('confirm');
-      } else {
-        if (confirmDigits.length !== 4) return;
-        if (digits !== confirmDigits) {
-          setError('PINs do not match');
-          setConfirmDigits('');
-          return;
-        }
-        await setPin(digits);
-      }
-    }
-  }, [pinMode, digits, confirmDigits, step, verifyPin, setPin]);
-
   // Auto-submit when 4 digits entered
   useEffect(() => {
     if (pinMode === 'unlock' && digits.length === 4) {
-      handleSubmit();
+      // Unlock mode: verify PIN directly
+      verifyPin(digits).then((ok) => {
+        if (!ok) {
+          setError('Wrong PIN');
+          setDigits('');
+        }
+      });
+    } else if (pinMode !== 'unlock' && step === 'enter' && digits.length === 4) {
+      // Set/change mode, step 1: auto-advance to confirm
+      setStep('confirm');
     }
-  }, [digits, pinMode, handleSubmit]);
+  }, [digits, pinMode, step, verifyPin]);
 
   useEffect(() => {
     if (pinMode !== 'unlock' && step === 'confirm' && confirmDigits.length === 4) {
-      handleSubmit();
+      if (digits !== confirmDigits) {
+        setError('PINs do not match');
+        setConfirmDigits('');
+      } else {
+        setPin(digits);
+      }
     }
-  }, [confirmDigits, pinMode, step, handleSubmit]);
+  }, [confirmDigits, digits, pinMode, step, setPin]);
 
   if (!showPinModal) return null;
 
