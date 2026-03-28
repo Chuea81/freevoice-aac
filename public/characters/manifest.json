@@ -143,6 +143,17 @@
       "previewImage": "/characters/preview/char_013.png",
       "supportedCategories": ["emotions"],
       "description": "African American boy with dark skin and black curly hair"
+    },
+    {
+      "id": "char_014",
+      "name": "Lucas",
+      "gender": "boy",
+      "skinTone": "medium-light",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_014.png",
+      "supportedCategories": ["emotions"],
+      "description": "Mediterranean boy with medium-light skin and black hair"
     }
   ]
 }
