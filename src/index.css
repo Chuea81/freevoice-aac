@@ -487,7 +487,8 @@ body {
   z-index: 1;
   border-radius: 8px;
   flex-shrink: 0;
-  clip-path: inset(4px round 6px);
+  -webkit-clip-path: inset(8px round 6px);
+  clip-path: inset(8px round 6px);
 }
 
 /* Legacy .symbol-image for fallback */
