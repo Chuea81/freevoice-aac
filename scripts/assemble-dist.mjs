@@ -24,6 +24,12 @@ if (existsSync(join(pub, 'terms.html'))) {
   console.log('✓ dist/terms.html');
 }
 
+// Copy guide page
+if (existsSync(join(pub, 'guide.html'))) {
+  copyFileSync(join(pub, 'guide.html'), join(dist, 'guide.html'));
+  console.log('✓ dist/guide.html');
+}
+
 // Copy CNAME
 if (existsSync(join(pub, 'CNAME'))) {
   copyFileSync(join(pub, 'CNAME'), join(dist, 'CNAME'));
