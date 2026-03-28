@@ -1259,9 +1259,21 @@ footer a:hover { color: var(--amber); }
 @media (max-width: 600px) {
   .feature-showcase, .feature-showcase.flip { direction: ltr; grid-template-columns: 1fr; }
   .about-sc-inner { grid-template-columns: 1fr; }
-  .share-cards { grid-template-columns: 1fr 1fr; }
+  .share-cards { grid-template-columns: 1fr; }
   .float-card:nth-child(n+5) { display: none; }
-  .promise-pillars { grid-template-columns: 1fr 1fr; }
+  .promise-pillars { grid-template-columns: 1fr; }
+  .access-steps { gap: 20px; }
+  .step { padding: 20px 16px; }
+  .final-cta-btns { flex-direction: column; gap: 12px; }
+  .btn-launch, .btn-github { width: 100%; text-align: center; }
+  .devices-strip { flex-wrap: wrap; justify-content: center; }
+}
+
+@media (max-width: 420px) {
+  .hero-title { font-size: 48px; }
+  .hero-tagline { font-size: 16px; }
+  .share-cards { grid-template-columns: 1fr; }
+  .section-title { font-size: 28px; }
 }
 
 </style>

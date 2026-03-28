@@ -2,22 +2,81 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FreeVoice AAC — Terms of Use</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Baloo+2:wght@700;800&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Nunito', sans-serif; background: #0C1428; color: rgba(255,255,255,0.85); max-width: 700px; margin: 0 auto; padding: 40px 24px; line-height: 1.7; }
-  h1 { color: #F59E0B; font-size: 28px; margin-bottom: 8px; }
-  h2 { color: #F59E0B; font-size: 18px; margin-top: 32px; margin-bottom: 8px; }
-  p { margin-bottom: 16px; color: rgba(255,255,255,0.7); }
-  a { color: #4FC3F7; }
-  .back { display: inline-block; margin-bottom: 24px; color: rgba(255,255,255,0.4); text-decoration: none; font-weight: 800; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #0C1428;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.7;
+    -webkit-text-size-adjust: 100%;
+  }
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: clamp(24px, 6vw, 60px) clamp(16px, 4vw, 40px);
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.15s;
+  }
+  .back:hover { background: rgba(255,255,255,0.1); }
+  h1 {
+    font-family: 'Baloo 2', cursive;
+    color: #F59E0B;
+    font-size: clamp(24px, 5vw, 32px);
+    margin-bottom: 8px;
+  }
+  .updated {
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 700;
+    margin-bottom: 32px;
+  }
+  h2 {
+    color: #F59E0B;
+    font-size: clamp(16px, 3vw, 20px);
+    margin-top: 32px;
+    margin-bottom: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+  }
+  p {
+    margin-bottom: 16px;
+    color: rgba(255,255,255,0.7);
+    font-size: clamp(14px, 2.5vw, 16px);
+  }
+  a { color: #4FC3F7; text-decoration: none; font-weight: 700; }
+  a:hover { text-decoration: underline; }
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.25);
+  }
 </style>
 </head>
 <body>
+<div class="container">
 <a href="/" class="back">← Back to FreeVoice</a>
 <h1>Terms of Use</h1>
-<p><strong>Last updated:</strong> March 2026</p>
+<p class="updated"><strong>Last updated:</strong> March 2026</p>
 
 <h2>What FreeVoice Is</h2>
 <p>FreeVoice AAC is a free, open-source augmentative and alternative communication (AAC) application. It is provided as-is, at no cost, with no warranty.</p>
@@ -43,5 +102,10 @@
 <h2>Contact</h2>
 <p>Shellcraft Labs LLC · Roswell, Georgia<br>
 <a href="https://github.com/Chuea81/freevoice-aac">GitHub</a></p>
+
+<div class="footer">
+  <p>© 2026 Shellcraft Labs LLC · <a href="/">FreeVoice AAC</a> · <a href="/app/">Open App</a></p>
+</div>
+</div>
 </body>
 </html>
