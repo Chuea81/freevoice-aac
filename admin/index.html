@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeVoice Symbol Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#0C1428; --card:#1B2845; --surface:#111827;
+    --amber:#F59E0B; --green:#27AE60; --red:#E11D48; --sky:#4FC3F7;
+    --text:#E2E8F0; --muted:rgba(226,232,240,0.55); --border:rgba(255,255,255,0.08);
+  }
+  body { font-family:'Nunito',sans-serif; background:var(--navy); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  header { padding:14px 24px; background:#060C1A; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-shrink:0; }
+  header h1 { font-size:20px; font-weight:900; color:var(--amber); }
+  header span { font-size:13px; color:var(--muted); font-weight:700; }
+  .header-right { margin-left:auto; display:flex; gap:10px; align-items:center; }
+  .status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .main { display:grid; grid-template-columns:320px 1fr; flex:1; overflow:hidden; }
+
+  .left-panel { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+  .panel-title { padding:16px 20px 12px; font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--amber); border-bottom:1px solid var(--border); flex-shrink:0; }
+  .form-body { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px; }
+
+  label { font-size:11px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:6px; }
+  input[type=text], select, textarea {
+    width:100%; background:#0C1428; border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px; padding:10px 14px; color:var(--text); font-family:'Nunito',sans-serif;
+    font-size:14px; font-weight:700; outline:none; transition:border-color 0.15s;
+  }
+  input[type=text]:focus, select:focus, textarea:focus { border-color:var(--amber); }
+  select option { background:#1B2845; }
+  textarea { resize:vertical; min-height:60px; }
+
+  .btn { width:100%; padding:12px 20px; border-radius:12px; border:none; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .btn:active { transform:scale(0.97); }
+  .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+  .btn-generate { background:var(--sky); color:#0C1428; }
+  .btn-approve  { background:var(--green); color:white; }
+  .btn-reject   { background:rgba(225,29,72,0.15); color:#FCA5A5; border:1px solid rgba(225,29,72,0.3); }
+
+  .spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,0.2); border-top-color:currentColor; border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .prompt-preview { background:#060C1A; border:1px solid var(--border); border-radius:10px; padding:12px; font-size:11px; color:var(--muted); line-height:1.6; max-height:80px; overflow-y:auto; }
+
+  .right-panel { display:grid; grid-template-rows:1fr auto; overflow:hidden; }
+  .preview-area { display:flex; align-items:center; justify-content:center; padding:40px; background:var(--navy); }
+  .preview-card {
+    width:220px; height:220px; background:var(--card); border-radius:24px;
+    border:1px solid var(--border); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:12px; position:relative; overflow:hidden;
+  }
+  .preview-card::before { content:''; position:absolute; top:0;left:0;right:0; height:4px; background:var(--amber); }
+  .preview-card img { width:140px; height:140px; object-fit:contain; border-radius:12px; }
+  .preview-card .preview-label { font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:rgba(255,255,255,0.85); }
+  .preview-placeholder { text-align:center; color:var(--muted); }
+  .preview-placeholder .ph-icon { font-size:64px; margin-bottom:12px; opacity:0.3; }
+  .preview-placeholder p { font-size:14px; font-weight:700; }
+
+  .regen-strip { display:flex; gap:8px; margin-top:20px; }
+  .regen-btn { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.15s; }
+  .regen-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+
+  .approved-section { border-top:1px solid var(--border); background:var(--surface); }
+  .approved-header { padding:12px 20px; display:flex; align-items:center; gap:12px; }
+  .approved-header h3 { font-size:11px; font-weight:900; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+  .approved-count { background:rgba(39,174,96,0.15); color:#86EFAC; border:1px solid rgba(39,174,96,0.3); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:900; }
+  .approved-grid { display:flex; gap:8px; padding:0 20px 16px; overflow-x:auto; }
+  .approved-thumb {
+    width:70px; height:70px; flex-shrink:0; background:var(--card); border-radius:12px;
+    border:1px solid var(--border); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:4px; cursor:pointer; overflow:hidden; position:relative;
+  }
+  .approved-thumb::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--amber); }
+  .approved-thumb img { width:44px; height:44px; object-fit:contain; }
+  .approved-thumb span { font-size:7px; font-weight:900; text-transform:uppercase; color:rgba(255,255,255,0.6); text-align:center; padding:0 4px; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 20px; font-size:14px; font-weight:800; display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; z-index:100; }
+  .toast.show { opacity:1; transform:none; }
+  .toast.success { border-color:rgba(39,174,96,0.4); }
+  .toast.error   { border-color:rgba(225,29,72,0.4); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎨 FreeVoice Symbol Builder</h1>
+  <span>Local Admin Tool · Never Deployed</span>
+  <div class="header-right">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text" style="font-size:12px;color:var(--muted);font-weight:700">Connecting...</span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="left-panel">
+    <div class="panel-title">New Symbol</div>
+    <div class="form-body">
+      <div><label>Symbol Label *</label><input type="text" id="input-label" placeholder="e.g. Tamale, Abuela, Jollof Rice" autocomplete="off"></div>
+      <div><label>Category *</label><select id="input-category"><option value="">Select category...</option></select></div>
+      <div><label>Sub-category</label><select id="input-subcategory"><option value="">None</option></select></div>
+      <div><label>Spoken Phrase</label><input type="text" id="input-phrase" placeholder="e.g. I want a tamale"><div style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:700">Auto-fills as "I want [label]" if blank</div></div>
+      <div><label>Extra Image Detail (optional)</label><textarea id="input-extra" placeholder="e.g. Show it wrapped in a corn husk. Mexican style. Steam rising."></textarea></div>
+      <div><label>ARASAAC Fallback ID (optional)</label><input type="text" id="input-arasaac" placeholder="e.g. 35533"><div style="font-size:11px;color:var(--muted);margin-top:5px;font-weight:700">Used if custom image fails to load</div></div>
+      <div><label>Generation Prompt Preview</label><div class="prompt-preview" id="prompt-preview">Fill in label and category to see prompt...</div></div>
+      <button class="btn btn-generate" id="btn-generate" onclick="generateSymbol()">✨ Generate Symbol</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-approve" id="btn-approve" onclick="approveSymbol()" disabled>✅ Approve</button>
+        <button class="btn btn-reject" id="btn-reject" onclick="rejectSymbol()" disabled>✗ Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="preview-area">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:24px">
+        <div class="preview-card" id="preview-card">
+          <div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Generate a symbol<br>to preview it here</p></div>
+        </div>
+        <div class="regen-strip" id="regen-strip" style="display:none">
+          <button class="regen-btn" onclick="generateSymbol()">↺ Regenerate</button>
+          <button class="regen-btn" onclick="generateVariant('more colorful')">🎨 More colorful</button>
+          <button class="regen-btn" onclick="generateVariant('simpler')">✂️ Simpler</button>
+          <button class="regen-btn" onclick="generateVariant('more cartoon')">😄 More cartoon</button>
+        </div>
+      </div>
+    </div>
+    <div class="approved-section">
+      <div class="approved-header"><h3>Approved Symbols</h3><span class="approved-count" id="approved-count">0</span></div>
+      <div class="approved-grid" id="approved-grid"><div style="font-size:13px;color:var(--muted);font-weight:700;padding:8px 0">Approved symbols appear here...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:3333/api';
+let currentImageBase64 = null;
+let currentLabel = null;
+
+async function init() {
+  try {
+    const cats = await fetch(`${API}/categories`).then(r => r.json());
+    buildCategorySelects(cats);
+    document.getElementById('status-dot').style.background = '#27AE60';
+    document.getElementById('status-text').textContent = 'Ready';
+  } catch {
+    document.getElementById('status-dot').style.background = '#E11D48';
+    document.getElementById('status-text').textContent = 'Server not running — run npm run admin';
+  }
+  await loadApproved();
+  ['input-label','input-category','input-extra'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updatePromptPreview));
+  document.getElementById('input-label').addEventListener('input', autoFillPhrase);
+}
+
+function buildCategorySelects(cats) {
+  const catSel = document.getElementById('input-category');
+  cats.forEach(cat => { const o = document.createElement('option'); o.value = cat.id; o.textContent = cat.label; catSel.appendChild(o); });
+  catSel.addEventListener('change', () => {
+    const subSel = document.getElementById('input-subcategory');
+    subSel.innerHTML = '<option value="">None</option>';
+    const cat = cats.find(c => c.id === catSel.value);
+    if (cat?.subcategories?.length) cat.subcategories.forEach(sub => { const o = document.createElement('option'); o.value = sub; o.textContent = sub; subSel.appendChild(o); });
+    updatePromptPreview();
+  });
+}
+
+function autoFillPhrase() {
+  const label = document.getElementById('input-label').value.trim();
+  const phrase = document.getElementById('input-phrase');
+  if (!phrase.dataset.manualEdit) phrase.placeholder = label ? `I want ${label.toLowerCase()}` : 'e.g. I want a tamale';
+}
+document.getElementById('input-phrase')?.addEventListener('input', function() { this.dataset.manualEdit = this.value ? 'true' : ''; });
+
+function updatePromptPreview() {
+  const label = document.getElementById('input-label').value.trim();
+  const cat = document.getElementById('input-category').value;
+  const extra = document.getElementById('input-extra').value.trim();
+  document.getElementById('prompt-preview').textContent = !label
+    ? 'Fill in label and category to see prompt...'
+    : `Flat cartoon illustration. Thick black outlines. Vibrant colors. Dark navy background. Clear AAC symbol for "${label}"${cat ? ` (${cat})` : ''}.${extra ? ' ' + extra : ''}`;
+}
+
+async function generateSymbol(extraOverride = '') {
+  const label = document.getElementById('input-label').value.trim();
+  const category = document.getElementById('input-category').value;
+  const extra = extraOverride || document.getElementById('input-extra').value.trim();
+  if (!label) { toast('Enter a label first', 'error'); return; }
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Generating...';
+  currentImageBase64 = null;
+  document.getElementById('btn-approve').disabled = true;
+  document.getElementById('btn-reject').disabled = true;
+  document.getElementById('regen-strip').style.display = 'none';
+  document.getElementById('preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 16px;width:36px;height:36px;border-width:3px"></div><p style="font-size:13px;font-weight:700">Generating "${label}"...</p></div>`;
+  try {
+    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,category,extraPrompt:extra}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Generation failed');
+    currentImageBase64 = data.imageBase64; currentLabel = label;
+    document.getElementById('preview-card').innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="${label}"><span class="preview-label">${label.toUpperCase()}</span>`;
+    document.getElementById('btn-approve').disabled = false;
+    document.getElementById('btn-reject').disabled = false;
+    document.getElementById('regen-strip').style.display = 'flex';
+  } catch (e) {
+    toast('Generation failed: ' + e.message, 'error');
+    document.getElementById('preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">❌</div><p>Generation failed<br>Check console</p></div>`;
+  } finally { btn.disabled = false; btn.innerHTML = '✨ Generate Symbol'; }
+}
+
+function generateVariant(hint) {
+  const current = document.getElementById('input-extra').value.trim();
+  generateSymbol(current ? `${current}. ${hint}.` : hint + '.');
+}
+
+async function approveSymbol() {
+  if (!currentImageBase64) return;
+  const label = document.getElementById('input-label').value.trim();
+  const category = document.getElementById('input-category').value;
+  const subcategory = document.getElementById('input-subcategory').value;
+  const phraseInput = document.getElementById('input-phrase').value.trim();
+  const phrase = phraseInput || `I want ${label.toLowerCase()}`;
+  const arasaacId = document.getElementById('input-arasaac').value.trim();
+  const btn = document.getElementById('btn-approve');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Saving...';
+  try {
+    const res = await fetch(`${API}/approve`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,category,subcategory,phrase,imageBase64:currentImageBase64,arasaacFallbackId:arasaacId||null}) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    toast(`✅ ${label} approved and saved!`, 'success');
+    await loadApproved(); resetForm();
+  } catch (e) { toast('Save failed: ' + e.message, 'error'); }
+  finally { btn.disabled = false; btn.innerHTML = '✅ Approve'; }
+}
+
+function rejectSymbol() {
+  currentImageBase64 = null; currentLabel = null;
+  document.getElementById('preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Rejected. Try generating<br>with different settings.</p></div>`;
+  document.getElementById('btn-approve').disabled = true;
+  document.getElementById('btn-reject').disabled = true;
+  document.getElementById('regen-strip').style.display = 'none';
+}
+
+function resetForm() {
+  ['input-label','input-phrase','input-extra','input-arasaac'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('input-phrase').dataset.manualEdit = '';
+  currentImageBase64 = null; currentLabel = null;
+  document.getElementById('btn-approve').disabled = true;
+  document.getElementById('btn-reject').disabled = true;
+  document.getElementById('regen-strip').style.display = 'none';
+  document.getElementById('preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Generate a symbol<br>to preview it here</p></div>`;
+  updatePromptPreview();
+  document.getElementById('input-label').focus();
+}
+
+async function loadApproved() {
+  try {
+    const symbols = await fetch(`${API}/symbols`).then(r => r.json());
+    document.getElementById('approved-count').textContent = symbols.length;
+    const grid = document.getElementById('approved-grid');
+    grid.innerHTML = symbols.length === 0
+      ? '<div style="font-size:13px;color:var(--muted);font-weight:700;padding:8px 0">Approved symbols appear here...</div>'
+      : symbols.map(sym => `<div class="approved-thumb" title="${sym.label}"><img src="${sym.url}" alt="${sym.label}" onerror="this.style.display='none'"><span>${sym.label}</span></div>`).join('');
+  } catch {}
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>

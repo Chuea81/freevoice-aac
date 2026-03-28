@@ -14,7 +14,9 @@
     "create-placeholders": "node scripts/create-character-placeholders.mjs",
     "slice-sprites": "node scripts/slice-sprites.mjs",
     "generate-assets": "npm run generate-icons && npm run generate-og",
-    "license-audit": "npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC-BY-4.0;CC0-1.0;Unlicense'"
+    "license-audit": "npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC-BY-4.0;CC0-1.0;Unlicense'",
+    "admin": "node admin/server.mjs",
+    "admin:install": "cd admin && npm install"
   },
   "dependencies": {
     "dexie": "^4.3.0",

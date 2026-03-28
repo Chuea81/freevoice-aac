@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Admin tool
+admin/.env
+admin/node_modules/
