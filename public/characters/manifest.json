@@ -132,6 +132,17 @@
       "previewImage": "/characters/preview/char_012.png",
       "supportedCategories": ["emotions"],
       "description": "Eastern European girl with light skin and blonde hair"
+    },
+    {
+      "id": "char_013",
+      "name": "Elijah",
+      "gender": "boy",
+      "skinTone": "dark",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_013.png",
+      "supportedCategories": ["emotions"],
+      "description": "African American boy with dark skin and black curly hair"
     }
   ]
 }
