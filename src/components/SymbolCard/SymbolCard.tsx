@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useEffect, type MouseEvent, type CSSProp
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
-import { ARASAAC_IDS } from '../../data/arasaacIds';
+import { ARASAAC_IDS, CUSTOM_SYMBOL_IMAGES } from '../../data/arasaacIds';
 import { useCharacterImage } from '../../hooks/useCharacterImage';
 import type { SymbolCategory } from '../../types/character';
 import type { Symbol as DbSymbol } from '../../db';
@@ -62,6 +62,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const category = boardToCategory(symbol.boardId);
   const characterImageUrl = useCharacterImage(symbol.label, category || 'emotions');
   const hasCharacterImage = category !== null && !!characterImageUrl;
+  const isCustomSymbol = ARASAAC_IDS[symbol.label?.toUpperCase() || ''] === -1;
 
   // Resolve image URL at render time.
   // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
@@ -81,6 +82,15 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     if (staticId === 0) {
       setResolvedUrl(null);
       return;
+    }
+
+    // 1b. Custom symbol image (ID=-1) — use custom path
+    if (staticId === -1) {
+      const customUrl = CUSTOM_SYMBOL_IMAGES[upperLabel];
+      if (customUrl) {
+        setResolvedUrl(customUrl);
+        return;
+      }
     }
 
     // 2. User-uploaded photo
@@ -193,8 +203,8 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
       {labelPosition === 'above' && labelEl}
 
-      {hasImage && hasCharacterImage ? (
-        /* Character images — full bleed, no white container */
+      {hasImage && (hasCharacterImage || isCustomSymbol) ? (
+        /* Character/custom images — clean, no white container */
         <img
           className="symbol-character-img"
           src={resolvedUrl!}

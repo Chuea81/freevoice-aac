@@ -43,4 +43,39 @@ export const ARASAAC_IDS: Record<string, number> = {
   'HAIR': 2695,
   'NUTS': 2674,
   'RULER': 2815,
+
+  // ── Drinks: use custom icons (ID=-1 = custom image path) ──
+  'WATER': -1,
+  'MILK': -1,
+  'JUICE': -1,
+  'ORANGE JUICE': -1,
+  'TEA': -1,
+  'SODA': -1,
+  'CHOCOLATE MILK': -1,
+  'SMOOTHIE': -1,
+  'LEMONADE': -1,
+  'COCONUT WATER': -1,
+};
+
+/**
+ * Custom symbol image paths — for symbols with custom art (not ARASAAC).
+ * ID = -1 in ARASAAC_IDS means "look up in CUSTOM_SYMBOL_IMAGES instead."
+ */
+const BASE = import.meta.env.BASE_URL || '/';
+
+function customPath(category: string, filename: string): string {
+  return `${BASE}symbols/${category}/${filename}.png`;
+}
+
+export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {
+  'WATER': customPath('drinks', 'water'),
+  'MILK': customPath('drinks', 'milk'),
+  'JUICE': customPath('drinks', 'juice'),
+  'ORANGE JUICE': customPath('drinks', 'orange_juice'),
+  'TEA': customPath('drinks', 'tea'),
+  'SODA': customPath('drinks', 'soda'),
+  'CHOCOLATE MILK': customPath('drinks', 'chocolate_milk'),
+  'SMOOTHIE': customPath('drinks', 'smoothie'),
+  'LEMONADE': customPath('drinks', 'lemonade'),
+  'COCONUT WATER': customPath('drinks', 'coconut_water'),
 };
