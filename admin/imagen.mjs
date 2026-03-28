@@ -9,18 +9,17 @@ config({ path: join(__dir, '.env') });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const BASE_STYLE_PROMPT = `
+Generate a 500x500 pixel image that FILLS THE ENTIRE CANVAS edge to edge.
 AAC (Augmentative and Alternative Communication) pictogram symbol.
-Style reference: ARASAAC pictograms — the gold standard for AAC symbols.
-Simple, clear line drawing with bold black outlines and flat bright colors.
-Designed for nonverbal children to understand immediately.
-White or very light background on the subject area.
-Dark navy blue background (#0C1428) surrounding the symbol.
-Single centered subject. No clutter, no unnecessary detail.
-Thick consistent outlines. Flat color fills — no gradients, no shading.
-The symbol must be recognizable at 60x60 pixels by a 3-year-old.
-No text, no labels, no letters, no watermarks.
-Square composition. Subject fills 60-70% of the frame.
-Clinical AAC quality — proven, clear, universally understood.
+Style: ARASAAC-inspired — simple, clear, bold black outlines, flat bright colors.
+The subject must be LARGE and fill at least 80% of the canvas.
+Background: solid dark navy blue (#0C1428) filling the entire image.
+DO NOT add a white background. DO NOT add borders or frames.
+DO NOT make the symbol small in the center — it must be BIG.
+No text, no labels, no letters, no watermarks, no borders.
+Single centered subject drawn large and clear.
+Thick consistent black outlines. Flat vivid color fills.
+Must be recognizable at 60x60 pixels by a 3-year-old child.
 `.trim();
 
 const CATEGORY_STYLE_HINTS = {
