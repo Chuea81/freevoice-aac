@@ -12,13 +12,13 @@ Give every nonverbal child a voice — free, forever, on any device.
 ## What's Built (v1.0 — LIVE at freevoiceaac.app)
 
 ### Core AAC System
-- [x] 570+ symbols across 35 boards (Home, Feelings, Food, Activities, Social, Body, School, Bedtime, Animals, Places, Clothing, Colors, Weather, Numbers, etc.)
-- [x] 5-tab navigation (Home, Feelings, Food, Play, My Words)
+- [x] 1145 symbols across 66 boards (Home, Feelings, Food, Activities, Social, Body, School, Places, Routines, plus culturally diverse food boards, nature, transportation, technology, etc.)
+- [x] 10-tab navigation (Home, Feelings, Food, Play, Social, Body, School, Places, Routines, My Words)
 - [x] Breadcrumb navigation for nested board hierarchy
 - [x] Speech bar — tap symbols to build sentences, tap SPEAK to say them
 - [x] Fast Phrases strip — 12 one-tap social phrases (Help, Wait, Done, More, Stop, etc.)
 - [x] Core Words bar — 50 high-frequency words always visible
-- [x] Symbol search — full-text search across all 570+ symbols
+- [x] Symbol search — full-text search across all 1145 symbols
 - [x] Custom symbols — add emoji, photo, or label to any board
 - [x] Move symbols between boards (long-press → Move to Board)
 - [x] Add symbols inside category cards (long-press category → Add inside)
@@ -44,10 +44,17 @@ Give every nonverbal child a voice — free, forever, on any device.
 - [x] Sprite sheet slicer tooling (npm run slice-sprites)
 - [x] Graceful fallback to emoji if no character selected
 
-### Custom Symbol Art
+### Symbol System
+- [x] Emoji as primary symbol source — all 991 labels set to ID=0 (force emoji)
+- [x] All emoji verified compatible with Emoji 12.0 (2019) — no white squares on any device
+- [x] 28 newer emoji (Emoji 13-15) replaced with universally supported alternatives
+- [x] ARASAAC keyword search DISABLED (useArasaac hook is a no-op)
+- [x] Static ARASAAC IDs only for genuinely ambiguous words (nails, bath, brush teeth, etc.)
 - [x] 40 custom drink icons (sliced from sprite sheet)
 - [x] Custom symbol image pipeline (ARASAAC_IDS → CUSTOM_SYMBOL_IMAGES)
 - [x] Sprite sheet slicer for drinks (npm run slice-drinks)
+- [x] SLP-recommended verb+noun phrase patterns ("Eat hamburger", "Drink water", "Play soccer")
+- [x] Culturally diverse food boards (American, Mexican & Latin, African American, East Asian, South Asian, Middle Eastern, African, Caribbean, European)
 
 ### Multilingual (10 Languages)
 - [x] i18next + react-i18next + browser language detection
@@ -99,6 +106,13 @@ Give every nonverbal child a voice — free, forever, on any device.
 - [x] iOS install prompt
 - [x] Service worker update notification
 
+### Admin Tool (Local Only)
+- [x] Express server on port 3333 with board browser
+- [x] Gemini API symbol generation (gemini-2.5-flash-image)
+- [x] Style reference image support for consistent generation
+- [x] Category-specific style hints (food, emotions, people, etc.)
+- [x] Bulk generation pipeline
+
 ### Design System
 - [x] Dark premium navy theme (5-layer background system)
 - [x] Amber accent system
@@ -107,28 +121,42 @@ Give every nonverbal child a voice — free, forever, on any device.
 - [x] ARASAAC symbol window (white rounded inset for pictograms)
 - [x] Character images with clip-path artifact removal
 - [x] Responsive grid (4-10 columns based on viewport)
+- [x] Responsive symbol cards — labels never cut off on mobile (flex-shrink priority system)
 - [x] Safe area support (iPhone notch/home indicator)
 
 ---
 
 ## What's In Progress
 
+### Symbol Expansion Sprint (BUILT LOCALLY — NOT YET DEPLOYED)
+- [x] 1145 symbols, 66 boards — built and tested locally
+- [x] Dexie migration v6 auto-syncs all defaults on upgrade
+- [x] Dexie migration v7 fixes unsupported emoji (re-syncs all defaults)
+- [x] Culturally diverse food boards (9 cuisine categories)
+- [x] SLP verb+noun phrase patterns across all food boards
+- [x] Routines, Transportation, Technology, Nature boards
+- [x] Emoji compatibility audit — all 1145 symbols render on Android 10+, iOS 13+, Windows 10+
+- [ ] **Deploy to production** (waiting for user go-ahead)
+
 ### Character Art
 - [ ] Medium-light girl character (Priya — South Asian)
-- [ ] More neutral/non-binary characters
+- [ ] 4 more neutral/non-binary characters
 - [ ] Expand character art beyond emotions (body, social, school categories)
 
 ### Symbol Art
-- [ ] Custom icons for Food category (meals, snacks, fruits, vegetables, desserts)
 - [ ] Custom icons for Activities category
 - [ ] Custom icons for Animals category
 - [ ] Custom icons for School category
 
 ### i18n Completion
 - [ ] Wire remaining components with t() calls (OnboardingWizard, VoiceDownloadPrompt, ParentMode, About, etc.)
-- [ ] ARASAAC API language-aware search
 - [ ] TTS voice auto-selection based on language
 - [ ] Community translation contributions (TRANSLATING.md)
+
+### Polish
+- [ ] Replace landing page mockup designs with real app screenshots
+- [x] Fix mobile label cutoff on phone view (flex-shrink priority system)
+- [x] Fix white square emoji on older devices (28 emoji replaced, Dexie migration v7)
 
 ---
 
@@ -201,7 +229,7 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 - Kokoro TTS via Web Worker (on-device AI voice)
 - i18next (multilingual)
 - pako (board sharing compression)
-- ARASAAC API (symbol pictograms, CC BY-NC-SA 4.0)
+- ARASAAC API (static IDs only for ambiguous words; keyword search disabled)
 - Workbox (PWA service worker)
 - GitHub Actions (CI/CD)
 - GitHub Pages (hosting)
@@ -214,8 +242,8 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 - `symbolCache` — keyword → ARASAAC image URL cache (90-day TTL)
 
 ### Key Files
-- `src/data/defaultBoards.ts` — 570+ symbols, 35 boards
-- `src/data/arasaacIds.ts` — Static symbol image lookup (ARASAAC IDs + custom paths)
+- `src/data/defaultBoards.ts` — 1145 symbols, 66 boards
+- `src/data/arasaacIds.ts` — 991 labels all ID=0 (emoji), static ARASAAC IDs for ambiguous words only
 - `src/store/boardStore.ts` — Board/symbol CRUD, navigation, search
 - `src/store/ttsStore.ts` — Voice preferences (persisted)
 - `src/store/characterStore.ts` — Character selection (persisted)
@@ -230,7 +258,7 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 
 | Metric | Target | Current |
 |---|---|---|
-| Symbols | 1000+ | 570+ |
+| Symbols | 1000+ | 1145 ✅ |
 | Characters | 20+ | 14 |
 | Languages | 10 | 10 (5 full, 5 beta) |
 | Custom icon categories | 10+ | 1 (drinks) |
@@ -248,12 +276,13 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 
 ## Manual Tasks Remaining
 
-1. 🧑 Create more character sprite sheets (medium-light girl, more neutral options)
-2. 🧑 Create custom icon sprite sheets for remaining categories (food, animals, school, etc.)
-3. 🧑 Domain DNS configuration (freevoiceaac.app → GitHub Pages)
-4. 🧑 App Store listings (when native apps are built)
-5. 🧑 Outreach to SLP communities, autism parent groups, school districts
-6. 🧑 Submit to AAC resource directories
+1. Create more character sprite sheets (Priya medium-light girl, 4 neutral options)
+2. Create custom icon sprite sheets for remaining categories (animals, school, etc.)
+3. Take real app screenshots for landing page (replace mockup designs)
+4. Deploy symbol expansion sprint to production (say "deploy" when ready)
+5. App Store listings (when native apps are built)
+6. Outreach to SLP communities, autism parent groups, school districts
+7. Submit to AAC resource directories
 
 ---
 

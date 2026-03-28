@@ -406,11 +406,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 4px 6px;
+  gap: 4px;
+  padding: 6px 4px 5px;
   aspect-ratio: 1 / 1;
   width: 100%;
   min-width: 0;
+  min-height: 0;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -441,9 +442,18 @@ body {
 }
 
 .symbol-emoji {
-  font-size: clamp(36px, 9vw, 64px);
+  font-size: clamp(28px, 9vw, 64px);
   line-height: 1;
   z-index: 1;
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+@media (max-width: 400px) {
+  .symbol-card { gap: 2px; padding: 4px 3px 4px; }
+  .symbol-emoji { font-size: clamp(24px, 8vw, 44px); }
+  .symbol-character-img { max-height: 65%; }
+  .symbol-label { font-size: clamp(7px, 1.6vw, 10px); letter-spacing: 0.1px; }
 }
 
 @media (min-width: 900px) {
@@ -452,15 +462,16 @@ body {
 
 /* ARASAAC symbol window — white rounded inset on dark cards */
 .symbol-image-container {
-  width: clamp(52px, 55%, 90px);
-  height: clamp(52px, 55%, 90px);
+  width: clamp(42px, 55%, 90px);
+  height: clamp(42px, 55%, 90px);
   background: rgba(255,255,255,0.92);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 4px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-height: 0;
   z-index: 1;
 }
 
@@ -473,12 +484,14 @@ body {
 /* Character images — full bleed, no white container */
 /* Character sprite images — constrained with clip-path for border artifacts */
 .symbol-character-img {
-  width: clamp(72px, 72%, 110px);
-  height: clamp(72px, 72%, 110px);
+  width: clamp(48px, 68%, 110px);
+  height: auto;
+  max-height: 72%;
   object-fit: contain;
   z-index: 1;
   border-radius: 6px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-height: 0;
   -webkit-clip-path: inset(6px round 4px);
   clip-path: inset(6px round 4px);
 }
@@ -519,18 +532,20 @@ body {
 
 .symbol-label {
   font-family: var(--font-body);
-  font-size: clamp(9px, 1.8vw, 12px);
+  font-size: clamp(8px, 1.8vw, 12px);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: rgba(255,255,255,0.95);
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
   word-break: break-word;
   hyphens: auto;
   max-width: 100%;
+  flex-shrink: 0;
   z-index: 2;
   text-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
+  overflow: visible;
 }
 
 /* Card speak pulse */

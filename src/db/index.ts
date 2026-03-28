@@ -126,6 +126,30 @@ class FreeVoiceDB extends Dexie {
 
       console.log('[Migration v5] Re-synced all default boards and symbols');
     });
+
+    // v6: Symbol expansion sprint — 1145 symbols, 66 boards.
+    // Re-sync all defaults to pick up cultural food boards, routines, etc.
+    this.version(6).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+      await tx.table('symbols').where('id').startsWith('default-').delete();
+      const freshSymbols = getDefaultSymbols();
+      const freshBoards = getDefaultBoards();
+      await tx.table('boards').bulkPut(freshBoards);
+      await tx.table('symbols').bulkPut(freshSymbols);
+      console.log('[Migration v6] Symbol expansion: 1145 symbols, 66 boards');
+    });
+
+    // v7: Fix unsupported emoji — replace Emoji 13-15 codepoints with
+    // universally supported alternatives (Emoji 12.0 and below).
+    this.version(7).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+      await tx.table('symbols').where('id').startsWith('default-').delete();
+      const freshSymbols = getDefaultSymbols();
+      const freshBoards = getDefaultBoards();
+      await tx.table('boards').bulkPut(freshBoards);
+      await tx.table('symbols').bulkPut(freshSymbols);
+      console.log('[Migration v7] Fixed unsupported emoji — all symbols now use Emoji 12.0 or below');
+    });
   }
 }
 

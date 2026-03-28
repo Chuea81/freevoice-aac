@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeVoice Emoji Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#0C1428; --card:#1B2845; --surface:#111827;
+    --amber:#F59E0B; --green:#27AE60; --red:#E11D48; --sky:#4FC3F7;
+    --text:#E2E8F0; --muted:rgba(226,232,240,0.55); --border:rgba(255,255,255,0.08);
+  }
+  body { font-family:'Nunito',sans-serif; background:var(--navy); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* Header */
+  header { padding:14px 24px; background:#060C1A; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; flex-shrink:0; }
+  header h1 { font-size:20px; font-weight:900; color:var(--amber); }
+  header span.sub { font-size:13px; color:var(--muted); font-weight:700; }
+  .header-right { margin-left:auto; display:flex; gap:10px; align-items:center; }
+  .header-link { font-size:12px; color:var(--sky); font-weight:800; text-decoration:none; padding:6px 12px; border:1px solid rgba(79,195,247,0.3); border-radius:8px; }
+  .header-link:hover { background:rgba(79,195,247,0.08); }
+
+  /* Stats bar */
+  .stats-bar { padding:12px 24px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; gap:24px; align-items:center; flex-shrink:0; flex-wrap:wrap; }
+  .stat { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .stat-value { font-size:22px; font-weight:900; }
+  .stat-label { font-size:10px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+  .stat-green .stat-value { color:var(--green); }
+  .stat-red .stat-value { color:var(--red); }
+  .stat-amber .stat-value { color:var(--amber); }
+  .stat-sky .stat-value { color:var(--sky); }
+
+  /* Progress bar */
+  .progress-wrap { flex:1; min-width:120px; display:flex; flex-direction:column; gap:4px; }
+  .progress-bar { height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--green); border-radius:4px; transition:width 0.3s; }
+  .progress-text { font-size:10px; font-weight:800; color:var(--muted); text-align:right; }
+
+  /* Filter bar */
+  .filter-bar { padding:12px 24px; background:#060C1A; border-bottom:1px solid var(--border); display:flex; gap:12px; align-items:center; flex-shrink:0; flex-wrap:wrap; }
+  .filter-bar input, .filter-bar select {
+    background:var(--card); border:1px solid rgba(255,255,255,0.12); border-radius:8px;
+    padding:8px 12px; color:var(--text); font-family:'Nunito',sans-serif; font-size:13px;
+    font-weight:700; outline:none;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color:var(--amber); }
+  .filter-bar input { flex:1; min-width:200px; }
+  .filter-bar select { min-width:140px; }
+  .filter-bar select option { background:var(--card); }
+
+  .btn { padding:8px 16px; border-radius:8px; border:none; font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:6px; }
+  .btn:active { transform:scale(0.97); }
+  .btn-export { background:var(--amber); color:#0C1428; }
+  .btn-claude { background:var(--sky); color:#0C1428; }
+  .btn-claude:hover { background:#81D4FA; }
+  .btn-export:hover { background:#FBBF24; }
+  .copied { background:var(--green) !important; color:white !important; }
+
+  /* Grid */
+  .grid-wrap { flex:1; overflow-y:auto; padding:20px 24px; }
+  .grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));
+    gap:10px;
+  }
+
+  /* Card */
+  .card {
+    background:var(--card); border-radius:14px; padding:10px 6px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    cursor:pointer; user-select:none; transition:all 0.15s;
+    border:2px solid transparent; position:relative;
+  }
+  .card:hover { background:#243152; }
+  .card.selected { outline:2px solid var(--amber); outline-offset:2px; }
+  .card.status-approved { border-color:var(--green); }
+  .card.status-flagged { border-color:var(--red); }
+  .card.status-unreviewed { border-color:transparent; }
+
+  .card-emoji { font-size:48px; line-height:1; }
+  .card-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; text-align:center; color:rgba(255,255,255,0.85); line-height:1.2; word-break:break-word; max-width:100%; }
+  .card-category { font-size:8px; font-weight:700; color:var(--muted); text-align:center; margin-top:-2px; }
+
+  .badge {
+    position:absolute; top:4px; right:4px; width:18px; height:18px;
+    border-radius:50%; font-size:10px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .badge-approved { background:var(--green); color:white; }
+  .badge-flagged { background:var(--red); color:white; }
+
+  /* Keyboard hint */
+  .keyboard-hint { font-size:11px; color:var(--muted); font-weight:700; display:flex; gap:12px; align-items:center; }
+  .kbd { display:inline-block; padding:2px 7px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:4px; font-size:10px; font-weight:800; }
+
+  /* Loading */
+  .loading { display:flex; align-items:center; justify-content:center; flex:1; flex-direction:column; gap:12px; }
+  .spinner { width:32px; height:32px; border:3px solid rgba(255,255,255,0.1); border-top-color:var(--amber); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Empty state */
+  .empty { text-align:center; padding:60px 20px; color:var(--muted); font-weight:700; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🔍 FreeVoice Emoji Audit</h1>
+  <span class="sub">Review every symbol on the actual app background</span>
+  <div class="header-right">
+    <a href="/" class="header-link">Symbol Builder</a>
+  </div>
+</header>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat stat-sky"><span class="stat-value" id="stat-total">-</span><span class="stat-label">Total</span></div>
+  <div class="stat stat-green"><span class="stat-value" id="stat-approved">-</span><span class="stat-label">Approved</span></div>
+  <div class="stat stat-red"><span class="stat-value" id="stat-flagged">-</span><span class="stat-label">Flagged</span></div>
+  <div class="stat stat-amber"><span class="stat-value" id="stat-remaining">-</span><span class="stat-label">Remaining</span></div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text">0%</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <input type="text" id="search" placeholder="Search labels..." autocomplete="off">
+  <select id="filter-category"><option value="">All categories</option></select>
+  <select id="filter-status">
+    <option value="">All statuses</option>
+    <option value="approved">Approved</option>
+    <option value="flagged">Flagged</option>
+    <option value="unreviewed">Unreviewed</option>
+  </select>
+  <button class="btn btn-export" id="btn-export">Export JSON</button>
+  <button class="btn btn-claude" id="btn-claude">Send to Claude Code</button>
+  <div class="keyboard-hint">
+    <span><span class="kbd">&rarr;</span> Approve</span>
+    <span><span class="kbd">&darr;</span> Flag</span>
+    <span><span class="kbd">&larr;</span> Unmark</span>
+  </div>
+</div>
+
+<div class="grid-wrap" id="grid-wrap">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span style="font-weight:700;color:var(--muted)">Loading symbols from defaultBoards.ts...</span>
+  </div>
+  <div class="grid" id="grid" style="display:none"></div>
+  <div class="empty" id="empty" style="display:none">No symbols match your filters.</div>
+</div>
+
+<script>
+const STORAGE_KEY = 'fv_emoji_audit';
+
+let allSymbols = [];
+let boards = {};
+let auditState = {}; // { symbolId: 'approved'|'flagged' }
+let selectedIdx = -1;
+let filteredSymbols = [];
+
+// Load saved state
+try { auditState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { auditState = {}; }
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(auditState));
+}
+
+function getStatus(sym) {
+  return auditState[sym.id] || 'unreviewed';
+}
+
+function cycleStatus(sym) {
+  const cur = getStatus(sym);
+  if (cur === 'unreviewed') auditState[sym.id] = 'approved';
+  else if (cur === 'approved') auditState[sym.id] = 'flagged';
+  else delete auditState[sym.id];
+  saveState();
+}
+
+function setStatus(sym, status) {
+  if (status === 'unreviewed') delete auditState[sym.id];
+  else auditState[sym.id] = status;
+  saveState();
+}
+
+// Stats
+function updateStats() {
+  const total = allSymbols.length;
+  const approved = allSymbols.filter(s => auditState[s.id] === 'approved').length;
+  const flagged = allSymbols.filter(s => auditState[s.id] === 'flagged').length;
+  const remaining = total - approved - flagged;
+  const pct = total > 0 ? Math.round(((approved + flagged) / total) * 100) : 0;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-approved').textContent = approved;
+  document.getElementById('stat-flagged').textContent = flagged;
+  document.getElementById('stat-remaining').textContent = remaining;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = pct + '% reviewed';
+}
+
+// Render
+function render() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const catFilter = document.getElementById('filter-category').value;
+  const statusFilter = document.getElementById('filter-status').value;
+
+  filteredSymbols = allSymbols.filter(sym => {
+    if (search && !sym.label.toLowerCase().includes(search)) return false;
+    if (catFilter && sym.boardId !== catFilter) return false;
+    if (statusFilter && getStatus(sym) !== statusFilter) return false;
+    return true;
+  });
+
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+
+  if (filteredSymbols.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+
+  grid.style.display = '';
+  empty.style.display = 'none';
+
+  grid.innerHTML = filteredSymbols.map((sym, i) => {
+    const status = getStatus(sym);
+    const boardName = boards[sym.boardId] || sym.boardId;
+    const badgeHtml = status === 'approved'
+      ? '<span class="badge badge-approved">&check;</span>'
+      : status === 'flagged'
+      ? '<span class="badge badge-flagged">!</span>'
+      : '';
+    const selectedClass = i === selectedIdx ? ' selected' : '';
+    return `<div class="card status-${status}${selectedClass}" data-idx="${i}" title="${sym.label} (${boardName})">
+      ${badgeHtml}
+      <span class="card-emoji">${sym.emoji}</span>
+      <span class="card-label">${sym.label}</span>
+      <span class="card-category">${boardName}</span>
+    </div>`;
+  }).join('');
+
+  updateStats();
+}
+
+// Click handler
+document.getElementById('grid').addEventListener('click', (e) => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const idx = parseInt(card.dataset.idx);
+  const sym = filteredSymbols[idx];
+  if (!sym) return;
+  selectedIdx = idx;
+  cycleStatus(sym);
+  render();
+  scrollToSelected();
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  // Don't capture when typing in search
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+  if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    if (selectedIdx < 0) selectedIdx = 0;
+    const sym = filteredSymbols[selectedIdx];
+    if (sym) { setStatus(sym, 'approved'); selectedIdx++; if (selectedIdx >= filteredSymbols.length) selectedIdx = filteredSymbols.length - 1; render(); scrollToSelected(); }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (selectedIdx < 0) selectedIdx = 0;
+    const sym = filteredSymbols[selectedIdx];
+    if (sym) { setStatus(sym, 'flagged'); selectedIdx++; if (selectedIdx >= filteredSymbols.length) selectedIdx = filteredSymbols.length - 1; render(); scrollToSelected(); }
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (selectedIdx < 0) selectedIdx = 0;
+    const sym = filteredSymbols[selectedIdx];
+    if (sym) { setStatus(sym, 'unreviewed'); render(); scrollToSelected(); }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    selectedIdx = Math.max(0, selectedIdx - 1);
+    render();
+    scrollToSelected();
+  }
+});
+
+function scrollToSelected() {
+  const card = document.querySelector('.card.selected');
+  if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// Filters
+document.getElementById('search').addEventListener('input', () => { selectedIdx = -1; render(); });
+document.getElementById('filter-category').addEventListener('change', () => { selectedIdx = -1; render(); });
+document.getElementById('filter-status').addEventListener('change', () => { selectedIdx = -1; render(); });
+
+// Export
+document.getElementById('btn-export').addEventListener('click', () => {
+  const issues = allSymbols
+    .filter(s => auditState[s.id] === 'flagged')
+    .map(s => ({ label: s.label, emoji: s.emoji, category: boards[s.boardId] || s.boardId, boardId: s.boardId, status: 'flagged' }));
+
+  const report = {
+    date: new Date().toISOString(),
+    device: navigator.userAgent,
+    total: allSymbols.length,
+    approved: allSymbols.filter(s => auditState[s.id] === 'approved').length,
+    flagged: issues.length,
+    issues,
+  };
+
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'freevoice-emoji-audit.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// Send to Claude Code
+document.getElementById('btn-claude').addEventListener('click', () => {
+  const flagged = allSymbols
+    .filter(s => auditState[s.id] === 'flagged')
+    .map(s => `- ${s.label} (emoji: ${s.emoji}, board: ${boards[s.boardId] || s.boardId}, boardId: ${s.boardId})`);
+
+  if (flagged.length === 0) {
+    alert('No flagged symbols. Flag symbols first by clicking them or pressing Down arrow.');
+    return;
+  }
+
+  const prompt = `Replace these flagged emoji in defaultBoards.ts:\n\n${flagged.join('\n')}\n\nFind a universally supported alternative emoji (Emoji 12.0 or earlier) for each.`;
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.getElementById('btn-claude');
+    btn.classList.add('copied');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Send to Claude Code'; }, 2000);
+  });
+});
+
+// Load data
+async function init() {
+  try {
+    const res = await fetch('/api/symbols-json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Build board name lookup
+    for (const b of data.boards) {
+      boards[b.id] = b.name;
+    }
+
+    // Only keep non-category symbols (actual emoji cards)
+    allSymbols = data.symbols.filter(s => !s.isCategory);
+
+    // Populate category dropdown
+    const catSelect = document.getElementById('filter-category');
+    const seen = new Set();
+    for (const sym of allSymbols) {
+      if (!seen.has(sym.boardId)) {
+        seen.add(sym.boardId);
+        const opt = document.createElement('option');
+        opt.value = sym.boardId;
+        opt.textContent = boards[sym.boardId] || sym.boardId;
+        catSelect.appendChild(opt);
+      }
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    render();
+  } catch (err) {
+    document.getElementById('loading').innerHTML =
+      `<span style="color:var(--red);font-weight:800">Failed to load symbols</span>
+       <span style="color:var(--muted);font-size:12px">${err.message}</span>
+       <span style="color:var(--muted);font-size:11px">Make sure the admin server is running (npm run admin)</span>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -417,7 +417,7 @@ footer a:hover { color: var(--amber); }
         <div class="step-num">3</div>
         <div class="step-content">
           <h3>Start communicating</h3>
-          <p>500+ symbols are ready immediately. Tap any symbol to hear it spoken. Tap multiple symbols to build a sentence, then tap <strong>SPEAK</strong> to say the whole thing.</p>
+          <p>1,090+ symbols are ready immediately. Tap any symbol to hear it spoken. Tap multiple symbols to build a sentence, then tap <strong>SPEAK</strong> to say the whole thing.</p>
           <div class="mini-board">
             <div class="mini-speech">
               <div class="mini-token">🍎 Apple</div>
@@ -546,7 +546,7 @@ footer a:hover { color: var(--amber); }
         <div class="step-num">🏠</div>
         <div class="step-content">
           <h3>Tab Bar — bottom of screen</h3>
-          <p>Jump directly to any main category: <strong>Home, Feelings, Food, Play, My Words</strong>. The active tab is highlighted in amber. My Words is where custom symbols you create live.</p>
+          <p>Jump directly to any main category. FreeVoice has 10 main tabs including <strong>Home, Feelings, Food, Play, Social, School, Body, Places, Routines, and My Words</strong>. The active tab is highlighted in amber. My Words is where custom symbols you create live. Swipe the tab bar to see all categories.</p>
         </div>
       </div>
     </div>
@@ -609,7 +609,7 @@ footer a:hover { color: var(--amber); }
         <div class="feature-row-body">
           <p>Parent Mode locks editing behind a PIN so your child can use the app freely without accidentally changing anything.</p>
           <p><strong>To enter Parent Mode:</strong> Triple-tap the top-right corner of the screen quickly. Enter your PIN (default: 1234).</p>
-          <p><strong>First time:</strong> You'll be prompted to set a new PIN. Choose something you'll remember — there's no recovery option if forgotten (you'd need to clear the app data).</p>
+          <p><strong>First time:</strong> You'll be prompted to set a new PIN. Choose something you'll remember and write it down somewhere safe — if forgotten, recovery requires clearing app data which erases custom boards. See the FAQ for reset instructions. The default PIN before setting one is 1234.</p>
           <p>In Parent Mode you can add symbols, edit boards, record voices, adjust settings, and manage vocabulary filters.</p>
         </div>
       </div>
@@ -636,6 +636,20 @@ footer a:hover { color: var(--amber); }
         <div class="feature-row-body">
           <p>High contrast mode uses dark backgrounds with high-contrast symbols and larger text — designed for users with low vision or those who respond better to reduced visual complexity.</p>
           <p><strong>To enable:</strong> Settings → Card Style → High Contrast.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(245,158,11,0.12)">🧒</div>
+          <div class="fr-text"><h3>Character System</h3><p>Choose a character that looks like your child</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>FreeVoice includes 14 diverse characters — different skin tones, genders, and backgrounds — that appear on the Feelings board. When your child taps "Happy" or "Scared," they see a character that looks like them expressing that emotion.</p>
+          <p><strong>To choose a character:</strong> Settings → Character → browse by skin tone and gender → tap to select. The character appears on all 24 emotion symbols instantly.</p>
+          <p>Characters include: Alex, Jordan, Sofia, Miguel, Amara, Wei, Aiko, Isabella, Kai, Leila, Tariq, Sasha, Elijah, and Lucas — representing a wide range of ethnicities and backgrounds.</p>
+          <p>This was a deliberate design decision: representation matters in AAC. A child should be able to see themselves in their own communication tool.</p>
         </div>
       </div>
 
@@ -782,6 +796,14 @@ footer a:hover { color: var(--amber); }
           <p>This is incredibly meaningful — a family member's voice can speak for the child.</p>
         </div>
       </div>
+
+      <div class="tip-box purple" style="margin-top:24px">
+        <span class="tip-icon">🔤</span>
+        <div class="tip-content">
+          <div class="tip-label">Pronunciation Dictionary</div>
+          <p>If FreeVoice mispronounces a word — a child's name, a nickname, a specific food — you can override it. Settings → Pronunciation → add the word and type how it should sound phonetically. For example: "Abuela" → "ah-BWAY-lah". The corrected pronunciation applies everywhere that word appears.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -826,8 +848,8 @@ footer a:hover { color: var(--amber); }
           <div class="tip-box purple">
             <span class="tip-icon">✨</span>
             <div class="tip-content">
-              <div class="tip-label">Community Boards</div>
-              <p>The FreeVoice community shares pre-made boards for common situations — doctor visits, restaurants, birthday parties, school. Find them at <strong>github.com/Chuea81/freevoice-aac/community-boards</strong>.</p>
+              <div class="tip-label">Community Tip</div>
+              <p>SLPs and families can share boards with each other using the Share Board QR code feature. Ask your child's SLP for their school or therapy boards, or share yours via the QR code link.</p>
             </div>
           </div>
         </div>
@@ -850,9 +872,10 @@ footer a:hover { color: var(--amber); }
         <div class="slp-feat"><span class="sf-icon">🔍</span>Vocabulary Filter — target specific words per session</div>
         <div class="slp-feat"><span class="sf-icon">📊</span>Vocab Level presets — Beginner / Intermediate / Full</div>
         <div class="slp-feat"><span class="sf-icon">📲</span>QR code board sharing — share boards with families instantly</div>
-        <div class="slp-feat"><span class="sf-icon">🌍</span>ARASAAC symbols — 12,000+ free pictograms, CC licensed</div>
+        <div class="slp-feat"><span class="sf-icon">🌍</span>Custom symbol library — 1,090+ illustrated symbols built in, with photo upload for fully personalized boards</div>
         <div class="slp-feat"><span class="sf-icon">🔒</span>Parent/clinician mode — PIN-protected editing</div>
         <div class="slp-feat"><span class="sf-icon">📥</span>JSON export/import — transfer full profiles between devices</div>
+        <div class="slp-feat"><span class="sf-icon">🌍</span>10 languages — English, Spanish, French, German, Portuguese (full), plus Italian, Dutch, Arabic (RTL), Chinese, Japanese (beta)</div>
       </div>
     </div>
 
@@ -868,7 +891,7 @@ footer a:hover { color: var(--amber); }
       <span class="tip-icon">🤝</span>
       <div class="tip-content">
         <div class="tip-label">Contribute</div>
-        <p>SLPs can contribute community boards, request new symbols from ARASAAC, suggest features, and report bugs via GitHub. Your clinical expertise makes FreeVoice better for everyone. See <strong>github.com/Chuea81/freevoice-aac/CONTRIBUTING.md</strong>.</p>
+        <p>SLPs can contribute community boards, suggest new symbols, request features, and report bugs via GitHub. Your clinical expertise makes FreeVoice better for everyone. See <strong>github.com/Chuea81/freevoice-aac/CONTRIBUTING.md</strong>.</p>
       </div>
     </div>
   </div>
@@ -881,6 +904,11 @@ footer a:hover { color: var(--amber); }
     <div style="margin-top:8px">
 
       <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">I forgot my Parent Mode PIN. How do I reset it? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">If you've forgotten your PIN, you can reset it by clearing FreeVoice's local data. <strong>Warning: this will erase all custom boards and symbols.</strong> Export a backup first if possible (Settings → Backup &amp; Restore → Export Backup).<br><br><strong>On iPad (Safari):</strong> iOS Settings → Safari → Advanced → Website Data → search for "freevoiceaac" → swipe to delete.<br><br><strong>On Android (Chrome):</strong> Chrome Settings → Site Settings → All Sites → freevoiceaac.app → Clear &amp; Reset.<br><br><strong>On any browser:</strong> Open DevTools (F12) → Application → Local Storage → freevoiceaac.app → Clear All.<br><br>After clearing, open FreeVoice again. You'll be prompted to set a new PIN on first entry to Parent Mode. The default PIN before you set one is <strong>1234</strong>.<br><br>To avoid this in future: write your PIN in a safe place, or use a memorable number like a birthday.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Will FreeVoice ever cost money? <span class="faq-arrow">▼</span></div>
         <div class="faq-a">No. FreeVoice is free forever, for everyone, anywhere in the world. No subscription, no premium tier, no "free trial." The code is open source (MIT license) and the hosting costs essentially nothing. This commitment is non-negotiable — it was built specifically because other AAC tools charge too much.</div>
       </div>
@@ -888,6 +916,11 @@ footer a:hover { color: var(--amber); }
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">What happens if I get a new iPad? <span class="faq-arrow">▼</span></div>
         <div class="faq-a">Export a backup from Settings → Backup &amp; Restore → Export Backup before switching devices. Save the file to iCloud Drive. On the new iPad, open freevoiceaac.app, go to Settings → Import Backup, and select your file. Everything — custom boards, photos, settings — will be restored. The AI voice download (~80MB) will need to be done again on the new device.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">The AI voice won't download or isn't working. What do I do? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">The AI voice (Kokoro) requires an internet connection for its one-time ~80MB download. Common fixes:<br><br>• <strong>Check your connection</strong> — the download needs a stable WiFi connection. Mobile data may be too slow or restricted.<br>• <strong>Try again later</strong> — the download prompt appears when you first open the app. If you dismissed it, go to Settings → Voice → Download AI Voices.<br>• <strong>Storage space</strong> — make sure your device has at least 200MB free.<br>• <strong>Use the device voice instead</strong> — your device's built-in voice works immediately with no download and sounds great, especially on iPad with Siri voices enabled (iOS Settings → Accessibility → Spoken Content → Voices → English → download Siri Voice 1).<br><br>If the AI voice downloads but sounds distorted, try Settings → Voice → switch to a different voice, then switch back.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -906,8 +939,13 @@ footer a:hover { color: var(--amber); }
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">What's the difference between FreeVoice and TD Snap? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">TD Snap is a commercial AAC app that costs $299/year and requires a subscription to speak. FreeVoice does the same core job — symbol boards, text-to-speech, customizable vocabulary — at zero cost, with no subscription, no account, and no data collection. FreeVoice uses ARASAAC symbols (free, CC licensed) instead of PCS symbols (proprietary). The core communication features are equivalent for most daily AAC users.</div>
+        <div class="faq-q">Can FreeVoice be used at school on a Chromebook? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes — FreeVoice works on any Chromebook with Chrome browser. No installation, no IT approval, no app store. Just open <strong>freevoiceaac.app</strong> in Chrome.<br><br><strong>To install as an app on Chromebook:</strong> Click the install icon in Chrome's address bar (or Chrome menu → Install FreeVoice). It then appears in the app launcher and works offline.<br><br><strong>For school districts:</strong> IT admins can whitelist freevoiceaac.app and push it as a managed Chrome app to student devices. No licensing fees, no per-seat costs, no vendor agreements required.<br><br>FreeVoice also works on Windows laptops, Mac laptops, Android tablets, and any device with a modern browser.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">What's the difference between FreeVoice and paid AAC apps? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Most AAC apps charge $200–$400/year and require a subscription just to let a child speak. FreeVoice does the same core job — 1,090+ symbol boards, text-to-speech, customizable vocabulary — at zero cost, with no subscription, no account, and no data collection. FreeVoice uses emoji and custom illustrated symbols instead of proprietary symbol sets. The core communication features are equivalent for most daily AAC users.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -917,12 +955,17 @@ footer a:hover { color: var(--amber); }
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">The wrong symbol is showing for a word. Can I fix it? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Yes. In Parent Mode, long-press any symbol → Edit → tap the symbol image → search for a replacement using the ARASAAC symbol search, or upload a custom photo. You can also report wrong symbols at <a href="https://github.com/Chuea81/freevoice-aac/issues">github.com/Chuea81/freevoice-aac/issues</a> and we'll fix it in the default boards.</div>
+        <div class="faq-a">Yes. In Parent Mode, long-press any symbol → Edit → tap the symbol image → choose a new emoji or upload a custom photo. You can also report wrong symbols at <a href="https://github.com/Chuea81/freevoice-aac/issues">github.com/Chuea81/freevoice-aac/issues</a> and we'll fix it in the default boards.</div>
       </div>
 
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">Is FreeVoice available in other languages? <span class="faq-arrow">▼</span></div>
-        <div class="faq-a">Spanish support is on the roadmap. ARASAAC natively supports 20+ languages and their symbol library has translations built in. The text-to-speech (Web Speech API) supports any language installed on the device. If you'd like to help translate FreeVoice's UI into another language, contributions are welcome at GitHub.</div>
+        <div class="faq-a">Yes — FreeVoice supports 10 languages right now. Five have full translations: English, Spanish (Español), French (Français), German (Deutsch), and Portuguese (Português). Five are in active beta: Italian, Dutch, Arabic (with full right-to-left layout), Chinese, and Japanese.<br><br>FreeVoice automatically detects your device's language on first load. To change manually: Settings → Language → choose your language.<br><br>Want to help translate FreeVoice into another language? Contributions are welcome at <a href="https://github.com/Chuea81/freevoice-aac">github.com/Chuea81/freevoice-aac</a>.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Does FreeVoice work in Arabic? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes — Arabic is supported in beta with full right-to-left (RTL) layout. The entire app mirrors for RTL reading direction, including the symbol grid, speech bar, and navigation.<br><br><strong>To enable Arabic:</strong> Settings → Language → العربية. The app will reload with RTL layout and Arabic labels.<br><br>Arabic TTS (text-to-speech) uses your device's built-in Arabic voice. Make sure you have an Arabic voice installed in your device's accessibility settings for the best experience.<br><br>The Arabic translation is currently in beta — some labels may not yet be translated. Help improve it at <a href="https://github.com/Chuea81/freevoice-aac">github.com/Chuea81/freevoice-aac</a>.</div>
       </div>
 
     </div>

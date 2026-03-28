@@ -16,6 +16,7 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.static(__dir));
 
 app.get('/', (req, res) => res.sendFile(join(__dir, 'index.html')));
+app.get('/emoji', (req, res) => res.sendFile(join(__dir, 'emoji-audit.html')));
 app.use('/symbols', express.static(join(ROOT, 'public', 'symbols')));
 app.use('/characters', express.static(join(ROOT, 'public', 'characters')));
 
@@ -35,6 +36,25 @@ app.get('/api/boards', async (req, res) => {
     const { getBoardsWithSymbols } = await import('./writer.mjs');
     res.json(await getBoardsWithSymbols());
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Emoji audit — export all symbols as JSON via tsx
+app.get('/api/symbols-json', async (req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    const { writeFileSync, unlinkSync } = await import('fs');
+    const tmpFile = join(ROOT, '_dump_symbols.ts');
+    writeFileSync(tmpFile, `
+      import { getDefaultBoards, getDefaultSymbols } from './src/data/defaultBoards.ts';
+      process.stdout.write(JSON.stringify({ boards: getDefaultBoards(), symbols: getDefaultSymbols() }));
+    `);
+    const json = execSync(`npx tsx "${tmpFile}"`, { cwd: ROOT, maxBuffer: 10 * 1024 * 1024 }).toString();
+    try { unlinkSync(tmpFile); } catch {}
+    res.json(JSON.parse(json));
+  } catch (e) {
+    console.error('symbols-json error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/generate', async (req, res) => {

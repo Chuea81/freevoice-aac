@@ -99,49 +99,115 @@ body {
   66%  { border-radius: 70% 30% 50% 50% / 40% 70% 30% 60%; transform: rotate(240deg); }
 }
 
-/* Floating symbol cards */
-.hero-symbols {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 1;
-  opacity: 0.35;
-}
-
-.float-card {
-  position: absolute;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
+/* Hero badge */
+.hero-badge {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #F59E0B;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  font-family: 'Nunito', sans-serif;
+  animation: fadeDown 0.8s ease both;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #F59E0B;
+  animation: badge-pulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Hero stats bar */
+.hero-stats {
+  display: flex;
   justify-content: center;
-  gap: 5px;
-  padding: 14px 10px;
-  backdrop-filter: blur(4px);
-  animation: floatCard linear infinite;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 40px auto 0;
+  max-width: 560px;
+  animation: fadeUp 0.9s 0.6s ease both;
+}
+.hero-stat {
+  flex: 1;
+  padding: 18px 20px;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.hero-stat:last-child { border-right: none; }
+.hero-stat-n {
+  display: block; font-size: 26px; font-weight: 900;
+  color: #F59E0B; line-height: 1; margin-bottom: 4px;
+  font-family: 'Nunito', sans-serif;
+}
+.hero-stat-l {
+  font-size: 11px; color: rgba(226, 232, 240, 0.4);
+  font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; font-family: 'Nunito', sans-serif;
 }
 
-.float-card .fc-emoji { font-size: 28px; line-height: 1; }
-.float-card .fc-label { font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px; }
-
-.float-card:nth-child(1)  { width:80px; height:80px;  top:8%;   left:4%;   animation-duration:18s; animation-delay:-3s; }
-.float-card:nth-child(2)  { width:90px; height:90px;  top:15%;  right:6%;  animation-duration:22s; animation-delay:-8s; }
-.float-card:nth-child(3)  { width:75px; height:75px;  top:55%;  left:2%;   animation-duration:15s; animation-delay:-1s; }
-.float-card:nth-child(4)  { width:85px; height:85px;  top:70%;  right:4%;  animation-duration:20s; animation-delay:-5s; }
-.float-card:nth-child(5)  { width:70px; height:70px;  top:35%;  left:8%;   animation-duration:25s; animation-delay:-12s; }
-.float-card:nth-child(6)  { width:80px; height:80px;  top:40%;  right:8%;  animation-duration:19s; animation-delay:-7s; }
-.float-card:nth-child(7)  { width:72px; height:72px;  top:82%;  left:15%;  animation-duration:17s; animation-delay:-9s; }
-.float-card:nth-child(8)  { width:88px; height:88px;  top:20%;  left:22%;  animation-duration:23s; animation-delay:-4s; }
-
-@keyframes floatCard {
-  0%   { transform: translateY(0px) rotate(-2deg);   opacity: 0.6; }
-  25%  { transform: translateY(-18px) rotate(1deg);  opacity: 0.9; }
-  50%  { transform: translateY(-8px) rotate(-1deg);  opacity: 0.7; }
-  75%  { transform: translateY(-24px) rotate(2deg);  opacity: 1; }
-  100% { transform: translateY(0px) rotate(-2deg);   opacity: 0.6; }
+/* Hero app preview */
+.hero-app-preview {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 16px;
+  max-width: 580px;
+  margin: 32px auto 0;
+  animation: fadeUp 0.9s 0.7s ease both;
+}
+.hero-speech-bar {
+  background: #1B2845; border-radius: 10px;
+  padding: 10px 14px; display: flex;
+  align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.hero-speech-word {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 6px; padding: 4px 10px;
+  font-size: 13px; font-weight: 800; color: #F59E0B;
+  font-family: 'Nunito', sans-serif;
+}
+.hero-speak-btn {
+  margin-left: auto; background: #F59E0B; color: #0C1428;
+  border: none; border-radius: 8px; padding: 6px 14px;
+  font-size: 12px; font-weight: 900; cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+.hero-symbol-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+}
+.hero-sym {
+  background: #1B2845; border-radius: 10px;
+  padding: 10px 6px 8px; display: flex; flex-direction: column;
+  align-items: center; gap: 5px; border-top: 3px solid transparent;
+}
+.hero-sym.blue   { border-top-color: #3B82F6; }
+.hero-sym.orange { border-top-color: #F97316; }
+.hero-sym.green  { border-top-color: #22C55E; }
+.hero-sym.yellow { border-top-color: #EAB308; }
+.hero-sym.purple { border-top-color: #A855F7; }
+.hero-sym.red    { border-top-color: #EF4444; }
+.hero-sym-e { font-size: 24px; line-height: 1; }
+.hero-sym-l {
+  font-size: 9px; font-weight: 900;
+  color: rgba(226, 232, 240, 0.65); text-transform: uppercase;
+  text-align: center; letter-spacing: 0.3px;
+  font-family: 'Nunito', sans-serif;
+}
+.hero-preview-label {
+  font-size: 11px; color: rgba(226, 232, 240, 0.25);
+  margin-top: 12px; font-weight: 700; text-align: center;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  font-family: 'Nunito', sans-serif;
 }
 
 .hero-inner {
@@ -151,25 +217,7 @@ body {
   text-align: center;
 }
 
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(245,158,11,0.15);
-  border: 1px solid rgba(245,158,11,0.4);
-  border-radius: 100px;
-  padding: 8px 20px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--amber);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  margin-bottom: 36px;
-  animation: fadeDown 0.8s ease both;
-}
-
-.hero-eyebrow::before { content: '●'; font-size: 8px; animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* hero-eyebrow replaced by hero-badge above */
 
 @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:none; } }
 
@@ -1266,8 +1314,11 @@ footer a:hover { color: var(--amber); }
   .feature-showcase, .feature-showcase.flip { direction: ltr; grid-template-columns: 1fr; }
   .about-sc-inner { grid-template-columns: 1fr; }
   .share-cards { grid-template-columns: 1fr; }
-  .float-card:nth-child(n+3) { display: none; }
-  .hero-symbols { opacity: 0.2; }
+  .hero-stat { padding: 14px 12px; }
+  .hero-stat-n { font-size: 20px; }
+  .hero-stat-l { font-size: 10px; }
+  .hero-symbol-grid { grid-template-columns: repeat(4, 1fr); }
+  .hero-sym-e { font-size: 20px; }
   .promise-pillars { grid-template-columns: 1fr; }
   .access-steps { gap: 20px; }
   .step { padding: 20px 16px; }
@@ -1289,19 +1340,11 @@ footer a:hover { color: var(--amber); }
 
 <!-- ══ HERO ══════════════════════════════════════════════════ -->
 <header class="hero">
-  <div class="hero-symbols" aria-hidden="true">
-    <div class="float-card"><span class="fc-emoji">❤️</span><span class="fc-label">Love</span></div>
-    <div class="float-card"><span class="fc-emoji">🍎</span><span class="fc-label">Apple</span></div>
-    <div class="float-card"><span class="fc-emoji">😊</span><span class="fc-label">Happy</span></div>
-    <div class="float-card"><span class="fc-emoji">🏠</span><span class="fc-label">Home</span></div>
-    <div class="float-card"><span class="fc-emoji">🙏</span><span class="fc-label">Please</span></div>
-    <div class="float-card"><span class="fc-emoji">💧</span><span class="fc-label">Water</span></div>
-    <div class="float-card"><span class="fc-emoji">🤗</span><span class="fc-label">Hug</span></div>
-    <div class="float-card"><span class="fc-emoji">⭐</span><span class="fc-label">More</span></div>
-  </div>
-
   <div class="container hero-inner">
-    <div class="hero-eyebrow">Free · Open Source · For Every Child</div>
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Free · Open Source · For Every Child
+    </div>
 
     <h1 class="hero-title">Free<em>Voice</em></h1>
     <p class="hero-tagline">Because communication is a human right,<br>not a subscription service.</p>
@@ -1310,6 +1353,49 @@ footer a:hover { color: var(--amber); }
       <a href="/app/" class="btn-primary">🔊 Open FreeVoice Free</a>
       <a href="#why" class="btn-ghost">Learn Our Story ↓</a>
     </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-n">1,090</span>
+        <span class="hero-stat-l">Symbols</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n">10</span>
+        <span class="hero-stat-l">Languages</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n">14</span>
+        <span class="hero-stat-l">Characters</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-n">$0</span>
+        <span class="hero-stat-l">Forever</span>
+      </div>
+    </div>
+
+    <div class="hero-app-preview">
+      <div class="hero-speech-bar">
+        <span class="hero-speech-word">I</span>
+        <span class="hero-speech-word">want</span>
+        <span class="hero-speech-word">play</span>
+        <button class="hero-speak-btn">🔊 SPEAK</button>
+      </div>
+      <div class="hero-symbol-grid">
+        <div class="hero-sym blue"><span class="hero-sym-e">⚽</span><span class="hero-sym-l">Soccer</span></div>
+        <div class="hero-sym orange"><span class="hero-sym-e">🏀</span><span class="hero-sym-l">Basketball</span></div>
+        <div class="hero-sym green"><span class="hero-sym-e">🎾</span><span class="hero-sym-l">Tennis</span></div>
+        <div class="hero-sym yellow"><span class="hero-sym-e">🐕</span><span class="hero-sym-l">Dog</span></div>
+        <div class="hero-sym purple"><span class="hero-sym-e">🐱</span><span class="hero-sym-l">Cat</span></div>
+        <div class="hero-sym red"><span class="hero-sym-e">🐇</span><span class="hero-sym-l">Bunny</span></div>
+        <div class="hero-sym yellow"><span class="hero-sym-e">😄</span><span class="hero-sym-l">Happy</span></div>
+        <div class="hero-sym blue"><span class="hero-sym-e">😌</span><span class="hero-sym-l">Calm</span></div>
+        <div class="hero-sym orange"><span class="hero-sym-e">🤩</span><span class="hero-sym-l">Excited</span></div>
+        <div class="hero-sym green"><span class="hero-sym-e">✏️</span><span class="hero-sym-l">Pencil</span></div>
+        <div class="hero-sym purple"><span class="hero-sym-e">🎒</span><span class="hero-sym-l">Backpack</span></div>
+        <div class="hero-sym blue"><span class="hero-sym-e">☀️</span><span class="hero-sym-l">Sunny</span></div>
+      </div>
+    </div>
+    <p class="hero-preview-label">1,090 symbols built in · works on any device</p>
   </div>
 
   <div class="hero-scroll" aria-hidden="true">
@@ -1390,7 +1476,7 @@ footer a:hover { color: var(--amber); }
       <div class="story-block reveal reveal-delay-2">
         <span class="story-block-icon">🌍</span>
         <h3>We're Not Stopping</h3>
-        <p>This isn't a charity project or a side experiment. We are building FreeVoice to be a complete, production-grade AAC platform — feature-for-feature what TD Snap does — and releasing every single bit of it for free, forever.</p>
+        <p>This isn't a charity project or a side experiment. We are building FreeVoice to be a complete, production-grade AAC platform — every feature the paid vendors charge hundreds for — and releasing every single bit of it for free, forever.</p>
       </div>
 
       <div class="story-block reveal reveal-delay-3">
