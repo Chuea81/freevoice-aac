@@ -473,8 +473,8 @@ body {
 /* Character images — full bleed, no white container */
 /* Character/custom images — fixed size, clipped edges */
 .symbol-character-img {
-  width: clamp(52px, 58%, 92px);
-  height: clamp(52px, 58%, 92px);
+  width: clamp(72px, 72%, 110px);
+  height: clamp(72px, 72%, 110px);
   object-fit: contain;
   z-index: 1;
   border-radius: 6px;
