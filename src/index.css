@@ -478,15 +478,16 @@ body {
 }
 
 /* Character images — full bleed, no white container */
-/* Character images — contain within top portion, label sits below */
+/* Character/custom images — contain in card, clip outer 4px to hide border artifacts */
 .symbol-character-img {
   width: 85%;
   height: 75%;
   object-fit: contain;
   object-position: center bottom;
   z-index: 1;
-  border-radius: 6px;
+  border-radius: 8px;
   flex-shrink: 0;
+  clip-path: inset(4px round 6px);
 }
 
 /* Legacy .symbol-image for fallback */
