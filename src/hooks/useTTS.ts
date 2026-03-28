@@ -34,7 +34,7 @@ function getWorker(): Worker {
         pendingCallbacks.delete(msg.id);
       }
       if (msg.type === 'LOAD_PROGRESS') {
-        useTTSStore.getState().setKokoroProgress(Math.round(msg.progress * 100));
+        useTTSStore.getState().setKokoroProgress(Math.round(msg.progress));
       }
       if (msg.type === 'LOAD_COMPLETE') {
         useTTSStore.getState().setKokoroStatus('ready');

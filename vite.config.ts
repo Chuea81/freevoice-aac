@@ -23,7 +23,7 @@ export default defineConfig({
       injectRegister: 'auto',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        globIgnores: ['**/tts.worker-*.js', '**/kokoroWorker-*.js', '**/*.wasm', '**/onnx*', '**/*.onnx', '**/kokoro*'],
+        globIgnores: ['**/tts.worker-*.js', '**/kokoroWorker-*.js', '**/*.wasm', '**/*.onnx'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
