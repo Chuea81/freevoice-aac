@@ -93,6 +93,15 @@ export function SymbolGrid({ isParentMode }: Props) {
     setContextSymbol(null);
   }, [contextSymbol, moveSymbolToBoard]);
 
+  const handleAddInside = useCallback(() => {
+    setContextOpen(false);
+    if (contextSymbol?.isCategory && contextSymbol.targetBoardId) {
+      setEditingSymbol(null);
+      setAddToBoardId(contextSymbol.targetBoardId);
+      setModalOpen(true);
+    }
+  }, [contextSymbol]);
+
   const handleDelete = useCallback(async () => {
     if (contextSymbol && confirm(`Remove "${contextSymbol.label}"?`)) {
       await deleteCustomSymbol(contextSymbol.id);
@@ -171,8 +180,10 @@ export function SymbolGrid({ isParentMode }: Props) {
       <SymbolContextMenu
         open={contextOpen}
         label={contextSymbol?.label || ''}
+        isCategory={contextSymbol?.isCategory}
         onEdit={handleEdit}
         onMove={handleMove}
+        onAddInside={handleAddInside}
         onDelete={handleDelete}
         onClose={() => { setContextOpen(false); setContextSymbol(null); }}
       />

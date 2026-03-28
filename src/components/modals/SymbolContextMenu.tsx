@@ -3,13 +3,15 @@ import { useCallback } from 'react';
 interface Props {
   open: boolean;
   label: string;
+  isCategory?: boolean;
   onEdit: () => void;
   onMove: () => void;
   onDelete: () => void;
+  onAddInside?: () => void;
   onClose: () => void;
 }
 
-export function SymbolContextMenu({ open, label, onEdit, onMove, onDelete, onClose }: Props) {
+export function SymbolContextMenu({ open, label, isCategory, onEdit, onMove, onDelete, onAddInside, onClose }: Props) {
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
@@ -20,6 +22,11 @@ export function SymbolContextMenu({ open, label, onEdit, onMove, onDelete, onClo
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="context-menu">
         <h3 className="context-menu-title">{label}</h3>
+        {isCategory && onAddInside && (
+          <button className="context-menu-btn edit" onClick={onAddInside}>
+            ➕ Add symbol inside
+          </button>
+        )}
         <button className="context-menu-btn edit" onClick={onEdit}>
           ✏️ Edit
         </button>
