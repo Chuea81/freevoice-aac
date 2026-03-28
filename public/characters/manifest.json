@@ -77,6 +77,17 @@
       "previewImage": "/characters/preview/char_007.png",
       "supportedCategories": ["emotions"],
       "description": "Asian girl with light skin and straight black hair"
+    },
+    {
+      "id": "char_008",
+      "name": "Isabella",
+      "gender": "girl",
+      "skinTone": "medium",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_008.png",
+      "supportedCategories": ["emotions"],
+      "description": "Latina girl with medium skin and black curly hair"
     }
   ]
 }
