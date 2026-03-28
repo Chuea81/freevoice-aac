@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="How to use FreeVoice AAC — a complete guide for parents, caregivers, and speech-language pathologists. Set up, customize, and get the most from FreeVoice.">
+<title>How to Use FreeVoice AAC — Complete Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --navy:    #0C1428;
+  --card:    #1B2845;
+  --surface: #111827;
+  --amber:   #F59E0B;
+  --gold:    #FCD34D;
+  --green:   #27AE60;
+  --sky:     #4FC3F7;
+  --coral:   #F97316;
+  --rose:    #E11D48;
+  --purple:  #8B5CF6;
+  --teal:    #0D9488;
+  --text:    #E2E8F0;
+  --muted:   rgba(226,232,240,0.6);
+  --dim:     rgba(226,232,240,0.3);
+  --border:  rgba(255,255,255,0.08);
+  --font-d:  'Fraunces', Georgia, serif;
+  --font-b:  'Nunito', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-b);
+  background: var(--navy);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── TOP NAV ── */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(12,20,40,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px clamp(20px,5vw,60px);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.nav-logo { font-family: var(--font-d); font-size: 20px; font-weight: 900; color: var(--amber); text-decoration: none; }
+.nav-logo span { color: var(--text); font-style: italic; }
+.nav-cta {
+  background: var(--amber); color: #1C1400;
+  font-family: var(--font-b); font-size: 14px; font-weight: 900;
+  padding: 10px 22px; border-radius: 100px; text-decoration: none;
+  white-space: nowrap; transition: transform 0.15s;
+}
+.nav-cta:hover { transform: translateY(-2px); }
+.nav-back { color: var(--muted); font-size: 14px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.nav-back:hover { color: var(--text); }
+
+/* ── HERO ── */
+.guide-hero {
+  padding: clamp(60px,10vw,120px) clamp(20px,5vw,60px) clamp(40px,6vw,80px);
+  max-width: 860px; margin: 0 auto; text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 100px; padding: 6px 18px;
+  font-size: 12px; font-weight: 900; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--amber);
+  margin-bottom: 28px;
+}
+.guide-hero h1 {
+  font-family: var(--font-d);
+  font-size: clamp(36px,6vw,72px);
+  font-weight: 900; line-height: 1.05;
+  margin-bottom: 20px; color: var(--text);
+}
+.guide-hero h1 em { font-style: italic; color: var(--amber); }
+.guide-hero p {
+  font-size: clamp(16px,2vw,20px);
+  color: var(--muted); max-width: 600px; margin: 0 auto 40px;
+}
+.time-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.time-badge {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 20px;
+  font-size: 14px; font-weight: 700; color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+}
+.time-badge .tb-icon { font-size: 18px; }
+.time-badge strong { color: var(--text); }
+
+/* ── TABLE OF CONTENTS ── */
+.toc-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 40px clamp(20px,5vw,60px); }
+.toc-inner { max-width: 860px; margin: 0 auto; }
+.toc-label { font-size: 11px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: var(--amber); margin-bottom: 20px; }
+.toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 8px; }
+.toc-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  text-decoration: none; color: var(--muted);
+  font-size: 14px; font-weight: 700;
+  transition: background 0.15s, color 0.15s;
+}
+.toc-item:hover { background: rgba(245,158,11,0.08); color: var(--amber); border-color: rgba(245,158,11,0.2); }
+.toc-num { font-family: var(--font-d); font-size: 18px; font-weight: 900; color: var(--amber); min-width: 24px; }
+
+/* ── PAGE LAYOUT ── */
+.page-body { max-width: 860px; margin: 0 auto; padding: 0 clamp(20px,5vw,60px) 100px; }
+
+/* ── SECTION HEADERS ── */
+.guide-section { margin-top: 80px; }
+.section-number {
+  font-family: var(--font-d); font-size: 13px; font-weight: 700;
+  color: var(--amber); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-number::after { content: ''; flex: 1; height: 1px; background: rgba(245,158,11,0.2); max-width: 60px; }
+.guide-section h2 {
+  font-family: var(--font-d);
+  font-size: clamp(28px,4vw,44px);
+  font-weight: 900; line-height: 1.1;
+  margin-bottom: 12px; color: var(--text);
+}
+.guide-section h2 em { font-style: italic; color: var(--amber); }
+.guide-section .section-intro { font-size: 17px; color: var(--muted); margin-bottom: 36px; line-height: 1.7; }
+
+/* ── STEP CARDS ── */
+.steps { display: flex; flex-direction: column; gap: 16px; }
+.step-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px 28px 28px 24px;
+  display: grid; grid-template-columns: 56px 1fr; gap: 20px;
+  align-items: start; position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.step-card:hover { border-color: rgba(245,158,11,0.25); }
+.step-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--step-color, var(--amber));
+}
+.step-num {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--step-bg, rgba(245,158,11,0.12));
+  border: 1px solid var(--step-border, rgba(245,158,11,0.25));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-d); font-size: 22px; font-weight: 900;
+  color: var(--step-color, var(--amber)); flex-shrink: 0;
+}
+.step-content h3 { font-size: 18px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
+.step-content p { font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+.step-content p:last-child { margin-bottom: 0; }
+.step-content strong { color: var(--text); font-weight: 800; }
+
+/* ── TIP / CALLOUT BOXES ── */
+.tip-box {
+  border-radius: 16px; padding: 20px 24px;
+  margin: 20px 0; display: flex; gap: 16px; align-items: flex-start;
+  border: 1px solid;
+}
+.tip-box.amber { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.25); }
+.tip-box.green  { background: rgba(39,174,96,0.07);  border-color: rgba(39,174,96,0.25); }
+.tip-box.sky    { background: rgba(79,195,247,0.07); border-color: rgba(79,195,247,0.25); }
+.tip-box.rose   { background: rgba(225,29,72,0.07);  border-color: rgba(225,29,72,0.25); }
+.tip-box.purple { background: rgba(139,92,246,0.07); border-color: rgba(139,92,246,0.25); }
+.tip-icon { font-size: 26px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+.tip-content { flex: 1; }
+.tip-content .tip-label { font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.tip-box.amber .tip-label { color: var(--gold); }
+.tip-box.green  .tip-label { color: #86EFAC; }
+.tip-box.sky    .tip-label { color: #7DD3FC; }
+.tip-box.rose   .tip-label { color: #FCA5A5; }
+.tip-box.purple .tip-label { color: #C4B5FD; }
+.tip-content p { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+.tip-content p strong { color: var(--text); font-weight: 800; }
+
+/* ── FEATURE SHOWCASE ── */
+.feature-row {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden; margin-bottom: 16px;
+}
+.feature-row-header {
+  padding: 20px 24px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s;
+}
+.feature-row-header:hover { background: rgba(255,255,255,0.03); }
+.feature-row.open .feature-row-header { border-bottom-color: var(--border); }
+.fr-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.fr-text { flex: 1; }
+.fr-text h3 { font-size: 16px; font-weight: 900; color: var(--text); margin-bottom: 2px; }
+.fr-text p  { font-size: 13px; color: var(--muted); }
+.fr-arrow { color: var(--dim); font-size: 18px; transition: transform 0.2s; }
+.feature-row.open .fr-arrow { transform: rotate(180deg); }
+.feature-row-body { padding: 0 24px; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; }
+.feature-row.open .feature-row-body { max-height: 800px; padding: 20px 24px; }
+.feature-row-body p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 12px; }
+.feature-row-body p:last-child { margin-bottom: 0; }
+.feature-row-body strong { color: var(--text); font-weight: 800; }
+
+/* ── MINI MOCKUP ── */
+.mini-board {
+  background: #111827; border-radius: 16px; padding: 12px;
+  margin: 16px 0; border: 1px solid rgba(255,255,255,0.06);
+}
+.mini-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.mini-card {
+  background: #1B2845; border-radius: 12px; padding: 10px 6px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; border: 1px solid rgba(255,255,255,0.08);
+  position: relative; overflow: hidden;
+}
+.mini-card::before { content: ''; position: absolute; top:0;left:0;right:0; height:2px; background:var(--c,#F59E0B); }
+.mini-card .mc-e { font-size: 24px; line-height: 1; }
+.mini-card .mc-l { font-size: 8px; font-weight: 900; text-transform: uppercase; color: rgba(255,255,255,0.75); letter-spacing: 0.3px; }
+.mini-speech {
+  background: #060C1A; border-radius: 10px; padding: 8px 10px;
+  display: flex; gap: 6px; align-items: center; margin-bottom: 8px;
+}
+.mini-token {
+  background: #1B2845; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 800;
+  color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 3px;
+}
+.mini-speak {
+  background: #27AE60; color: white; border-radius: 8px;
+  padding: 5px 12px; font-size: 10px; font-weight: 900;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* ── CORE WORD BAR DEMO ── */
+.demo-cw-bar {
+  background: #060C1A; border-radius: 10px; padding: 6px 10px;
+  display: flex; gap: 5px; flex-wrap: wrap; margin: 12px 0;
+}
+.demo-cw { border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+.cw-y { background: rgba(251,211,77,0.12); color: #FCD34D; border: 1px solid rgba(251,211,77,0.25); }
+.cw-g { background: rgba(134,239,172,0.10); color: #86EFAC; border: 1px solid rgba(134,239,172,0.2); }
+.cw-b { background: rgba(147,197,253,0.10); color: #93C5FD; border: 1px solid rgba(147,197,253,0.2); }
+
+/* ── FAQ ── */
+.faq-item {
+  border-bottom: 1px solid var(--border); padding: 20px 0;
+}
+.faq-q {
+  font-size: 16px; font-weight: 900; color: var(--text);
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; gap: 16px; user-select: none;
+}
+.faq-q .faq-arrow { color: var(--amber); font-size: 20px; transition: transform 0.2s; flex-shrink: 0; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { font-size: 15px; color: var(--muted); line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin 0.3s ease; }
+.faq-item.open .faq-a { max-height: 400px; margin-top: 12px; }
+.faq-a strong { color: var(--text); font-weight: 800; }
+.faq-a a { color: var(--sky); font-weight: 700; }
+
+/* ── SLP SECTION ── */
+.slp-card {
+  background: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(79,195,247,0.08) 100%);
+  border: 1px solid rgba(139,92,246,0.25); border-radius: 20px;
+  padding: 36px; margin-top: 24px;
+}
+.slp-card h3 { font-family: var(--font-d); font-size: 26px; font-weight: 900; margin-bottom: 12px; }
+.slp-card p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+.slp-features { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+@media(max-width:500px){ .slp-features{grid-template-columns:1fr;} }
+.slp-feat {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; padding: 14px 16px;
+  font-size: 14px; font-weight: 700; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.slp-feat .sf-icon { font-size: 20px; flex-shrink: 0; }
+
+/* ── BOTTOM CTA ── */
+.bottom-cta {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: clamp(60px,8vw,100px) clamp(20px,5vw,60px);
+  text-align: center;
+}
+.bottom-cta h2 { font-family: var(--font-d); font-size: clamp(32px,5vw,56px); font-weight: 900; margin-bottom: 16px; }
+.bottom-cta h2 em { font-style: italic; color: var(--amber); }
+.bottom-cta p { font-size: 18px; color: var(--muted); max-width: 560px; margin: 0 auto 40px; }
+.cta-group { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--amber); color: #1C1400;
+  font-family: var(--font-b); font-size: 17px; font-weight: 900;
+  padding: 18px 36px; border-radius: 100px; text-decoration: none;
+  transition: transform 0.15s;
+}
+.btn-primary:hover { transform: translateY(-3px); }
+.btn-ghost {
+  background: transparent; border: 1.5px solid rgba(255,255,255,0.2);
+  color: var(--text); font-family: var(--font-b); font-size: 16px;
+  font-weight: 700; padding: 18px 32px; border-radius: 100px;
+  text-decoration: none; transition: border-color 0.15s;
+}
+.btn-ghost:hover { border-color: rgba(255,255,255,0.45); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--navy); border-top: 1px solid var(--border);
+  padding: 40px clamp(20px,5vw,60px); text-align: center;
+}
+footer p { font-size: 13px; color: var(--dim); font-weight: 700; }
+footer a { color: rgba(255,255,255,0.3); text-decoration: none; }
+footer a:hover { color: var(--amber); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .step-card { grid-template-columns: 1fr; }
+  .step-num { width: 40px; height: 40px; font-size: 18px; }
+  .slp-features { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-back">← Back</a>
+  <a href="/" class="nav-logo">Free<span>Voice</span></a>
+  <a href="/app" class="nav-cta">🔊 Open App</a>
+</nav>
+
+<!-- HERO -->
+<div class="guide-hero">
+  <div class="hero-eyebrow">📖 Complete Guide</div>
+  <h1>Everything you need to<br>get started with <em>FreeVoice</em></h1>
+  <p>A step-by-step guide for parents, caregivers, and speech-language pathologists. No experience needed.</p>
+  <div class="time-badges">
+    <div class="time-badge"><span class="tb-icon">⚡</span><span>First words in <strong>under 1 minute</strong></span></div>
+    <div class="time-badge"><span class="tb-icon">📱</span><span>Install to home screen in <strong>2 minutes</strong></span></div>
+    <div class="time-badge"><span class="tb-icon">🎨</span><span>Fully customized in <strong>under 30 minutes</strong></span></div>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc-section">
+  <div class="toc-inner">
+    <div class="toc-label">In This Guide</div>
+    <div class="toc-grid">
+      <a href="#getting-started" class="toc-item"><span class="toc-num">1</span> Getting Started</a>
+      <a href="#install"         class="toc-item"><span class="toc-num">2</span> Installing on iPad</a>
+      <a href="#first-use"       class="toc-item"><span class="toc-num">3</span> First Communication</a>
+      <a href="#features"        class="toc-item"><span class="toc-num">4</span> All Features</a>
+      <a href="#customize"       class="toc-item"><span class="toc-num">5</span> Customizing Boards</a>
+      <a href="#voices"          class="toc-item"><span class="toc-num">6</span> Setting Up Voices</a>
+      <a href="#backup"          class="toc-item"><span class="toc-num">7</span> Backup & Sharing</a>
+      <a href="#slp"             class="toc-item"><span class="toc-num">8</span> For SLPs</a>
+      <a href="#faq"             class="toc-item"><span class="toc-num">9</span> FAQ</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-body">
+
+  <!-- ══ SECTION 1: GETTING STARTED ══ -->
+  <div class="guide-section reveal" id="getting-started">
+    <div class="section-number">Section 1</div>
+    <h2>Getting <em>Started</em></h2>
+    <p class="section-intro">FreeVoice works instantly in any browser — no download, no account, no payment. Here's how to open it for the first time.</p>
+
+    <div class="steps">
+      <div class="step-card reveal" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Open your browser</h3>
+          <p>On an iPad, use <strong>Safari</strong>. On Android, use <strong>Chrome</strong>. On a computer, any modern browser works.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#4FC3F7;--step-bg:rgba(79,195,247,0.1);--step-border:rgba(79,195,247,0.25)">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Go to freevoiceaac.app</h3>
+          <p>Type <strong>freevoiceaac.app</strong> in the address bar and tap Go. The app loads immediately — no waiting, no signup.</p>
+          <div class="tip-box amber">
+            <span class="tip-icon">💡</span>
+            <div class="tip-content">
+              <div class="tip-label">First Load</div>
+              <p>The first time you open FreeVoice it needs an internet connection to load. After that it works completely offline.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#27AE60;--step-bg:rgba(39,174,96,0.1);--step-border:rgba(39,174,96,0.25)">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Start communicating</h3>
+          <p>500+ symbols are ready immediately. Tap any symbol to hear it spoken. Tap multiple symbols to build a sentence, then tap <strong>SPEAK</strong> to say the whole thing.</p>
+          <div class="mini-board">
+            <div class="mini-speech">
+              <div class="mini-token">🍎 Apple</div>
+              <div class="mini-token">🙏 Please</div>
+              <div class="mini-speak">🔊 SPEAK</div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini-card" style="--c:#F59E0B"><span class="mc-e">😊</span><span class="mc-l">Happy</span></div>
+              <div class="mini-card" style="--c:#4FC3F7"><span class="mc-e">🍎</span><span class="mc-l">Food</span></div>
+              <div class="mini-card" style="--c:#81C784"><span class="mc-e">⚽</span><span class="mc-l">Play</span></div>
+              <div class="mini-card" style="--c:#CE93D8"><span class="mc-e">💬</span><span class="mc-l">Social</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 2: INSTALL ══ -->
+  <div class="guide-section reveal" id="install">
+    <div class="section-number">Section 2</div>
+    <h2>Installing on <em>iPad</em></h2>
+    <p class="section-intro">Adding FreeVoice to your home screen makes it behave exactly like a native app — full screen, works offline, opens instantly from an icon.</p>
+
+    <div class="tip-box green">
+      <span class="tip-icon">✅</span>
+      <div class="tip-content">
+        <div class="tip-label">Why Install?</div>
+        <p>Once installed to the home screen, FreeVoice opens full-screen with no browser address bar, works with no internet connection, and looks and feels like a dedicated device.</p>
+      </div>
+    </div>
+
+    <div class="steps" style="margin-top:24px">
+      <div class="step-card reveal" style="--step-color:#F97316;--step-bg:rgba(249,115,22,0.1);--step-border:rgba(249,115,22,0.25)">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Open in Safari on iPad</h3>
+          <p>FreeVoice must be opened in <strong>Safari</strong> to install on an iPad. If you're using Chrome or another browser, copy the URL and paste it into Safari.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Tap the Share button</h3>
+          <p>At the bottom of Safari, tap the <strong>Share button</strong> — it looks like a box with an arrow pointing up <strong>⎙</strong>. It's in the toolbar at the top or bottom of the browser.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#27AE60;--step-bg:rgba(39,174,96,0.1);--step-border:rgba(39,174,96,0.25)">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Tap "Add to Home Screen"</h3>
+          <p>Scroll down in the Share menu and tap <strong>"Add to Home Screen"</strong>. Confirm the name "FreeVoice" and tap <strong>Add</strong>.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-3" style="--step-color:#4FC3F7;--step-bg:rgba(79,195,247,0.1);--step-border:rgba(79,195,247,0.25)">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Open from your home screen</h3>
+          <p>The FreeVoice icon now appears on your iPad home screen. Tap it to open the app in full-screen mode. It works just like a real app — even offline.</p>
+          <div class="tip-box sky">
+            <span class="tip-icon">🤖</span>
+            <div class="tip-content">
+              <div class="tip-label">Android</div>
+              <p>On Android with Chrome, tap the <strong>three-dot menu → Add to Home Screen</strong>. Same result — full-screen app icon on your home screen.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 3: FIRST USE ══ -->
+  <div class="guide-section reveal" id="first-use">
+    <div class="section-number">Section 3</div>
+    <h2>Your child's <em>first communication</em></h2>
+    <p class="section-intro">Understanding how FreeVoice is laid out helps you guide your child. Here's every part of the screen explained.</p>
+
+    <div class="steps">
+      <div class="step-card reveal" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">🔊</div>
+        <div class="step-content">
+          <h3>Speech Bar — top of screen</h3>
+          <p>As your child taps symbols, they appear here as chips. When they've built a message, tap <strong>SPEAK</strong> to read the whole sentence aloud. <strong>UNDO</strong> removes the last word. <strong>CLEAR</strong> (hold for half a second) resets everything.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#FCD34D;--step-bg:rgba(252,211,77,0.1);--step-border:rgba(252,211,77,0.25)">
+        <div class="step-num">⚡</div>
+        <div class="step-content">
+          <h3>Fast Phrases — quick strip below speech bar</h3>
+          <p>Single-tap phrases like <strong>"I need help"</strong>, <strong>"Wait please"</strong>, and <strong>"I'm done"</strong> that speak immediately without building a sentence. Great for urgent or frequent messages. Scrolls left and right.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#86EFAC;--step-bg:rgba(134,239,172,0.08);--step-border:rgba(134,239,172,0.2)">
+        <div class="step-num">📝</div>
+        <div class="step-content">
+          <h3>Core Word Bar — always visible</h3>
+          <p>The most important words in any language — <strong>I, want, go, more, stop, help, yes, no</strong> — are always visible here, color-coded by word type. Yellow = pronouns. Green = verbs. Blue = descriptors. This is based on the Fitzgerald Key system used by SLPs worldwide.</p>
+          <div class="demo-cw-bar">
+            <span class="demo-cw cw-y">I</span>
+            <span class="demo-cw cw-y">YOU</span>
+            <span class="demo-cw cw-g">WANT</span>
+            <span class="demo-cw cw-g">GO</span>
+            <span class="demo-cw cw-g">GET</span>
+            <span class="demo-cw cw-b">THIS</span>
+            <span class="demo-cw cw-b">THAT</span>
+            <span class="demo-cw cw-g">MORE</span>
+            <span class="demo-cw cw-g">STOP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card reveal" style="--step-color:#4FC3F7;--step-bg:rgba(79,195,247,0.08);--step-border:rgba(79,195,247,0.2)">
+        <div class="step-num">🎯</div>
+        <div class="step-content">
+          <h3>Symbol Grid — the main board</h3>
+          <p>The large grid of symbol cards. Tap any symbol to hear it and add it to the speech bar. Cards with a small <strong>▶</strong> in the corner are categories — tapping them takes you deeper. Use the breadcrumb bar below the core words to navigate back.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#CE93D8;--step-bg:rgba(206,147,216,0.08);--step-border:rgba(206,147,216,0.2)">
+        <div class="step-num">🏠</div>
+        <div class="step-content">
+          <h3>Tab Bar — bottom of screen</h3>
+          <p>Jump directly to any main category: <strong>Home, Feelings, Food, Play, My Words</strong>. The active tab is highlighted in amber. My Words is where custom symbols you create live.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 4: FEATURES ══ -->
+  <div class="guide-section reveal" id="features">
+    <div class="section-number">Section 4</div>
+    <h2>All <em>Features</em></h2>
+    <p class="section-intro">Tap any feature to learn more about it.</p>
+
+    <div id="features-list">
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(245,158,11,0.12)">🔊</div>
+          <div class="fr-text"><h3>AI Voice (Kokoro)</h3><p>Natural, human-sounding speech — no robot voice</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>FreeVoice includes an AI voice model called <strong>Kokoro</strong> that runs entirely on your device. It sounds like a real human — warm, clear, and natural. This is the same quality you'd pay hundreds of dollars a year for elsewhere.</p>
+          <p><strong>First use:</strong> A prompt will appear asking if you want to download the AI voices (~80MB, one time only). Tap "Download Free Voices." After it downloads it works offline forever.</p>
+          <p><strong>If you skip it:</strong> FreeVoice uses your device's built-in voice instead, which works fine and is also completely free.</p>
+          <p><strong>On iPad (iOS 17+):</strong> If you've set up Apple Personal Voice in your device settings (Accessibility → Personal Voice), FreeVoice will detect it automatically and offer it as a voice option. This lets the app speak in a voice recorded from a family member.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(39,174,96,0.12)">📡</div>
+          <div class="fr-text"><h3>Works Offline</h3><p>No internet needed after first load</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>After the first load, FreeVoice works with <strong>zero internet connection</strong>. On airplanes. In hospitals. In areas with no signal. Anywhere.</p>
+          <p>All symbols, boards, custom words, and voice settings are stored on the device. Nothing is sent to any server.</p>
+          <p><strong>Note:</strong> If you use the AI voice (Kokoro), it needs to download once (~80MB) before it works offline. After that download, even the AI voice works offline.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(79,195,247,0.12)">🗣️</div>
+          <div class="fr-text"><h3>Record Family Voices</h3><p>Assign a parent's or sibling's real voice to any symbol</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>Any symbol can be assigned a real recorded voice — mom's voice saying "I love you", a sibling saying a nickname, a teacher saying a common phrase. This is one of the most meaningful features in AAC.</p>
+          <p><strong>How to record:</strong> Enter Parent Mode → long-press any symbol → tap Edit → tap the microphone icon → record → save. The recording plays instead of the AI voice for that specific symbol.</p>
+          <p>Recordings are stored privately on your device and are never sent anywhere.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(139,92,246,0.12)">🔒</div>
+          <div class="fr-text"><h3>Parent Mode</h3><p>PIN-locked editing so children can't change their boards</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>Parent Mode locks editing behind a PIN so your child can use the app freely without accidentally changing anything.</p>
+          <p><strong>To enter Parent Mode:</strong> Triple-tap the top-right corner of the screen quickly. Enter your PIN (default: 1234).</p>
+          <p><strong>First time:</strong> You'll be prompted to set a new PIN. Choose something you'll remember — there's no recovery option if forgotten (you'd need to clear the app data).</p>
+          <p>In Parent Mode you can add symbols, edit boards, record voices, adjust settings, and manage vocabulary filters.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(249,115,22,0.12)">🔍</div>
+          <div class="fr-text"><h3>Vocabulary Filter</h3><p>Show or hide symbols for therapy sessions</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>Speech-language pathologists use this feature to focus on specific vocabulary during sessions. You can hide symbols without deleting them, then show them again when ready.</p>
+          <p><strong>How it works:</strong> In Parent Mode, tap any symbol to toggle it hidden or visible. Hidden symbols are greyed out in edit mode and completely invisible in use mode.</p>
+          <p>You can save named Vocab Lists — for example "Therapy Week 4" or "School Words" — and switch between them. Great for targeting specific communication goals.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(13,148,136,0.12)">🎨</div>
+          <div class="fr-text"><h3>High Contrast Mode</h3><p>For users with visual impairments or sensory sensitivities</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>High contrast mode uses dark backgrounds with high-contrast symbols and larger text — designed for users with low vision or those who respond better to reduced visual complexity.</p>
+          <p><strong>To enable:</strong> Settings → Card Style → High Contrast.</p>
+        </div>
+      </div>
+
+      <div class="feature-row" onclick="toggleFeature(this)">
+        <div class="feature-row-header">
+          <div class="fr-icon" style="background:rgba(225,29,72,0.12)">👂</div>
+          <div class="fr-text"><h3>Auditory Touch</h3><p>Hear the symbol label before it activates</p></div>
+          <span class="fr-arrow">▼</span>
+        </div>
+        <div class="feature-row-body">
+          <p>When Auditory Touch is on, touching a symbol speaks its label aloud. A second tap activates it. This helps users with motor uncertainty who tap cautiously — they can hear what they're about to select before committing.</p>
+          <p><strong>To enable:</strong> Settings → Accessibility → Auditory Touch.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ SECTION 5: CUSTOMIZE ══ -->
+  <div class="guide-section reveal" id="customize">
+    <div class="section-number">Section 5</div>
+    <h2>Customizing <em>Your Child's Board</em></h2>
+    <p class="section-intro">Every child is different. Personalize FreeVoice with photos, custom words, favorite foods, and family names.</p>
+
+    <div class="steps">
+      <div class="step-card reveal" style="--step-color:#8B5CF6;--step-bg:rgba(139,92,246,0.1);--step-border:rgba(139,92,246,0.25)">
+        <div class="step-num">🔒</div>
+        <div class="step-content">
+          <h3>Enter Parent Mode first</h3>
+          <p>Triple-tap the top-right corner quickly and enter your PIN. You'll see an amber border appear around the app — that means you're in editing mode.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">➕</div>
+        <div class="step-content">
+          <h3>Add a symbol to any board</h3>
+          <p>Navigate to any board (Food, Feelings, School, etc.) while in Parent Mode. You'll see an <strong>Add Symbol ＋</strong> card at the end of the grid. Tap it to add a new symbol directly to that board.</p>
+          <p>For example: tap the Food tab, scroll to the end, tap Add Symbol, choose an emoji or photo, type "Pizza" — and pizza appears in the Food board.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#27AE60;--step-bg:rgba(39,174,96,0.1);--step-border:rgba(39,174,96,0.25)">
+        <div class="step-num">📸</div>
+        <div class="step-content">
+          <h3>Add a photo symbol</h3>
+          <p>The most powerful customization. Add a photo of grandma, the family dog, a favorite snack, or your child's school bus. Real photos make communication more meaningful and faster to recognize.</p>
+          <p><strong>How to:</strong> Tap Add Symbol → tap the camera icon → choose from your Camera Roll → crop → enter the label and phrase → Save.</p>
+          <div class="tip-box amber">
+            <span class="tip-icon">💡</span>
+            <div class="tip-content">
+              <div class="tip-label">Best Practice</div>
+              <p>Add photos of <strong>people</strong> your child communicates with most — parents, siblings, teachers, grandparents. Hearing "Grandma" is far more motivating than a generic "person" symbol.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card reveal" style="--step-color:#4FC3F7;--step-bg:rgba(79,195,247,0.1);--step-border:rgba(79,195,247,0.25)">
+        <div class="step-num">↔️</div>
+        <div class="step-content">
+          <h3>Move symbols between boards</h3>
+          <p>In Parent Mode, <strong>long-press any custom symbol</strong> for half a second. A menu appears with Edit, Move to Board, and Delete options.</p>
+          <p>Tap "Move to Board" → select the destination board → the symbol moves there immediately.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#F97316;--step-bg:rgba(249,115,22,0.1);--step-border:rgba(249,115,22,0.25)">
+        <div class="step-num">🎨</div>
+        <div class="step-content">
+          <h3>Set skin tone</h3>
+          <p>One tap applies your chosen skin tone to every human symbol in the app. Settings → Skin Tone → choose from 6 options. It updates every symbol immediately.</p>
+          <p>Representation matters — this was a deliberate first-class feature, not an afterthought.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 6: VOICES ══ -->
+  <div class="guide-section reveal" id="voices">
+    <div class="section-number">Section 6</div>
+    <h2>Setting Up <em>Voices</em></h2>
+    <p class="section-intro">FreeVoice has three voice options, from instant device voices to natural AI voices — all completely free.</p>
+
+    <div class="steps">
+      <div class="step-card reveal" style="--step-color:#27AE60;--step-bg:rgba(39,174,96,0.1);--step-border:rgba(39,174,96,0.25)">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Device Voice (works immediately)</h3>
+          <p>FreeVoice uses your device's built-in text-to-speech voice by default. On iPad this is quite good — especially the Siri voices. No setup needed, works instantly.</p>
+          <p><strong>To improve device voice quality on iPad:</strong> iOS Settings → Accessibility → Spoken Content → Voices → English → download Siri Voice 1 or 2 for the best quality.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>AI Voice — Kokoro (recommended)</h3>
+          <p>When you first open FreeVoice, a prompt appears asking to download AI voices. Tap <strong>"Download Free Voices"</strong> and wait for the ~80MB download. This is a one-time download that works offline forever after.</p>
+          <p>Nine voice options are available: Heart (warmest, recommended for children), Bella, Sky, Sarah, Nicole, Adam, Michael, Emma, George. Change voices in Settings → Voice.</p>
+          <div class="tip-box green">
+            <span class="tip-icon">⭐</span>
+            <div class="tip-content">
+              <div class="tip-label">Recommended</div>
+              <p><strong>"Heart"</strong> is the default AI voice — warm, gentle, and natural. It's specifically the best choice for a child's primary AAC voice.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#4FC3F7;--step-bg:rgba(79,195,247,0.1);--step-border:rgba(79,195,247,0.25)">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Apple Personal Voice (iOS 17+ only)</h3>
+          <p>Apple lets you record 150 phrases and create a voice that sounds like you — completely on-device, completely private. If you've set this up, FreeVoice detects it automatically and shows it in the voice selector.</p>
+          <p><strong>To set up Personal Voice:</strong> iOS Settings → Accessibility → Personal Voice → Create a Personal Voice. Takes about 15 minutes to record phrases. Processing takes a few hours.</p>
+          <p>This is incredibly meaningful — a family member's voice can speak for the child.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 7: BACKUP ══ -->
+  <div class="guide-section reveal" id="backup">
+    <div class="section-number">Section 7</div>
+    <h2>Backup &amp; <em>Sharing Boards</em></h2>
+    <p class="section-intro">Your child's custom boards are precious. Here's how to back them up and share them with therapists, teachers, and other devices.</p>
+
+    <div class="tip-box rose">
+      <span class="tip-icon">⚠️</span>
+      <div class="tip-content">
+        <div class="tip-label">Important</div>
+        <p><strong>Back up regularly.</strong> FreeVoice stores everything locally on your device. If you clear your browser data or get a new device without restoring a backup, custom boards and symbols will be lost. We recommend backing up monthly.</p>
+      </div>
+    </div>
+
+    <div class="steps" style="margin-top:24px">
+      <div class="step-card reveal" style="--step-color:#F59E0B;--step-bg:rgba(245,158,11,0.1);--step-border:rgba(245,158,11,0.25)">
+        <div class="step-num">💾</div>
+        <div class="step-content">
+          <h3>Back up your boards (Export)</h3>
+          <p>Settings → Backup &amp; Restore → <strong>Export Backup</strong>. A JSON file downloads to your device containing all your boards, symbols, and settings — including any photos you've added.</p>
+          <p><strong>Save it to iCloud Drive or Google Drive</strong> so you can restore it on any device.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-1" style="--step-color:#27AE60;--step-bg:rgba(39,174,96,0.1);--step-border:rgba(39,174,96,0.25)">
+        <div class="step-num">📥</div>
+        <div class="step-content">
+          <h3>Restore a backup (Import)</h3>
+          <p>Settings → Backup &amp; Restore → <strong>Import Backup</strong>. Select your backup JSON file. FreeVoice will automatically create a backup of your current data first, then restore the imported boards.</p>
+        </div>
+      </div>
+
+      <div class="step-card reveal reveal-delay-2" style="--step-color:#8B5CF6;--step-bg:rgba(139,92,246,0.1);--step-border:rgba(139,92,246,0.25)">
+        <div class="step-num">📲</div>
+        <div class="step-content">
+          <h3>Share a single board via QR code</h3>
+          <p>In Parent Mode, tap <strong>"Share Board"</strong> on any board. A QR code appears that anyone can scan to import that board into their own FreeVoice.</p>
+          <p>Perfect for SLPs sharing a Doctor Visit board with multiple families, or teachers sharing a School board with parents. The board opens instantly when the link is tapped.</p>
+          <div class="tip-box purple">
+            <span class="tip-icon">✨</span>
+            <div class="tip-content">
+              <div class="tip-label">Community Boards</div>
+              <p>The FreeVoice community shares pre-made boards for common situations — doctor visits, restaurants, birthday parties, school. Find them at <strong>github.com/Chuea81/freevoice-aac/community-boards</strong>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 8: SLP ══ -->
+  <div class="guide-section reveal" id="slp">
+    <div class="section-number">Section 8</div>
+    <h2>For <em>Speech-Language Pathologists</em></h2>
+    <p class="section-intro">FreeVoice is designed to support evidence-based AAC practice. Here's everything relevant to clinical use.</p>
+
+    <div class="slp-card reveal">
+      <h3>🩺 Clinical Features</h3>
+      <p>FreeVoice implements the core vocabulary and Fitzgerald Key conventions that SLPs rely on, alongside practical tools for session management.</p>
+      <div class="slp-features">
+        <div class="slp-feat"><span class="sf-icon">🎯</span>Core word strategy — high-frequency words always accessible</div>
+        <div class="slp-feat"><span class="sf-icon">🎨</span>Fitzgerald Key color coding — pronouns, verbs, nouns, descriptors</div>
+        <div class="slp-feat"><span class="sf-icon">🔍</span>Vocabulary Filter — target specific words per session</div>
+        <div class="slp-feat"><span class="sf-icon">📊</span>Vocab Level presets — Beginner / Intermediate / Full</div>
+        <div class="slp-feat"><span class="sf-icon">📲</span>QR code board sharing — share boards with families instantly</div>
+        <div class="slp-feat"><span class="sf-icon">🌍</span>ARASAAC symbols — 12,000+ free pictograms, CC licensed</div>
+        <div class="slp-feat"><span class="sf-icon">🔒</span>Parent/clinician mode — PIN-protected editing</div>
+        <div class="slp-feat"><span class="sf-icon">📥</span>JSON export/import — transfer full profiles between devices</div>
+      </div>
+    </div>
+
+    <div class="tip-box sky" style="margin-top:24px">
+      <span class="tip-icon">📋</span>
+      <div class="tip-content">
+        <div class="tip-label">For IEP Teams</div>
+        <p>FreeVoice is free, runs on any device the school already has (iPad, Chromebook, Windows laptop), and requires no IT approval or app store purchase. Share the URL <strong>freevoiceaac.app</strong> and it works immediately on any device in the building.</p>
+      </div>
+    </div>
+
+    <div class="tip-box green" style="margin-top:16px">
+      <span class="tip-icon">🤝</span>
+      <div class="tip-content">
+        <div class="tip-label">Contribute</div>
+        <p>SLPs can contribute community boards, request new symbols from ARASAAC, suggest features, and report bugs via GitHub. Your clinical expertise makes FreeVoice better for everyone. See <strong>github.com/Chuea81/freevoice-aac/CONTRIBUTING.md</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION 9: FAQ ══ -->
+  <div class="guide-section reveal" id="faq">
+    <div class="section-number">Section 9</div>
+    <h2>Frequently Asked <em>Questions</em></h2>
+
+    <div style="margin-top:8px">
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Will FreeVoice ever cost money? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">No. FreeVoice is free forever, for everyone, anywhere in the world. No subscription, no premium tier, no "free trial." The code is open source (MIT license) and the hosting costs essentially nothing. This commitment is non-negotiable — it was built specifically because other AAC tools charge too much.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">What happens if I get a new iPad? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Export a backup from Settings → Backup &amp; Restore → Export Backup before switching devices. Save the file to iCloud Drive. On the new iPad, open freevoiceaac.app, go to Settings → Import Backup, and select your file. Everything — custom boards, photos, settings — will be restored. The AI voice download (~80MB) will need to be done again on the new device.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Does FreeVoice work without internet? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes — completely. After the first load, FreeVoice works with zero internet. On airplanes, in hospitals, in remote areas. All symbols and boards are stored locally. The AI voice model works offline after its one-time download. Nothing requires a server connection during daily use.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Is my child's data private? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Completely. FreeVoice collects <strong>zero data</strong>. No accounts, no tracking, no analytics, no advertising. Everything — boards, custom symbols, audio recordings, settings — is stored exclusively on your device. Nothing is ever sent to any server. If you delete the app, everything is gone. We have no copy of anything.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Can multiple children use FreeVoice on the same device? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Multiple profile support is coming in a future update. Currently FreeVoice supports one active profile per browser/device. As a workaround, you can use different browsers (Safari and Chrome on the same iPad maintain separate data) or export/import board profiles to switch between users.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">What's the difference between FreeVoice and TD Snap? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">TD Snap is a commercial AAC app that costs $299/year and requires a subscription to speak. FreeVoice does the same core job — symbol boards, text-to-speech, customizable vocabulary — at zero cost, with no subscription, no account, and no data collection. FreeVoice uses ARASAAC symbols (free, CC licensed) instead of PCS symbols (proprietary). The core communication features are equivalent for most daily AAC users.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Can an SLP set up boards and share them with a family? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes — this is one of the best use cases. Set up a customized board on your device, then use <strong>Share Board</strong> (in Parent Mode on any board) to generate a QR code or link. The family scans the QR code on their device and the board imports instantly. You can also export a full profile JSON and send it via email or messaging app.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">The wrong symbol is showing for a word. Can I fix it? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes. In Parent Mode, long-press any symbol → Edit → tap the symbol image → search for a replacement using the ARASAAC symbol search, or upload a custom photo. You can also report wrong symbols at <a href="https://github.com/Chuea81/freevoice-aac/issues">github.com/Chuea81/freevoice-aac/issues</a> and we'll fix it in the default boards.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">Is FreeVoice available in other languages? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Spanish support is on the roadmap. ARASAAC natively supports 20+ languages and their symbol library has translations built in. The text-to-speech (Web Speech API) supports any language installed on the device. If you'd like to help translate FreeVoice's UI into another language, contributions are welcome at GitHub.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <h2>Ready to get started?<br><em>It's free. Right now.</em></h2>
+  <p>Open FreeVoice on any device. No download, no account, no waiting.</p>
+  <div class="cta-group">
+    <a href="/app" class="btn-primary">🔊 Open FreeVoice</a>
+    <a href="/" class="btn-ghost">← Back to Home</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>FreeVoice AAC &nbsp;·&nbsp; <a href="/terms">Terms of Use</a> &nbsp;·&nbsp; <a href="https://github.com/Chuea81/freevoice-aac">GitHub</a> &nbsp;·&nbsp; Built with love by Shellcraft Labs LLC</p>
+  <p style="margin-top:8px">Symbols by <a href="https://arasaac.org">ARASAAC</a> (CC BY-NC-SA 4.0) &nbsp;·&nbsp; Free forever</p>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Feature accordion
+function toggleFeature(row) {
+  const isOpen = row.classList.contains('open');
+  document.querySelectorAll('.feature-row.open').forEach(r => r.classList.remove('open'));
+  if (!isOpen) row.classList.add('open');
+}
+
+// FAQ accordion
+function toggleFaq(item) {
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Smooth scroll for TOC links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      const offset = 80;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+</script>
+</body>
+</html>

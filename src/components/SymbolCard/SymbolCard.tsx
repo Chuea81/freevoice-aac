@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, useEffect, type MouseEvent, type CSSProp
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
+import { ARASAAC_IDS } from '../../data/arasaacIds';
 import type { Symbol as DbSymbol } from '../../db';
 
 // Fitzgerald Key color mapping
@@ -49,24 +50,31 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Resolve image URL at render time:
-  // Priority: user photo > arasaacId (direct URL) > symbolCache (keyword) > emoji fallback
+  // Resolve image URL at render time.
+  // Priority: user photo > static ID lookup > Dexie arasaacId > symbolCache > emoji
   useEffect(() => {
     setImgFailed(false);
 
-    // User-uploaded photo — use directly
+    // 1. User-uploaded photo — use directly
     if (isUserPhoto(symbol.imageUrl)) {
       setResolvedUrl(symbol.imageUrl!);
       return;
     }
 
-    // arasaacId — direct URL, synchronous, no async needed
+    // 2. Static label lookup — bypasses Dexie entirely, cannot fail
+    const staticId = ARASAAC_IDS[symbol.label?.toUpperCase()];
+    if (staticId) {
+      setResolvedUrl(getArasaacImageUrl(staticId));
+      return;
+    }
+
+    // 3. Dexie arasaacId field (for symbols not in static lookup)
     if (symbol.arasaacId) {
       setResolvedUrl(getArasaacImageUrl(symbol.arasaacId));
       return;
     }
 
-    // No arasaacId — check symbolCache asynchronously
+    // 4. symbolCache async lookup (keyword search results)
     if (!symbol.isCategory) {
       let cancelled = false;
       resolveArasaacUrl(symbol).then((url) => {
