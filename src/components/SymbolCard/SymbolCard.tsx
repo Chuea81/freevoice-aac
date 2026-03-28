@@ -204,15 +204,16 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       {labelPosition === 'above' && labelEl}
 
       {hasImage && isCustomSymbol ? (
-        /* Custom admin-generated images — fill entire card */
-        <img
-          className="symbol-custom-img"
-          src={resolvedUrl!}
-          alt={symbol.label}
-          loading="lazy"
-          decoding="async"
-          onError={() => setImgFailed(true)}
-        />
+        /* Custom admin-generated ARASAAC-style images — white container like ARASAAC */
+        <div className="symbol-image-container">
+          <img
+            src={resolvedUrl!}
+            alt={symbol.label}
+            loading="lazy"
+            decoding="async"
+            onError={() => setImgFailed(true)}
+          />
+        </div>
       ) : hasImage && hasCharacterImage ? (
         /* Character sprite images — constrained with clip-path */
         <img

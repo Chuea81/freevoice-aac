@@ -89,8 +89,7 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const imageBuffer = Buffer.from(imageBase64, 'base64');
 
   await sharp(imageBuffer)
-    .resize(500, 500, { fit: 'cover', position: 'center' })
-    .flatten({ background: { r: 12, g: 20, b: 40 } })
+    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
     .png({ compressionLevel: 8 })
     .toFile(filePath);
 

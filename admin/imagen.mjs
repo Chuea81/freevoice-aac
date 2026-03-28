@@ -9,32 +9,42 @@ config({ path: join(__dir, '.env') });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const BASE_STYLE_PROMPT = `
-Generate a 500x500 pixel image that FILLS THE ENTIRE CANVAS edge to edge.
-AAC (Augmentative and Alternative Communication) pictogram symbol.
-Style: ARASAAC-inspired — simple, clear, bold black outlines, flat bright colors.
-The subject must be LARGE and fill at least 80% of the canvas.
-Background: solid dark navy blue (#0C1428) filling the entire image.
-DO NOT add a white background. DO NOT add borders or frames.
-DO NOT make the symbol small in the center — it must be BIG.
-No text, no labels, no letters, no watermarks, no borders.
-Single centered subject drawn large and clear.
-Thick consistent black outlines. Flat vivid color fills.
-Must be recognizable at 60x60 pixels by a 3-year-old child.
+Generate an AAC pictogram symbol in the ARASAAC style.
+ARASAAC is the clinical standard used by speech therapists worldwide.
+
+STYLE RULES — follow these exactly:
+- Simple clear line drawing with BOLD BLACK OUTLINES
+- FLAT bright colors — no gradients, no shadows, no 3D effects
+- White or very light background for the symbol area
+- Simple shapes, minimal detail — a child must understand it instantly
+- Looks hand-drawn but clean and professional
+- Similar to symbols at arasaac.org — the international AAC standard
+- Subject fills most of the frame, centered
+- Thick consistent black outlines around every shape
+- Flat solid color fills inside the outlines
+- Skin-toned people when showing humans (light peachy skin tone)
+- NO text, NO labels, NO letters in the image
+- NO 3D effects, NO gradients, NO shine, NO glow
+- NO realistic rendering — keep it simple and flat
+
+The image should look like it belongs in an ARASAAC symbol set.
+Clean. Simple. Bold outlines. Flat colors. Instantly recognizable.
+A 3-year-old nonverbal child needs to understand this symbol.
 `.trim();
 
 const CATEGORY_STYLE_HINTS = {
-  food: 'Simple food pictogram. Clear recognizable shape. Bright flat colors. Like an ARASAAC food symbol but cleaner.',
-  drinks: 'Simple drink pictogram. Clear vessel shape with visible liquid. Flat colors, bold outlines.',
-  emotions: 'Simple face showing emotion clearly. Round face, minimal features, big clear expression. ARASAAC emotion style.',
-  people: 'Simple person pictogram. Clear role identifier (uniform, tool, etc). ARASAAC person style.',
-  places: 'Simple building/location pictogram. Recognizable shape, minimal detail. ARASAAC style.',
-  activities: 'Simple action pictogram. Clear pose or equipment. ARASAAC activity style.',
-  body: 'Simple body part or health pictogram. Clear, clinical but friendly. ARASAAC body style.',
-  school: 'Simple school object pictogram. Recognizable shape. ARASAAC school supply style.',
-  social: 'Simple social interaction pictogram. Clear gesture or scene. ARASAAC style.',
-  nature: 'Simple nature pictogram. Clear shape, bright colors. ARASAAC style.',
-  animals: 'Simple animal pictogram. Recognizable species, friendly. Bold outlines, flat colors. ARASAAC animal style.',
-  default: 'Simple clear pictogram. Bold outlines, flat colors. ARASAAC style.',
+  food: 'ARASAAC-style food pictogram. Simple recognizable food shape. Bold outlines, flat colors.',
+  drinks: 'ARASAAC-style drink pictogram. Simple cup or glass shape. Bold outlines, flat colors.',
+  emotions: 'ARASAAC-style emotion face. Simple round face, bold expression. Flat colors.',
+  people: 'ARASAAC-style person pictogram. Simple body, clear role identifier. Flat colors.',
+  places: 'ARASAAC-style building pictogram. Simple recognizable shape. Flat colors.',
+  activities: 'ARASAAC-style action pictogram. Simple figure doing the action. Flat colors.',
+  body: 'ARASAAC-style body pictogram. Simple, clear, medical-friendly. Flat colors.',
+  school: 'ARASAAC-style school supply pictogram. Simple object. Flat colors.',
+  social: 'ARASAAC-style social pictogram. Simple gesture or interaction. Flat colors.',
+  nature: 'ARASAAC-style nature pictogram. Simple plant or animal shape. Flat colors.',
+  animals: 'ARASAAC-style animal pictogram. Simple friendly animal. Bold outlines, flat colors.',
+  default: 'ARASAAC-style pictogram. Bold black outlines, flat bright colors, simple and clear.',
 };
 
 export async function generateSymbol({ label, category = 'default', extraPrompt = '' }) {
