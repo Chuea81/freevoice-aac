@@ -51,30 +51,40 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Resolve image URL at render time.
-  // Priority: user photo > static ID lookup > Dexie arasaacId > symbolCache > emoji
+  // Static lookup is checked FIRST and is authoritative:
+  //   ID > 0 → use that ARASAAC pictogram
+  //   ID = 0 → force emoji fallback (skip all ARASAAC)
+  //   not in map → fall through to Dexie / symbolCache
   useEffect(() => {
     setImgFailed(false);
+    const upperLabel = symbol.label?.toUpperCase() || '';
+    const staticId = ARASAAC_IDS[upperLabel];
 
-    // 1. User-uploaded photo — use directly
+    // 1. Static lookup says "force emoji" (ID=0) — skip everything
+    if (staticId === 0) {
+      setResolvedUrl(null);
+      return;
+    }
+
+    // 2. User-uploaded photo — use directly
     if (isUserPhoto(symbol.imageUrl)) {
       setResolvedUrl(symbol.imageUrl!);
       return;
     }
 
-    // 2. Static label lookup — bypasses Dexie entirely, cannot fail
-    const staticId = ARASAAC_IDS[symbol.label?.toUpperCase()];
-    if (staticId) {
+    // 3. Static lookup has a real ARASAAC ID — use it
+    if (staticId && staticId > 0) {
       setResolvedUrl(getArasaacImageUrl(staticId));
       return;
     }
 
-    // 3. Dexie arasaacId field (for symbols not in static lookup)
+    // 4. Dexie arasaacId field (for symbols not in static lookup)
     if (symbol.arasaacId) {
       setResolvedUrl(getArasaacImageUrl(symbol.arasaacId));
       return;
     }
 
-    // 4. symbolCache async lookup (keyword search results)
+    // 5. symbolCache async lookup (keyword search results)
     if (!symbol.isCategory) {
       let cancelled = false;
       resolveArasaacUrl(symbol).then((url) => {
