@@ -105,6 +105,8 @@ body {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  z-index: 1;
+  opacity: 0.35;
 }
 
 .float-card {
@@ -143,6 +145,7 @@ body {
 }
 
 .hero-inner {
+  position: relative;
   position: relative;
   z-index: 2;
   text-align: center;
@@ -243,8 +246,11 @@ body {
 .hero-scroll {
   position: absolute;
   bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1260,7 +1266,8 @@ footer a:hover { color: var(--amber); }
   .feature-showcase, .feature-showcase.flip { direction: ltr; grid-template-columns: 1fr; }
   .about-sc-inner { grid-template-columns: 1fr; }
   .share-cards { grid-template-columns: 1fr; }
-  .float-card:nth-child(n+5) { display: none; }
+  .float-card:nth-child(n+3) { display: none; }
+  .hero-symbols { opacity: 0.2; }
   .promise-pillars { grid-template-columns: 1fr; }
   .access-steps { gap: 20px; }
   .step { padding: 20px 16px; }
