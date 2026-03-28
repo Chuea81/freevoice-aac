@@ -1,7 +1,7 @@
 {
   "speech": {
     "speak": "SPEAK",
-    "undo": "UNDO",
+    "undo": "CLEAR",
     "clear": "CLEAR",
     "type": "TYPE",
     "placeholder": "Tap symbols to speak…"

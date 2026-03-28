@@ -3,10 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 
-export function SpeechBar() {
+interface Props {
+  onOpenSettings?: () => void;
+}
+
+export function SpeechBar({ onOpenSettings }: Props) {
   const outputTokens = useBoardStore((s) => s.outputTokens);
   const removeLastToken = useBoardStore((s) => s.removeLastToken);
-  const clearTokens = useBoardStore((s) => s.clearTokens);
   const addToken = useBoardStore((s) => s.addToken);
   const { speak, cancel } = useTTS();
   const { t } = useTranslation();
@@ -41,9 +44,8 @@ export function SpeechBar() {
 
   const handleClear = useCallback(() => {
     cancel();
-    clearTokens();
-    setKeyboardInput('');
-  }, [clearTokens, cancel]);
+    removeLastToken();
+  }, [removeLastToken, cancel]);
 
   const handleKeyboardSubmit = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && keyboardInput.trim()) {
@@ -105,18 +107,15 @@ export function SpeechBar() {
         <span className="btn-icon" aria-hidden="true">⌨️</span>{t('speech.type')}
       </button>
 
-      <button className="bar-btn" id="btn-back" onClick={removeLastToken} aria-label={t('speech.undo')}>
-        <span className="btn-icon" aria-hidden="true">⌫</span>{t('speech.undo')}
+      <button className="bar-btn" id="btn-clear" onClick={handleClear} aria-label={t('speech.clear')}>
+        <span className="btn-icon" aria-hidden="true">⌫</span>{t('speech.clear')}
       </button>
 
-      <button
-        className="bar-btn"
-        id="btn-clear"
-        onClick={handleClear}
-        aria-label={t('speech.clear')}
-      >
-        <span className="btn-icon" aria-hidden="true">🗑️</span>{t('speech.clear')}
-      </button>
+      {onOpenSettings && (
+        <button className="bar-btn" id="btn-settings" onClick={onOpenSettings} aria-label="Settings">
+          <span className="btn-icon" aria-hidden="true">⚙️</span>Settings
+        </button>
+      )}
     </div>
   );
 }

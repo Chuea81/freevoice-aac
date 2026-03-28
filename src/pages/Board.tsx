@@ -96,7 +96,7 @@ export function Board({ onOpenParentMode }: Props) {
 
   return (
     <>
-      <SpeechBar />
+      <SpeechBar onOpenSettings={onOpenParentMode} />
       <div className="parent-tap-zone" onClick={handleTripleTap} aria-hidden="true" />
       <button className="search-trigger-btn" onClick={() => setSearchOpen(true)} aria-label="Search symbols">
         🔍
