@@ -2,7 +2,9 @@ import { useState, useCallback } from 'react';
 import { useSettingsStore, type LabelPosition, type ColorScheme, type SkinTone } from '../store/settingsStore';
 import { useParentStore } from '../store/parentStore';
 import { useBoardStore } from '../store/boardStore';
+import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
+import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 
@@ -112,6 +114,22 @@ export function Settings({ onBack }: { onBack: () => void }) {
 
         {/* ── VOICE (3-tier system) ── */}
         <VoiceSelector />
+
+        {/* ── YOUR CHARACTER ── */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Your Character</h2>
+          <p className="settings-hint">
+            {useCharacterStore.getState().selectedCharacterId
+              ? `Currently using: ${useCharacterStore.getState().characters.find(c => c.id === useCharacterStore.getState().selectedCharacterId)?.name || 'Custom'}`
+              : 'Using standard emoji symbols'}
+          </p>
+          <CharacterPicker
+            onSelect={(id) => {
+              useCharacterStore.getState().setSelectedCharacter(id === 'none' ? null : id);
+            }}
+            showSkipOption={true}
+          />
+        </section>
 
         {/* ── AUTO-SPEAK ── */}
         <section className="settings-section">

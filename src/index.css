@@ -477,6 +477,15 @@ body {
   object-fit: contain;
 }
 
+/* Character images — full bleed, no white container */
+.symbol-character-img {
+  width: clamp(52px, 65%, 96px);
+  height: clamp(52px, 65%, 96px);
+  object-fit: contain;
+  border-radius: 8px;
+  z-index: 1;
+}
+
 /* Legacy .symbol-image for fallback */
 .symbol-image {
   width: 52px;

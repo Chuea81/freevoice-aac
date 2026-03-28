@@ -1,29 +1,23 @@
 import { useState, useCallback } from 'react';
-import { useSettingsStore, type SkinTone } from '../../store/settingsStore';
+import { useSettingsStore } from '../../store/settingsStore';
+import { useCharacterStore } from '../../store/characterStore';
+import { CharacterPicker } from '../CharacterPicker/CharacterPicker';
 
 interface Props {
   onComplete: () => void;
 }
 
-const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
-  { value: 'default', label: 'Default', swatch: '👋' },
-  { value: 'light', label: 'Light', swatch: '👋🏻' },
-  { value: 'medium-light', label: 'Medium Light', swatch: '👋🏼' },
-  { value: 'medium', label: 'Medium', swatch: '👋🏽' },
-  { value: 'medium-dark', label: 'Medium Dark', swatch: '👋🏾' },
-  { value: 'dark', label: 'Dark', swatch: '👋🏿' },
-];
-
 export function OnboardingWizard({ onComplete }: Props) {
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
-  const setSkinTone = useSettingsStore((s) => s.setSkinTone);
-  const skinTone = useSettingsStore((s) => s.skinTone);
   const setOnboardingDone = useSettingsStore((s) => s.setOnboardingDone);
+  const selectedCharacterId = useCharacterStore((s) => s.selectedCharacterId);
+  const characters = useCharacterStore((s) => s.characters);
+
+  const selectedChar = characters.find(c => c.id === selectedCharacterId);
 
   const handleFinish = useCallback(() => {
     if (name.trim()) {
-      // Store the user's name for potential personalization
       import('../../db').then(({ db }) => {
         db.settings.put({ key: 'userName', value: name.trim() });
       });
@@ -34,7 +28,7 @@ export function OnboardingWizard({ onComplete }: Props) {
 
   return (
     <div className="onboarding-overlay">
-      <div className="onboarding-card">
+      <div className="onboarding-card" style={{ maxWidth: step === 1 ? 520 : 400 }}>
         {/* Step indicators */}
         <div className="onboarding-steps">
           {[0, 1, 2].map((i) => (
@@ -42,6 +36,7 @@ export function OnboardingWizard({ onComplete }: Props) {
           ))}
         </div>
 
+        {/* Step 0: Name */}
         {step === 0 && (
           <>
             <h1 className="onboarding-title">Welcome to FreeVoice!</h1>
@@ -63,29 +58,36 @@ export function OnboardingWizard({ onComplete }: Props) {
           </>
         )}
 
+        {/* Step 1: Character picker (replaces skin tone) */}
         {step === 1 && (
           <>
-            <h1 className="onboarding-title">Choose Skin Tone</h1>
-            <p className="onboarding-subtitle">Applies to all people symbols</p>
-            <div className="onboarding-skin-grid">
-              {SKIN_TONES.map((t) => (
-                <button
-                  key={t.value}
-                  className={`onboarding-skin-btn${skinTone === t.value ? ' active' : ''}`}
-                  onClick={() => setSkinTone(t.value)}
-                >
-                  <span className="onboarding-skin-swatch">{t.swatch}</span>
-                  <span className="onboarding-skin-label">{t.label}</span>
-                </button>
-              ))}
-            </div>
-            <div className="onboarding-nav">
+            <h1 className="onboarding-title">
+              Choose a character
+            </h1>
+            <p className="onboarding-subtitle">
+              Pick the character that looks most like {name || 'your child'}.
+              {'\n'}They'll appear on emotion symbols throughout the app.
+            </p>
+
+            <CharacterPicker
+              onSelect={(id) => {
+                if (id === 'none') {
+                  useCharacterStore.getState().setSelectedCharacter(null);
+                } else {
+                  useCharacterStore.getState().setSelectedCharacter(id);
+                }
+              }}
+              showSkipOption={true}
+            />
+
+            <div className="onboarding-nav" style={{ marginTop: 20 }}>
               <button className="onboarding-back" onClick={() => setStep(0)}>Back</button>
               <button className="onboarding-next" onClick={() => setStep(2)}>Next</button>
             </div>
           </>
         )}
 
+        {/* Step 2: Tips */}
         {step === 2 && (
           <>
             <h1 className="onboarding-title">You're all set!</h1>
@@ -100,7 +102,9 @@ export function OnboardingWizard({ onComplete }: Props) {
             </div>
             <div className="onboarding-nav">
               <button className="onboarding-back" onClick={() => setStep(1)}>Back</button>
-              <button className="onboarding-next done" onClick={handleFinish}>Start Using FreeVoice</button>
+              <button className="onboarding-next done" onClick={handleFinish}>
+                {selectedChar ? `Start with ${selectedChar.name}` : 'Start FreeVoice'}
+              </button>
             </div>
           </>
         )}

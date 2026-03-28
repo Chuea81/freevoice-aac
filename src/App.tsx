@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Board } from './pages/Board';
 import { ParentMode } from './pages/ParentMode';
 import { useSettingsStore } from './store/settingsStore';
+import { useCharacterManifest } from './hooks/useCharacterManifest';
 
 function App() {
   const [page, setPage] = useState<'board' | 'parent'>('board');
@@ -12,6 +13,9 @@ function App() {
   useEffect(() => {
     loadFromDb();
   }, [loadFromDb]);
+
+  // Load character manifest
+  useCharacterManifest();
 
   // Apply card-style class to root for high-contrast mode to affect all chrome
   useEffect(() => {

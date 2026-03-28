@@ -3,6 +3,8 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
 import { ARASAAC_IDS } from '../../data/arasaacIds';
+import { useCharacterImage, knownCharacterPaths } from '../../hooks/useCharacterImage';
+import type { SymbolCategory } from '../../types/character';
 import type { Symbol as DbSymbol } from '../../db';
 
 // Fitzgerald Key color mapping
@@ -32,6 +34,12 @@ function isUserPhoto(url?: string): boolean {
   return url.startsWith('data:') || url.startsWith('blob:');
 }
 
+/** Map boardId to character system SymbolCategory */
+function boardToCategory(boardId: string): SymbolCategory | null {
+  if (boardId === 'feelings') return 'emotions';
+  return null;
+}
+
 interface Props {
   symbol: DbSymbol;
   onTap: (symbol: DbSymbol) => void;
@@ -50,41 +58,50 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Check for custom character image (emotions only for now)
+  const category = boardToCategory(symbol.boardId);
+  const characterImageUrl = useCharacterImage(symbol.label, category || 'emotions');
+  const hasCharacterImage = category !== null && !!characterImageUrl && knownCharacterPaths.has(characterImageUrl);
+
   // Resolve image URL at render time.
-  // Static lookup is checked FIRST and is authoritative:
-  //   ID > 0 → use that ARASAAC pictogram
-  //   ID = 0 → force emoji fallback (skip all ARASAAC)
-  //   not in map → fall through to Dexie / symbolCache
+  // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
   useEffect(() => {
     setImgFailed(false);
+
+    // 0. Custom character image — highest priority
+    if (hasCharacterImage && characterImageUrl) {
+      setResolvedUrl(characterImageUrl);
+      return;
+    }
+
     const upperLabel = symbol.label?.toUpperCase() || '';
     const staticId = ARASAAC_IDS[upperLabel];
 
-    // 1. Static lookup says "force emoji" (ID=0) — skip everything
+    // 1. Static lookup says "force emoji" (ID=0) — skip all ARASAAC
     if (staticId === 0) {
       setResolvedUrl(null);
       return;
     }
 
-    // 2. User-uploaded photo — use directly
+    // 2. User-uploaded photo
     if (isUserPhoto(symbol.imageUrl)) {
       setResolvedUrl(symbol.imageUrl!);
       return;
     }
 
-    // 3. Static lookup has a real ARASAAC ID — use it
+    // 3. Static ARASAAC ID
     if (staticId && staticId > 0) {
       setResolvedUrl(getArasaacImageUrl(staticId));
       return;
     }
 
-    // 4. Dexie arasaacId field (for symbols not in static lookup)
+    // 4. Dexie arasaacId
     if (symbol.arasaacId) {
       setResolvedUrl(getArasaacImageUrl(symbol.arasaacId));
       return;
     }
 
-    // 5. symbolCache async lookup (keyword search results)
+    // 5. symbolCache async lookup
     if (!symbol.isCategory) {
       let cancelled = false;
       resolveArasaacUrl(symbol).then((url) => {
@@ -94,7 +111,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     }
 
     setResolvedUrl(null);
-  }, [symbol.id, symbol.arasaacId, symbol.imageUrl, symbol.isCategory, symbol.label]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [symbol.id, symbol.arasaacId, symbol.imageUrl, symbol.isCategory, symbol.label, hasCharacterImage, characterImageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasImage = !!resolvedUrl && !imgFailed;
 
@@ -176,7 +193,21 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
       {labelPosition === 'above' && labelEl}
 
-      {hasImage ? (
+      {hasImage && hasCharacterImage ? (
+        /* Character images — full bleed, no white container */
+        <img
+          className="symbol-character-img"
+          src={resolvedUrl!}
+          alt={symbol.label}
+          loading="lazy"
+          decoding="async"
+          onError={() => {
+            knownCharacterPaths.delete(characterImageUrl!);
+            setImgFailed(true);
+          }}
+        />
+      ) : hasImage ? (
+        /* ARASAAC images — white symbol-window container */
         <div className="symbol-image-container">
           <img
             src={resolvedUrl!}

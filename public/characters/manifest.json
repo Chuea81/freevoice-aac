@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "characters": [
+    {
+      "id": "char_001",
+      "name": "Alex",
+      "gender": "boy",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "brown",
+      "previewImage": "/characters/preview/char_001.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with light skin and brown hair"
+    },
+    {
+      "id": "char_002",
+      "name": "Jordan",
+      "gender": "boy",
+      "skinTone": "dark",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_002.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with dark skin and black curly hair"
+    }
+  ]
+}
