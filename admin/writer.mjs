@@ -8,6 +8,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT  = join(__dir, '..');
 const SYMBOLS_DIR = join(ROOT, 'public', 'symbols', 'custom');
 const ARASAAC_IDS_FILE = join(ROOT, 'src', 'data', 'arasaacIds.ts');
+const BOARDS_FILE = join(ROOT, 'src', 'data', 'defaultBoards.ts');
 
 function labelToFileName(label) {
   return label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
