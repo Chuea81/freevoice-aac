@@ -191,20 +191,7 @@
           </div>
           <div id="bulk-preview-card" class="preview-card" style="margin:0 auto 16px"></div>
           <div id="bulk-status" style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:16px"></div>
-          <div id="bulk-actions" style="display:none;flex-direction:column;gap:8px;align-items:center">
-            <div style="display:flex;gap:8px">
-              <button onclick="bulkApprove()" class="btn btn-approve" style="width:auto;padding:10px 24px">✅ Approve</button>
-              <button onclick="bulkSkip()" class="btn btn-reject" style="width:auto;padding:10px 24px">Skip →</button>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-              <button onclick="bulkRedo('')" class="regen-btn">↺ Redo</button>
-              <button onclick="bulkRedo('more colorful and vibrant')" class="regen-btn">🎨 Colorful</button>
-              <button onclick="bulkRedo('simpler, more iconic, less detail')" class="regen-btn">✂️ Simpler</button>
-              <button onclick="bulkRedo('more cartoon style, rounder, cuter')" class="regen-btn">😄 Cartoon</button>
-              <button onclick="bulkRedo('more realistic, detailed')" class="regen-btn">📷 Detailed</button>
-              <button onclick="bulkRedo('bigger subject, fill the frame')" class="regen-btn">🔍 Bigger</button>
-            </div>
-          </div>
+          <div id="bulk-actions" style="display:none"></div>
         </div>
         <!-- Step 3: Done -->
         <div id="bulk-step-done" style="display:none;padding:40px 20px;text-align:center">
@@ -391,87 +378,148 @@ function closeBulkModal() {
   loadApproved();
 }
 
+let bulkResults = []; // { label, emoji, imageBase64, status: 'pending'|'approved'|'skipped' }
+let bulkBoardId = '';
+
 async function selectBulkBoard(boardId) {
   const boards = await fetch(`${API}/boards`).then(r=>r.json());
   const board = boards.find(b => b.id === boardId);
   if (!board) return;
 
+  bulkBoardId = boardId;
   bulkQueue = board.symbols.filter(s => !s.label.match(/^(Food|Drinks|Meals|Snacks|Fruits|Vegetables|Desserts|Sports|Music|Outdoor|Hygiene|Medical|Family|Community|Questions)$/));
+  bulkResults = bulkQueue.map(s => ({ label: s.label, emoji: s.emoji, imageBase64: null, status: 'pending' }));
   bulkIndex = 0;
   bulkApproved = 0;
   bulkSkipped = 0;
 
   document.getElementById('bulk-step-pick').style.display = 'none';
   document.getElementById('bulk-step-review').style.display = 'block';
+  document.getElementById('bulk-status').textContent = `Generating all ${bulkQueue.length} symbols...`;
+  document.getElementById('bulk-actions').style.display = 'none';
+  document.getElementById('bulk-review-count').textContent = `Generating 0 of ${bulkQueue.length}`;
+  document.getElementById('bulk-bar').style.width = '0%';
+  document.getElementById('bulk-preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px;width:36px;height:36px;border-width:3px"></div><p style="font-size:13px;font-weight:700">Generating all symbols...<br>This may take a few minutes</p></div>`;
 
-  bulkNext();
-}
-
-async function bulkNext() {
-  if (bulkIndex >= bulkQueue.length) {
-    document.getElementById('bulk-step-review').style.display = 'none';
-    document.getElementById('bulk-step-done').style.display = 'block';
-    document.getElementById('bulk-done-stats').textContent = `${bulkApproved} approved, ${bulkSkipped} skipped out of ${bulkQueue.length} symbols`;
-    return;
+  // Generate ALL first
+  for (let i = 0; i < bulkQueue.length; i++) {
+    document.getElementById('bulk-review-count').textContent = `Generating ${i + 1} of ${bulkQueue.length} — ${bulkQueue[i].label}`;
+    document.getElementById('bulk-bar').style.width = `${((i + 1) / bulkQueue.length) * 50}%`;
+    try {
+      const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:bulkQueue[i].label, category:bulkBoardId}) });
+      const data = await res.json();
+      if (res.ok && data.imageBase64) {
+        bulkResults[i].imageBase64 = data.imageBase64;
+      }
+    } catch {}
+    await new Promise(r => setTimeout(r, 300));
   }
 
-  const sym = bulkQueue[bulkIndex];
-  bulkCurrentSym = sym;
-  bulkCurrentImage = null;
-
-  document.getElementById('bulk-review-count').textContent = `${bulkIndex + 1} of ${bulkQueue.length} — ${sym.label}`;
-  document.getElementById('bulk-bar').style.width = `${((bulkIndex) / bulkQueue.length) * 100}%`;
-
-  await bulkGenerate('');
+  // Now show review grid
+  bulkIndex = 0;
+  showBulkReviewGrid();
 }
 
-async function bulkApprove() {
-  if (!bulkCurrentImage || !bulkCurrentSym) return;
+function showBulkReviewGrid() {
+  document.getElementById('bulk-status').textContent = 'Review all — click to approve or reject each one';
+  document.getElementById('bulk-review-count').textContent = `${bulkResults.filter(r=>r.imageBase64).length} generated, review below`;
+  document.getElementById('bulk-bar').style.width = '50%';
   document.getElementById('bulk-actions').style.display = 'none';
-  document.getElementById('bulk-status').textContent = 'Saving...';
 
-  try {
-    await fetch(`${API}/approve`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:bulkCurrentSym.label, category:'', phrase:`I want ${bulkCurrentSym.label.toLowerCase()}`, imageBase64:bulkCurrentImage}) });
-    bulkApproved++;
-    toast(`✅ ${bulkCurrentSym.label} approved`, 'success');
-  } catch(e) { toast('Save failed', 'error'); }
+  const grid = document.getElementById('bulk-preview-card');
+  grid.style.width = '100%';
+  grid.style.height = 'auto';
+  grid.style.maxHeight = '50vh';
+  grid.style.overflowY = 'auto';
+  grid.style.display = 'grid';
+  grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+  grid.style.gap = '8px';
+  grid.style.padding = '12px';
+  grid.style.background = 'var(--navy)';
+  grid.style.borderRadius = '16px';
 
-  bulkIndex++;
-  bulkNext();
+  grid.innerHTML = bulkResults.map((r, i) => `
+    <div id="bulk-item-${i}" style="background:var(--card);border:2px solid ${r.imageBase64 ? 'rgba(39,174,96,0.3)' : 'rgba(225,29,72,0.3)'};border-radius:14px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;transition:all 0.15s" onclick="toggleBulkItem(${i})">
+      ${r.imageBase64
+        ? `<img src="data:image/png;base64,${r.imageBase64}" style="width:80px;height:80px;object-fit:contain;border-radius:8px">`
+        : `<div style="width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px">${r.emoji}</div>`}
+      <span style="font-size:8px;font-weight:900;text-transform:uppercase;color:rgba(255,255,255,0.7);text-align:center">${r.label}</span>
+      <div id="bulk-badge-${i}" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;${r.status === 'approved' ? 'background:#27AE60;color:white' : r.status === 'skipped' ? 'background:#E11D48;color:white' : 'background:rgba(245,158,11,0.3);color:#FCD34D'}">${r.status === 'approved' ? '✓' : r.status === 'skipped' ? '✕' : '?'}</div>
+    </div>
+  `).join('');
+
+  // Add approve all / reject remaining buttons below
+  const actionsHtml = `
+    <div style="grid-column:1/-1;display:flex;gap:8px;justify-content:center;padding:12px 0">
+      <button onclick="bulkApproveAll()" class="btn btn-approve" style="width:auto;padding:10px 20px;font-size:13px">✅ Approve All Pending</button>
+      <button onclick="bulkFinish()" class="btn btn-generate" style="width:auto;padding:10px 20px;font-size:13px">💾 Save Approved & Finish</button>
+    </div>
+  `;
+  grid.innerHTML += actionsHtml;
 }
 
-function bulkSkip() {
-  bulkSkipped++;
-  bulkIndex++;
-  bulkNext();
-}
+function toggleBulkItem(i) {
+  const r = bulkResults[i];
+  if (!r.imageBase64) return;
+  // Cycle: pending → approved → skipped → pending
+  if (r.status === 'pending') r.status = 'approved';
+  else if (r.status === 'approved') r.status = 'skipped';
+  else r.status = 'pending';
 
-async function bulkRedo(hint = '') {
-  document.getElementById('bulk-actions').style.display = 'none';
-  await bulkGenerate(hint);
-}
-
-async function bulkGenerate(extraHint = '') {
-  const sym = bulkCurrentSym;
-  bulkCurrentImage = null;
-
-  document.getElementById('bulk-status').textContent = `Generating "${sym.label}"${extraHint ? ' (' + extraHint + ')' : ''}...`;
-  document.getElementById('bulk-preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 12px;width:32px;height:32px;border-width:3px"></div><p style="font-size:13px;font-weight:700">${sym.label}</p></div>`;
-
-  try {
-    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:sym.label, category:'', extraPrompt:extraHint}) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
-    bulkCurrentImage = data.imageBase64;
-    document.getElementById('bulk-preview-card').innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="${sym.label}" style="width:140px;height:140px;object-fit:contain;border-radius:12px"><span class="preview-label">${sym.label.toUpperCase()}</span>`;
-    document.getElementById('bulk-status').textContent = `Review "${sym.label}"`;
-    document.getElementById('bulk-actions').style.display = 'flex';
-  } catch(e) {
-    document.getElementById('bulk-preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">❌</div><p style="font-size:12px">Failed</p></div>`;
-    document.getElementById('bulk-status').textContent = e.message?.substring(0,100);
-    document.getElementById('bulk-actions').style.display = 'flex';
+  const badge = document.getElementById(`bulk-badge-${i}`);
+  const item = document.getElementById(`bulk-item-${i}`);
+  if (r.status === 'approved') {
+    badge.style.background = '#27AE60'; badge.style.color = 'white'; badge.textContent = '✓';
+    item.style.borderColor = 'rgba(39,174,96,0.5)';
+  } else if (r.status === 'skipped') {
+    badge.style.background = '#E11D48'; badge.style.color = 'white'; badge.textContent = '✕';
+    item.style.borderColor = 'rgba(225,29,72,0.5)'; item.style.opacity = '0.4';
+  } else {
+    badge.style.background = 'rgba(245,158,11,0.3)'; badge.style.color = '#FCD34D'; badge.textContent = '?';
+    item.style.borderColor = 'rgba(245,158,11,0.3)'; item.style.opacity = '1';
   }
+}
+
+function bulkApproveAll() {
+  bulkResults.forEach((r, i) => {
+    if (r.imageBase64 && r.status === 'pending') {
+      r.status = 'approved';
+      toggleBulkItem(i); // refresh UI
+      r.status = 'approved'; // ensure it stays
+    }
+  });
+  // Re-render badges
+  bulkResults.forEach((r, i) => {
+    const badge = document.getElementById(`bulk-badge-${i}`);
+    const item = document.getElementById(`bulk-item-${i}`);
+    if (!badge || !item) return;
+    if (r.status === 'approved') {
+      badge.style.background = '#27AE60'; badge.style.color = 'white'; badge.textContent = '✓';
+      item.style.borderColor = 'rgba(39,174,96,0.5)'; item.style.opacity = '1';
+    }
+  });
+}
+
+async function bulkFinish() {
+  const toSave = bulkResults.filter(r => r.status === 'approved' && r.imageBase64);
+  if (toSave.length === 0) { toast('Nothing to save', 'error'); return; }
+
+  document.getElementById('bulk-status').textContent = `Saving ${toSave.length} symbols...`;
+  document.getElementById('bulk-bar').style.width = '50%';
+
+  for (let i = 0; i < toSave.length; i++) {
+    const r = toSave[i];
+    document.getElementById('bulk-bar').style.width = `${50 + ((i + 1) / toSave.length) * 50}%`;
+    try {
+      await fetch(`${API}/approve`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label:r.label, category:bulkBoardId, phrase:`I want ${r.label.toLowerCase()}`, imageBase64:r.imageBase64}) });
+      bulkApproved++;
+    } catch { bulkSkipped++; }
+  }
+
+  document.getElementById('bulk-step-review').style.display = 'none';
+  document.getElementById('bulk-step-done').style.display = 'block';
+  document.getElementById('bulk-done-stats').textContent = `${bulkApproved} saved out of ${bulkResults.length} symbols`;
+  loadApproved();
 }
 
 // ── TABS ──────────────────────────────────────────────────────
