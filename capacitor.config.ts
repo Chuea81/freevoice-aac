@@ -8,7 +8,11 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://freevoiceaac.app',
     cleartext: false,
-    androidScheme: 'https'
+    androidScheme: 'https',
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
   },
   plugins: {
     SplashScreen: {
