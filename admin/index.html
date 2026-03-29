@@ -59,6 +59,7 @@
   }
   .preview-card::before { content:''; position:absolute; top:0;left:0;right:0; height:4px; background:var(--amber); }
   .preview-card img { width:140px; height:140px; object-fit:contain; border-radius:12px; }
+  .preview-card canvas { width:140px; height:140px; border-radius:12px; background:#0C1428; }
   .preview-card .preview-label { font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; color:rgba(255,255,255,0.85); }
   .preview-placeholder { text-align:center; color:var(--muted); }
   .preview-placeholder .ph-icon { font-size:64px; margin-bottom:12px; opacity:0.3; }
@@ -132,6 +133,7 @@
     <div class="tab-row">
       <button class="tab-btn-admin active" onclick="switchTab('create')">✨ New Symbol</button>
       <button class="tab-btn-admin" onclick="switchTab('browse')">📋 Browse Boards</button>
+      <button class="tab-btn-admin" onclick="switchTab('food')">🍔 Food &amp; Drink</button>
     </div>
     <div class="form-body" id="tab-create">
       <div><label>Symbol Label *</label><input type="text" id="input-label" placeholder="e.g. Tamale, Abuela, Jollof Rice" autocomplete="off"></div>
@@ -148,6 +150,20 @@
       </div>
     </div>
     <div class="board-browser" id="tab-browse"></div>
+    <div class="board-browser" id="tab-food" style="display:none;padding:16px;overflow-y:auto">
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="food-filter" style="background:#0C1428;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700">
+          <option value="">All Categories</option>
+        </select>
+        <select id="food-status-filter" style="background:#0C1428;border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="done">Done</option>
+        </select>
+        <span id="food-stats" style="font-size:11px;color:var(--muted);font-weight:700;margin-left:auto"></span>
+      </div>
+      <div id="food-grid" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
   </div>
 
   <div class="right-panel">
@@ -228,6 +244,7 @@ async function init() {
   // Load pre-written Gemini prompts
   try {
     geminiPrompts = await fetch(`${API}/gemini-prompts`).then(r => r.json());
+    buildPromptLookup();
     console.log('[Admin] Loaded', Object.keys(geminiPrompts).length, 'Gemini prompts:', Object.keys(geminiPrompts).slice(0, 5).join(', '), '...');
   } catch (e) { console.warn('[Admin] Failed to load Gemini prompts:', e); }
   await loadApproved();
@@ -256,28 +273,29 @@ function autoFillPhrase() {
 }
 document.getElementById('input-phrase')?.addEventListener('input', function() { this.dataset.manualEdit = this.value ? 'true' : ''; });
 
+// Build a lowercase lookup map on load for fast matching
+let promptLookup = {}; // lowercase key → { originalKey, prompt }
+
+function buildPromptLookup() {
+  promptLookup = {};
+  const normalize = (s) => s.toLowerCase().trim().replace(/&/g, 'and').replace(/\s+/g, ' ');
+  for (const [k, v] of Object.entries(geminiPrompts)) {
+    const lower = k.toLowerCase();
+    const norm = normalize(k);
+    promptLookup[lower] = v;
+    promptLookup[norm] = v;
+    // Also add without trailing 's' and with trailing 's'
+    if (lower.endsWith('s')) promptLookup[lower.slice(0, -1)] = v;
+    else promptLookup[lower + 's'] = v;
+  }
+  console.log('[Admin] Prompt lookup built:', Object.keys(promptLookup).length, 'entries from', Object.keys(geminiPrompts).length, 'prompts');
+}
+
 function findGeminiPrompt(label) {
   if (!label) return null;
-  const lower = label.toLowerCase().trim();
-  // Normalize: & ↔ and, strip extra spaces
   const normalize = (s) => s.toLowerCase().trim().replace(/&/g, 'and').replace(/\s+/g, ' ');
-  const normalizedInput = normalize(label);
-  // 1. Exact match
-  if (geminiPrompts[label]) return geminiPrompts[label];
-  // 2. Case-insensitive match
-  for (const [k, v] of Object.entries(geminiPrompts)) {
-    if (k.toLowerCase() === lower) return v;
-  }
-  // 3. Normalized match (& vs and)
-  for (const [k, v] of Object.entries(geminiPrompts)) {
-    if (normalize(k) === normalizedInput) return v;
-  }
-  // 4. Singular/plural (Tamale → Tamales, Biscuit → Biscuits)
-  for (const [k, v] of Object.entries(geminiPrompts)) {
-    const kl = k.toLowerCase();
-    if (kl === lower + 's' || kl + 's' === lower) return v;
-  }
-  return null;
+  const input = normalize(label);
+  return promptLookup[input] || promptLookup[label.toLowerCase().trim()] || null;
 }
 
 function autoFillGeminiPrompt() {
@@ -286,10 +304,10 @@ function autoFillGeminiPrompt() {
   const badge = document.getElementById('prompt-badge');
   // Reset manual edit flag when label changes
   if (extra.dataset.lastAutoLabel && extra.dataset.lastAutoLabel !== label) {
-    extra.dataset.manualEdit = '';
+    delete extra.dataset.manualEdit;
   }
   const match = findGeminiPrompt(label);
-  console.log('[Gemini Prompt]', label, '→', match ? match.substring(0, 60) + '...' : 'no match', '| map has', Object.keys(geminiPrompts).length, 'keys');
+  console.log('[Gemini Prompt]', JSON.stringify(label), '→', match ? '"' + match.substring(0, 50) + '..."' : 'NO MATCH', '| lookup has', Object.keys(promptLookup).length, 'entries');
   if (match && !extra.dataset.manualEdit) {
     extra.value = match;
     extra.dataset.lastAutoLabel = label;
@@ -306,7 +324,10 @@ function autoFillGeminiPrompt() {
   }
 }
 document.getElementById('input-extra')?.addEventListener('input', function() {
-  this.dataset.manualEdit = this.value ? 'true' : '';
+  // Only flag as manual if user actually typed (not programmatic)
+  if (document.activeElement === this) {
+    this.dataset.manualEdit = this.value ? 'true' : '';
+  }
   if (!this.value) document.getElementById('prompt-badge').style.display = 'none';
 });
 
@@ -336,7 +357,7 @@ async function generateSymbol(extraOverride = '') {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Generation failed');
     currentImageBase64 = data.imageBase64; currentLabel = label;
-    document.getElementById('preview-card').innerHTML = `<img src="data:image/png;base64,${data.imageBase64}" alt="${label}"><span class="preview-label">${label.toUpperCase()}</span>`;
+    showNavyPreview(data.imageBase64, label);
     document.getElementById('btn-approve').disabled = false;
     document.getElementById('btn-reject').disabled = false;
     document.getElementById('regen-strip').style.display = 'flex';
@@ -587,11 +608,18 @@ async function bulkFinish() {
 
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn-admin').forEach((b,i) => b.classList.toggle('active', (tab==='create'?0:1)===i));
+  document.querySelectorAll('.tab-btn-admin').forEach((b,i) => {
+    b.classList.toggle('active', ['create','browse','food'][i] === tab);
+  });
   document.getElementById('tab-create').style.display = tab==='create' ? 'flex' : 'none';
-  const browse = document.getElementById('tab-browse');
-  browse.classList.toggle('active', tab==='browse');
-  if (tab==='browse' && !browse.dataset.loaded) { loadBoards(); browse.dataset.loaded='1'; }
+  document.getElementById('tab-browse').style.display = tab==='browse' ? 'block' : 'none';
+  document.getElementById('tab-food').style.display = tab==='food' ? 'block' : 'none';
+  if (tab==='browse' && !document.getElementById('tab-browse').dataset.loaded) {
+    loadBoards(); document.getElementById('tab-browse').dataset.loaded='1';
+  }
+  if (tab==='food' && !document.getElementById('tab-food').dataset.loaded) {
+    loadFoodDrinkQueue(); document.getElementById('tab-food').dataset.loaded='1';
+  }
 }
 
 // ── BOARD BROWSER ─────────────────────────────────────────────
@@ -636,6 +664,375 @@ function prefillFromBoard(label, boardId) {
   updatePromptPreview();
   toast(`Loaded "${label}" — generate to replace`, 'success');
 }
+
+// ── NAVY PREVIEW — replace white bg with app navy in preview ──
+function showNavyPreview(base64, label) {
+  const card = document.getElementById('preview-card');
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const ctx = c.getContext('2d');
+    // 1. Fill entire canvas with navy
+    ctx.fillStyle = '#0C1428';
+    ctx.fillRect(0, 0, c.width, c.height);
+    // 2. Draw image on top (transparent areas show navy beneath)
+    ctx.drawImage(img, 0, 0);
+    // 3. Replace any remaining white/light pixels with navy
+    const id = ctx.getImageData(0, 0, c.width, c.height);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] > 210 && d[i+1] > 210 && d[i+2] > 210) {
+        d[i] = 12; d[i+1] = 20; d[i+2] = 40; d[i+3] = 255;
+      }
+    }
+    ctx.putImageData(id, 0, 0);
+    card.innerHTML = '';
+    card.appendChild(c);
+    const lbl = document.createElement('span');
+    lbl.className = 'preview-label';
+    lbl.textContent = label.toUpperCase();
+    card.appendChild(lbl);
+  };
+  img.src = 'data:image/png;base64,' + base64;
+}
+
+// ── FOOD & DRINK QUEUE ───────────────────────────────────────
+const FOOD_PROMPTS = {
+  // Drinks
+  'Water':'Clear glass of water with ice cubes, refreshing blue tones',
+  'Milk':'Tall glass of white milk with slight foam on top',
+  'Chocolate Milk':'Glass of chocolate milk, rich brown color',
+  'Lemonade':'Tall glass of yellow lemonade with lemon slice on rim, ice cubes',
+  'Smoothie':'Colorful fruit smoothie in tall glass with straw, berry purple-pink',
+  'Hot Chocolate':'Mug of hot chocolate with marshmallows, steam rising',
+  'Milkshake':'Thick milkshake in tall glass with whipped cream, straw',
+  'Fruit Punch':'Bright red fruit punch in glass with fruit slices floating',
+  'Iced Tea':'Tall glass of amber iced tea with ice cubes and lemon wedge',
+  'Orange Juice':'Glass of bright orange juice with orange slice garnish',
+  'Apple Juice':'Glass of golden apple juice, apple slice beside it',
+  'Grape Juice':'Glass of deep purple grape juice, grape cluster beside',
+  'Pineapple Juice':'Glass of golden pineapple juice with pineapple wedge',
+  'Mango Juice':'Glass of bright orange-yellow mango juice, mango slice',
+  'Cranberry Juice':'Glass of deep red cranberry juice, cranberries beside',
+  'Peach Juice':'Glass of soft peach-colored juice, peach slice garnish',
+  'Coke':'Glass of dark cola with ice and fizzy bubbles rising',
+  'Sprite':'Glass of clear bubbly lemon-lime soda with ice',
+  'Fanta':'Glass of bright orange soda with ice and fizzy bubbles',
+  'Root Beer':'Frosty mug of dark brown root beer with foam head',
+  'Ginger Ale':'Glass of pale golden ginger ale with bubbles',
+  'Dr Pepper':'Glass of dark burgundy soda with ice and bubbles',
+  // American
+  'Hamburger':'Classic hamburger with sesame bun, beef patty, lettuce, tomato, cheese',
+  'Hot Dog':'Hot dog in bun with mustard and ketchup zigzag',
+  'Pizza':'Slice of pepperoni pizza with melted cheese stretching',
+  'Fried Chicken':'Crispy golden fried chicken drumstick with crunchy breading',
+  'Sandwich':'Classic deli sandwich cut in half, layers visible',
+  'Grilled Cheese':'Golden grilled cheese cut diagonally, cheese oozing',
+  'Bacon':'Crispy strips of bacon, brown and golden, sizzling',
+  'Pancakes':'Stack of three golden pancakes with butter and maple syrup',
+  'Waffles':'Golden waffle with grid pattern, butter and syrup',
+  'Eggs':'Two sunny side up eggs with bright yellow yolks',
+  'Cereal':'Bowl of colorful cereal with milk, spoon visible',
+  'Corn on the Cob':'Ear of yellow corn with butter melting',
+  'French Fries':'Golden crispy french fries in red paper container',
+  'Salad':'Fresh green salad in bowl with tomatoes, cucumber, croutons',
+  'Steak':'Grilled steak with grill marks, medium rare pink center',
+  'Pot Pie':'Golden flaky pot pie with steam rising from broken crust',
+  'Soup':'Bowl of steaming soup with vegetables, spoon in bowl',
+  // Latin (extras not in audit)
+  'Tacos':'Two corn shell tacos with seasoned meat, lettuce, tomato, cheese',
+  'Burrito':'Large flour tortilla burrito wrapped, filling visible at end',
+  'Pozole':'Bowl of red pozole soup with hominy, radish, oregano garnish',
+  'Empanadas':'Golden fried empanadas with crimped edges, flaky pastry',
+  'Plantains':'Sliced fried sweet plantains, golden brown caramelized',
+  'Black Beans':'Bowl of black beans in dark sauce, cilantro garnish',
+  'Chile Relleno':'Stuffed poblano pepper with cheese, red sauce, golden batter',
+  'Flan':'Caramel flan with golden caramel sauce pooling, smooth custard',
+  'Paleta':'Colorful Mexican popsicle with visible fruit pieces',
+  'Tres Leches':'Slice of tres leches cake soaked in milk, whipped cream',
+  'Pollo Asado':'Grilled chicken pieces with char marks, lime wedge',
+  'Tostada':'Flat crispy corn tostada topped with beans, lettuce, cheese',
+  // Soul Food
+  'Collard Greens':'Bowl of dark green cooked collard greens, glistening',
+  'Cornbread':'Square of golden cornbread with butter melting on top',
+  'Black-Eyed Peas':'Bowl of cooked black-eyed peas, Southern comfort food',
+  'Sweet Potato':'Baked sweet potato split open with butter, orange flesh',
+  'Gumbo':'Bowl of thick dark roux gumbo with rice, shrimp and okra',
+  'BBQ':'Plate of BBQ with smoky ribs, pulled pork, tangy sauce',
+  'Rice':'Bowl of fluffy white steamed rice',
+  'Sweet Potato Pie':'Slice of orange sweet potato pie with whipped cream',
+  'Fried Fish':'Golden battered fried fish fillets, lemon wedge',
+  'Jambalaya':'Bowl of jambalaya with rice, sausage, shrimp, bell peppers',
+  'Red Beans & Rice':'Red kidney beans in thick sauce over white rice',
+  'Biscuits & Gravy':'Split biscuits covered in creamy white sausage gravy',
+  'Cabbage':'Bowl of cooked cabbage, tender green leaves',
+  'Hot Sauce':'Red hot sauce bottle with chili peppers',
+  'Grits':'Bowl of creamy white grits with butter pat melting',
+  'Peanut Soup':'Bowl of creamy peanut soup, golden brown, peanuts on top',
+  'Chicken Wings':'Plate of glazed chicken wings, crispy skin, buffalo sauce',
+  'Peach Cobbler':'Baked peach cobbler with golden biscuit topping',
+  'Pound Cake':'Slice of dense golden pound cake, moist texture',
+  // East Asian
+  'Noodles':'Bowl of Asian noodles with chopsticks lifting, steam rising',
+  'Sushi':'Colorful sushi rolls with salmon, rice, nori, wasabi',
+  'Dumplings':'Steamed dumplings in bamboo steamer, dipping sauce',
+  'Ramen':'Bowl of ramen with rich broth, egg, nori, green onions',
+  'Stir Fry':'Wok of colorful stir fry vegetables and meat, sizzling',
+  'Bento Box':'Japanese bento box with rice, fish, vegetables in compartments',
+  'Hot Pot':'Bubbling hot pot with broth, meat, vegetables, mushrooms',
+  'Chopsticks':'Pair of wooden chopsticks picking up noodles',
+  'Fried Rice':'Plate of golden fried rice with egg, peas, carrots',
+  'Curry Rice':'Japanese curry rice with thick brown sauce beside white rice',
+  'Teriyaki':'Teriyaki glazed chicken with shiny sauce, sesame seeds, rice',
+  'Tempura':'Crispy golden tempura shrimp and vegetables, light batter',
+  'Bok Choy':'Fresh green bok choy stir fried, bright green leaves',
+  'Garlic Noodles':'Bowl of garlic noodles glistening with garlic butter sauce',
+  'Spring Rolls':'Fresh or fried spring rolls, vegetables visible inside',
+  'Pho':'Large bowl of Vietnamese pho with clear broth, rice noodles, herbs',
+  'Lo Mein':'Plate of lo mein noodles with vegetables, thick saucy noodles',
+  'Orange Chicken':'Crispy orange chicken pieces in glossy orange sauce',
+  'Mochi':'Colorful round mochi balls, soft, pastel colors',
+  'Moon Cake':'Round moon cake with decorative pattern, golden brown',
+  'Rice Cracker':'Round crispy rice crackers with soy sauce glaze',
+  'Edamame':'Bowl of bright green edamame pods with sea salt',
+  'Green Tea':'Cup of green tea in traditional cup, pale green',
+  'Bubble Tea':'Tall glass of bubble tea with tapioca pearls, fat straw',
+  'Chow Mein':'Plate of crispy chow mein noodles with vegetables',
+  'Bibimbap':'Korean bibimbap bowl with rice, colorful vegetable toppings',
+  'Kimchi':'Bowl of bright red Korean kimchi, fermented cabbage',
+  'Korean BBQ':'Grilled Korean BBQ meat on grill plate, sizzling',
+  'Wonton':'Bowl of wonton soup with thin dumplings in clear broth',
+  'Miso Soup':'Bowl of miso soup with tofu cubes, wakame, green onion',
+  // South Asian
+  'Curry':'Bowl of rich golden curry sauce with meat or vegetables',
+  'Naan':'Tear-drop shaped naan bread with charred spots, fluffy',
+  'Biryani':'Plate of aromatic biryani rice with saffron color, meat',
+  'Dal':'Bowl of yellow dal lentil soup, thick and creamy',
+  'Roti':'Round flat roti bread, golden brown spots',
+  'Samosa':'Golden fried triangular samosa, filling visible at bite',
+  'Tandoori Chicken':'Red tandoori chicken with char marks, red-orange spice',
+  'Pakora':'Crispy golden pakora fritters with green chutney',
+  'Paratha':'Layered flaky paratha, golden with visible layers',
+  'Tikka Masala':'Creamy orange-red tikka masala with chicken pieces',
+  'Rice Pilaf':'Fluffy rice pilaf with saffron, nuts, raisins',
+  'Saag':'Creamy dark green saag spinach curry, naan beside',
+  'Chana Masala':'Bowl of chickpea chana masala in spiced tomato sauce',
+  'Onion Bhaji':'Crispy golden onion bhaji fritters, shredded onion',
+  'Raita':'Bowl of white yogurt raita with cucumber, mint',
+  'Mango Chutney':'Small bowl of golden mango chutney, sweet and glossy',
+  'Kheer':'Bowl of creamy white kheer rice pudding with nuts',
+  'Gulab Jamun':'Golden brown gulab jamun balls in sugar syrup',
+  'Chai Tea':'Cup of milky chai tea, warm brown, spices visible',
+  'Lassi':'Tall glass of creamy lassi yogurt drink, frothy top',
+  'Dosa':'Large crispy golden dosa crepe with sambar and chutney',
+  'Korma':'Creamy mild korma sauce with chicken, almond garnish',
+  'Vindaloo':'Rich red-brown vindaloo curry, spicy, potato and meat',
+  'Rajma':'Bowl of red kidney bean rajma in thick tomato gravy',
+  'Idli':'White steamed idli cakes, round and fluffy, with sambar',
+  // Middle Eastern
+  'Falafel':'Crispy green falafel balls cut open, on pita bread',
+  'Hummus':'Bowl of smooth hummus with olive oil drizzle, paprika',
+  'Pita':'Round pita bread, slightly puffed, warm and soft',
+  'Shawarma':'Shawarma wrap with shaved meat, pickles, tahini sauce',
+  'Kebab':'Grilled meat kebab skewers with charred edges',
+  'Couscous':'Bowl of fluffy couscous with vegetables, herbs',
+  'Tabbouleh':'Bowl of green tabbouleh with parsley, tomato, bulgur',
+  'Baba Ganoush':'Bowl of smoky baba ganoush eggplant dip, pita beside',
+  'Flatbread':'Round flatbread with charred spots, rustic',
+  'Tagine':'Moroccan tagine in traditional clay pot, stew with vegetables',
+  'Dolma':'Stuffed grape leaves rolled tightly, arranged on plate',
+  'Fattoush':'Colorful fattoush salad with crispy pita chips',
+  'Baklava':'Layered baklava with golden phyllo, honey, pistachios',
+  'Manakish':'Round manakish flatbread with zaatar topping',
+  'Mint Tea':'Glass of Moroccan mint tea, fresh mint leaves, golden',
+  'Halloumi':'Grilled halloumi cheese slices with grill marks',
+  'Shakshuka':'Eggs poached in red tomato sauce in skillet',
+  // African
+  'Jollof Rice':'Plate of vibrant orange-red jollof rice, West African',
+  'Injera':'Large round spongy injera with colorful stews on top',
+  'Stew':'Bowl of thick hearty stew with vegetables and meat',
+  'Fufu':'Round smooth white fufu ball beside bowl of soup',
+  'Suya':'Grilled suya meat skewers with spicy peanut coating',
+  'Lentils':'Bowl of cooked lentils, earthy and nutritious',
+  'Greens':'Bowl of cooked dark leafy greens, African style',
+  'Egusi Soup':'Bowl of thick green-gold egusi melon seed soup',
+  'Grilled Meat':'Grilled meat pieces on skewers with char marks',
+  'Ugali':'Round portion of white ugali cornmeal, dense and smooth',
+  'Doro Wat':'Ethiopian doro wat chicken stew, dark red spicy sauce, egg',
+  'Chapati':'Round layered chapati flatbread, golden, East African',
+  // Caribbean
+  'Jerk Chicken':'Spicy jerk chicken with dark spice coating, charred',
+  'Rice and Peas':'Jamaican rice and peas, coconut milk rice with beans',
+  'Curry Goat':'Bowl of Caribbean curry goat, rich sauce, tender meat',
+  'Coconut':'Fresh coconut split open showing white flesh, tropical',
+  'Mango':'Ripe golden mango cut in hedgehog style, tropical',
+  'Callaloo':'Bowl of green callaloo leafy vegetable stew',
+  'Patty':'Golden Jamaican beef patty, flaky yellow pastry, crescent',
+  'Oxtail':'Plate of braised oxtail in rich dark gravy, Caribbean',
+  // European
+  'Pasta':'Plate of spaghetti with red tomato sauce, parmesan, basil',
+  'Margherita Pizza':'Whole margherita pizza with mozzarella, tomato, basil',
+  'Croissant':'Golden flaky croissant with layered pastry visible',
+  'Baguette':'Long French baguette with crispy golden crust',
+  'Cheese':'Wedge of yellow cheese with holes, classic slice',
+  'Paella':'Large pan of Spanish paella with saffron rice, seafood',
+  'Borscht':'Bowl of deep red borscht beet soup with sour cream swirl',
+  'Pierogi':'Plate of golden pan-fried pierogi with sour cream',
+  'Bratwurst':'Grilled bratwurst sausage in bun with mustard',
+  'Pretzel':'Large golden soft pretzel with coarse salt, twisted shape',
+  'Fish and Chips':'Golden battered fish with thick chips, tartar sauce',
+  'Crepe':'Thin folded French crepe with chocolate and strawberries',
+  'Greek Salad':'Greek salad with feta, olives, tomato, cucumber',
+  'Fondue':'Cheese fondue pot with bread on fork dipping in',
+  'Schnitzel':'Golden breaded schnitzel cutlet with lemon wedge',
+  // Snacks
+  'Peanut Butter':'Jar of peanut butter with knife spreading on bread',
+  'Waffle':'Golden waffle with syrup and butter, grid pattern',
+  'Popcorn':'Overflowing container of fluffy popcorn, movie snack',
+  'Crackers':'Stack of square saltine crackers, simple and golden',
+  'Chocolate':'Chocolate bar with squares broken off, foil wrapper',
+  'Ice Cream':'Ice cream cone with two scoops, sprinkles, waffle cone',
+  'Donut':'Frosted donut with colorful sprinkles, round with hole',
+  'Cupcake':'Cupcake with swirled frosting, sprinkles, paper wrapper',
+  'Nuts':'Bowl of mixed nuts, almonds, cashews, walnuts',
+  'Cheese Stick':'Golden fried mozzarella stick, cheese stretching',
+  'Rice Cake':'Round white puffed rice cake, light and airy',
+  'Trail Mix':'Bowl of trail mix with nuts, raisins, chocolate chips',
+  'Breadstick':'Long golden breadstick with sesame seeds',
+  // Fruits
+  'Apple':'Shiny red apple with green leaf, classic fruit',
+  'Banana':'Yellow banana slightly curved, bright and cheerful',
+  'Strawberry':'Bright red strawberry with green leaves, seeds visible',
+  'Orange':'Round bright orange with dimpled skin, green leaf',
+  'Grapes':'Cluster of purple grapes on vine with green leaf',
+  'Watermelon':'Slice of red watermelon with green rind and black seeds',
+  'Peach':'Fuzzy peach with pink-orange blush, soft',
+  'Cherry':'Pair of bright red cherries on stems, shiny',
+  'Blueberry':'Handful of dark blue blueberries, small and round',
+  'Pineapple':'Whole pineapple with spiky crown leaves, tropical',
+  'Kiwi':'Kiwi cut in half showing green flesh with black seeds',
+  'Pear':'Green pear fruit with classic pear shape',
+  'Lemon':'Bright yellow lemon, one slice cut showing interior',
+  // Vegetables
+  'Carrot':'Bright orange carrot with green leafy top',
+  'Broccoli':'Head of green broccoli with thick stem and florets',
+  'Corn':'Ear of yellow corn with husk partially peeled',
+  'Lettuce':'Head of green lettuce with ruffled leaves',
+  'Tomato':'Round red ripe tomato with green stem',
+  'Cucumber':'Green cucumber, one slice cut showing interior',
+  'Pepper':'Green bell pepper, blocky shape, shiny skin',
+  'Potato':'Brown russet potato, oval shape, unpeeled',
+  'Onion':'Yellow onion with papery skin, round bulb',
+  'Mushroom':'White button mushroom with rounded cap',
+  'Peas':'Open green pea pod showing round green peas inside',
+  'Hot Pepper':'Red chili pepper, long and pointed, spicy',
+  // Desserts
+  'Cake':'Layer cake slice with frosting, decorated',
+  'Cookie':'Round chocolate chip cookie, golden brown, fresh baked',
+  'Pie':'Slice of fruit pie with lattice crust, golden pastry',
+  'Pudding':'Bowl of smooth chocolate pudding with whipped cream',
+  'Candy':'Colorful wrapped candy assortment, bright wrappers',
+  'Chocolate Bar':'Chocolate bar with squares, foil wrapper opened',
+  'Popsicle':'Colorful fruit popsicle on stick, frozen, dripping',
+  'Gummy Bears':'Pile of colorful gummy bears in various colors',
+  'Birthday Cake':'Birthday cake with lit candles, colorful frosting',
+};
+
+function loadFoodDrinkQueue() {
+  const grid = document.getElementById('food-grid');
+  const filter = document.getElementById('food-filter');
+  const statusFilter = document.getElementById('food-status-filter');
+  const cats = {};
+  // Group by rough category from comment structure
+  const entries = Object.entries(FOOD_PROMPTS);
+  entries.forEach(([label]) => {
+    const cat = guessFoodCategory(label);
+    if (!cats[cat]) cats[cat] = [];
+    cats[cat].push(label);
+  });
+  // Populate category filter
+  Object.keys(cats).sort().forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c + ' (' + cats[c].length + ')';
+    filter.appendChild(o);
+  });
+  const render = () => {
+    const catVal = filter.value;
+    const statVal = statusFilter.value;
+    const done = JSON.parse(localStorage.getItem('fv_food_done') || '{}');
+    let shown = entries;
+    if (catVal) shown = shown.filter(([l]) => guessFoodCategory(l) === catVal);
+    if (statVal === 'done') shown = shown.filter(([l]) => done[l]);
+    if (statVal === 'pending') shown = shown.filter(([l]) => !done[l]);
+    const total = entries.length;
+    const doneCount = entries.filter(([l]) => done[l]).length;
+    document.getElementById('food-stats').textContent = doneCount + '/' + total + ' done (' + Math.round(doneCount/total*100) + '%)';
+    grid.innerHTML = shown.map(([label, prompt]) => {
+      const isDone = done[label];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${isDone?'rgba(39,174,96,0.08)':'var(--card)'};border:1px solid ${isDone?'rgba(39,174,96,0.3)':'var(--border)'};border-radius:10px;cursor:pointer" onclick="loadFoodSymbol('${label.replace(/'/g,"\\'")}')">
+        <span style="font-size:11px;font-weight:900;color:${isDone?'var(--green)':'var(--amber)'};min-width:20px">${isDone?'✓':'→'}</span>
+        <span style="font-size:13px;font-weight:800;color:var(--text);flex:1">${label}</span>
+        <span style="font-size:10px;color:var(--muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prompt}</span>
+      </div>`;
+    }).join('');
+  };
+  filter.addEventListener('change', render);
+  statusFilter.addEventListener('change', render);
+  render();
+}
+
+function guessFoodCategory(label) {
+  const drinks = ['Water','Milk','Chocolate Milk','Lemonade','Smoothie','Hot Chocolate','Milkshake','Fruit Punch','Iced Tea','Orange Juice','Apple Juice','Grape Juice','Pineapple Juice','Mango Juice','Cranberry Juice','Peach Juice','Coke','Sprite','Fanta','Root Beer','Ginger Ale','Dr Pepper'];
+  const american = ['Hamburger','Hot Dog','Pizza','Fried Chicken','Sandwich','Grilled Cheese','Bacon','Pancakes','Waffles','Eggs','Cereal','Corn on the Cob','French Fries','Salad','Steak','Pot Pie','Soup'];
+  const latin = ['Tacos','Burrito','Pozole','Empanadas','Plantains','Black Beans','Chile Relleno','Flan','Paleta','Tres Leches','Pollo Asado','Tostada'];
+  const soul = ['Collard Greens','Cornbread','Black-Eyed Peas','Sweet Potato','Gumbo','BBQ','Rice','Sweet Potato Pie','Fried Fish','Jambalaya','Red Beans & Rice','Biscuits & Gravy','Cabbage','Hot Sauce','Grits','Peanut Soup','Chicken Wings','Peach Cobbler','Pound Cake'];
+  const asian = ['Noodles','Sushi','Dumplings','Ramen','Stir Fry','Bento Box','Hot Pot','Chopsticks','Fried Rice','Curry Rice','Teriyaki','Tempura','Bok Choy','Garlic Noodles','Spring Rolls','Pho','Lo Mein','Orange Chicken','Mochi','Moon Cake','Rice Cracker','Edamame','Green Tea','Bubble Tea','Chow Mein','Bibimbap','Kimchi','Korean BBQ','Wonton','Miso Soup'];
+  const southasian = ['Curry','Naan','Biryani','Dal','Roti','Samosa','Tandoori Chicken','Pakora','Paratha','Tikka Masala','Rice Pilaf','Saag','Chana Masala','Onion Bhaji','Raita','Mango Chutney','Kheer','Gulab Jamun','Chai Tea','Lassi','Dosa','Korma','Vindaloo','Rajma','Idli'];
+  const mideast = ['Falafel','Hummus','Pita','Shawarma','Kebab','Couscous','Tabbouleh','Baba Ganoush','Flatbread','Tagine','Dolma','Fattoush','Baklava','Manakish','Mint Tea','Halloumi','Shakshuka'];
+  const african = ['Jollof Rice','Injera','Stew','Fufu','Suya','Lentils','Greens','Egusi Soup','Grilled Meat','Ugali','Doro Wat','Chapati'];
+  const caribbean = ['Jerk Chicken','Rice and Peas','Curry Goat','Coconut','Mango','Callaloo','Patty','Oxtail'];
+  const euro = ['Pasta','Margherita Pizza','Croissant','Baguette','Cheese','Paella','Borscht','Pierogi','Bratwurst','Pretzel','Fish and Chips','Crepe','Greek Salad','Fondue','Schnitzel'];
+  const snacks = ['Peanut Butter','Waffle','Popcorn','Crackers','Chocolate','Ice Cream','Donut','Cupcake','Nuts','Cheese Stick','Rice Cake','Trail Mix','Breadstick'];
+  const fruits = ['Apple','Banana','Strawberry','Orange','Grapes','Watermelon','Peach','Cherry','Blueberry','Pineapple','Kiwi','Pear','Lemon'];
+  const vegs = ['Carrot','Broccoli','Corn','Lettuce','Tomato','Cucumber','Pepper','Potato','Onion','Mushroom','Peas','Hot Pepper'];
+  const desserts = ['Cake','Cookie','Pie','Pudding','Candy','Chocolate Bar','Popsicle','Gummy Bears','Birthday Cake'];
+  if (drinks.includes(label)) return 'Drinks';
+  if (american.includes(label)) return 'American';
+  if (latin.includes(label)) return 'Latin';
+  if (soul.includes(label)) return 'Soul Food';
+  if (asian.includes(label)) return 'East Asian';
+  if (southasian.includes(label)) return 'South Asian';
+  if (mideast.includes(label)) return 'Middle Eastern';
+  if (african.includes(label)) return 'African';
+  if (caribbean.includes(label)) return 'Caribbean';
+  if (euro.includes(label)) return 'European';
+  if (snacks.includes(label)) return 'Snacks';
+  if (fruits.includes(label)) return 'Fruits';
+  if (vegs.includes(label)) return 'Vegetables';
+  if (desserts.includes(label)) return 'Desserts';
+  return 'Other';
+}
+
+function loadFoodSymbol(label) {
+  switchTab('create');
+  document.getElementById('input-label').value = label;
+  document.getElementById('input-extra').value = FOOD_PROMPTS[label] || '';
+  document.getElementById('input-extra').style.borderColor = 'rgba(39,174,96,0.6)';
+  document.getElementById('prompt-badge').style.display = 'inline';
+  delete document.getElementById('input-extra').dataset.manualEdit;
+  document.getElementById('input-category').value = 'food';
+  autoFillPhrase();
+  updatePromptPreview();
+}
+
+// Mark a food symbol as done after approval
+const _origApprove = window.approveSymbol;
+window.markFoodDone = function(label) {
+  const done = JSON.parse(localStorage.getItem('fv_food_done') || '{}');
+  done[label] = true;
+  localStorage.setItem('fv_food_done', JSON.stringify(done));
+};
 
 init();
 </script>

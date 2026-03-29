@@ -452,7 +452,7 @@ body {
 @media (max-width: 400px) {
   .symbol-card { gap: 2px; padding: 4px 3px 4px; }
   .symbol-emoji { font-size: clamp(24px, 8vw, 44px); }
-  .symbol-character-img { max-height: 65%; }
+  .symbol-character-img { max-height: 78%; }
   .symbol-label { font-size: clamp(7px, 1.6vw, 10px); letter-spacing: 0.1px; }
 }
 
@@ -481,31 +481,29 @@ body {
   object-fit: contain;
 }
 
-/* Character images — full bleed, no white container */
-/* Character sprite images — constrained with clip-path for border artifacts */
+/* Character images — fill the card, no clipping */
 .symbol-character-img {
-  width: clamp(48px, 68%, 110px);
+  width: 100%;
   height: auto;
-  max-height: 72%;
+  max-height: 85%;
   object-fit: contain;
   z-index: 1;
   border-radius: 6px;
   flex-shrink: 1;
   min-height: 0;
-  -webkit-clip-path: inset(6px round 4px);
-  clip-path: inset(6px round 4px);
 }
 
-/* Custom admin-generated images — fill entire card, navy bg matches */
+/* Custom admin-generated images — contain on dark card, CSS handles background */
 .symbol-custom-img {
   position: absolute;
   inset: 3px 1px 0 1px;
   width: calc(100% - 2px);
   height: calc(100% - 3px);
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   border-radius: 0 0 19px 19px;
   z-index: 0;
+  background: transparent;
 }
 
 /* Legacy .symbol-image for fallback */

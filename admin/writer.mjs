@@ -88,8 +88,9 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const filePath = join(SYMBOLS_DIR, fileName);
   const imageBuffer = Buffer.from(imageBase64, 'base64');
 
+  // Just resize — CSS handles the dark card background
   await sharp(imageBuffer)
-    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
     .png({ compressionLevel: 8 })
     .toFile(filePath);
 
