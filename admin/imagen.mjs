@@ -32,9 +32,9 @@ const BASE_STYLE_PROMPT = `
 You are generating AAC pictogram symbols for a communication app used by nonverbal children.
 
 CRITICAL — MATCH THIS EXACT STYLE:
-- Transparent or white background. Isolated object, nothing behind it.
-- Bold thick colorful outlines matching the object's color. Rich vibrant saturated colors. No thin lines. No sketchy style. Bold chunky cartoon style like a children's app icon.
+- Simple clear line drawing with BOLD BLACK OUTLINES (2-3px thick)
 - FLAT bright colors — absolutely no gradients, no shadows, no 3D
+- White background
 - Minimal detail — only what's needed to recognize the subject
 - Consistent line weight throughout the entire image
 - Skin-toned people (light peachy tone) when showing humans

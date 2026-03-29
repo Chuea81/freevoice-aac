@@ -88,9 +88,36 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const filePath = join(SYMBOLS_DIR, fileName);
   const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-  // Just resize — CSS handles the dark card background
-  await sharp(imageBuffer)
-    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+  // Resize then replace white/light background with app navy #0C1428
+  const navy = { r: 12, g: 20, b: 40 };
+  const resized = await sharp(imageBuffer)
+    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { data, info } = resized;
+  const pixels = Buffer.from(data);
+
+  // Replace light pixels (R>200, G>200, B>200) with navy
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+    if (r > 200 && g > 200 && b > 200) {
+      pixels[i] = navy.r;
+      pixels[i+1] = navy.g;
+      pixels[i+2] = navy.b;
+      pixels[i+3] = 255;
+    }
+    // Also catch near-black/dark gray backgrounds Gemini sometimes uses
+    if (r < 40 && g < 40 && b < 50) {
+      pixels[i] = navy.r;
+      pixels[i+1] = navy.g;
+      pixels[i+2] = navy.b;
+      pixels[i+3] = 255;
+    }
+  }
+
+  await sharp(pixels, { raw: { width: info.width, height: info.height, channels: 4 } })
     .png({ compressionLevel: 8 })
     .toFile(filePath);
 

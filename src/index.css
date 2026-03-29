@@ -493,17 +493,16 @@ body {
   min-height: 0;
 }
 
-/* Custom admin-generated images — contain on dark card, CSS handles background */
+/* Custom admin-generated images — fill entire card, navy bg matches */
 .symbol-custom-img {
   position: absolute;
   inset: 3px 1px 0 1px;
   width: calc(100% - 2px);
   height: calc(100% - 3px);
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   border-radius: 0 0 19px 19px;
   z-index: 0;
-  background: transparent;
 }
 
 /* Legacy .symbol-image for fallback */
