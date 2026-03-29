@@ -51,8 +51,37 @@ function getWorker(): Worker {
   return worker;
 }
 
+// Shared AudioContext — reuse across playbacks to avoid init screech
+let sharedAudioCtx: AudioContext | null = null;
+let audioCtxWarmed = false;
+
+function getAudioContext(): AudioContext {
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    sharedAudioCtx = new AudioContext();
+    audioCtxWarmed = false;
+  }
+  return sharedAudioCtx;
+}
+
+/** Warm the AudioContext with a tiny silent buffer to flush any init garbage */
+async function warmAudioContext(ctx: AudioContext): Promise<void> {
+  if (audioCtxWarmed) return;
+  if (ctx.state === 'suspended') {
+    await ctx.resume();
+  }
+  // Play 50ms of silence to flush any init artifacts
+  const silent = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+  const src = ctx.createBufferSource();
+  src.buffer = silent;
+  src.connect(ctx.destination);
+  src.start();
+  await new Promise<void>((resolve) => { src.onended = () => resolve(); });
+  audioCtxWarmed = true;
+}
+
 async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<void> {
-  const audioCtx = new AudioContext();
+  const audioCtx = getAudioContext();
+  await warmAudioContext(audioCtx);
   const audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
@@ -62,10 +91,7 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
   gainNode.connect(audioCtx.destination);
   source.start(0);
   return new Promise((resolve) => {
-    source.onended = () => {
-      audioCtx.close();
-      resolve();
-    };
+    source.onended = () => resolve();
   });
 }
 
@@ -106,9 +132,15 @@ export function useTTS() {
 
   const getPronunciation = useBoardStore((s) => s.getPronunciation);
 
-  // Unlock iOS speech synthesis on mount
+  // Unlock iOS speech synthesis + warm AudioContext on first user interaction
   useEffect(() => {
     unlockIOSSpeech();
+    const warmOnInteraction = () => {
+      warmAudioContext(getAudioContext());
+      document.removeEventListener('pointerdown', warmOnInteraction);
+    };
+    document.addEventListener('pointerdown', warmOnInteraction, { once: true });
+    return () => document.removeEventListener('pointerdown', warmOnInteraction);
   }, []);
 
   // Auto-reload Kokoro if it was previously downloaded (model cached by browser)

@@ -29,15 +29,54 @@ async function detectWebGPU(): Promise<boolean> {
   }
 }
 
+/** Check if model files are already cached in Cache Storage (transformers.js cache) */
+async function isModelCached(): Promise<boolean> {
+  try {
+    const cacheNames = await caches.keys();
+    // transformers.js uses a cache named 'transformers-cache'
+    const tfCache = cacheNames.find(n => n.includes('transformers'));
+    if (!tfCache) return false;
+    const cache = await caches.open(tfCache);
+    const keys = await cache.keys();
+    // Check if any cached URL contains our model ID
+    return keys.some(req => req.url.includes('Kokoro'));
+  } catch {
+    return false;
+  }
+}
+
+/** Request persistent storage so the browser doesn't evict the ~80MB model cache */
+async function requestPersistentStorage(): Promise<void> {
+  try {
+    if (navigator.storage?.persist) {
+      const persisted = await navigator.storage.persisted();
+      if (!persisted) {
+        await navigator.storage.persist();
+      }
+    }
+  } catch {
+    // Non-fatal — storage may still work, just not guaranteed persistent
+  }
+}
+
 async function loadModel(dtypeHint = 'q8') {
   if (tts) return;
   if (loadingPromise) return loadingPromise;
 
   loadingPromise = (async () => {
     try {
+      // Prevent browser from evicting model cache
+      await requestPersistentStorage();
+
       const hasWebGPU = await detectWebGPU();
       const device = hasWebGPU ? 'webgpu' : 'wasm';
       const dtype = hasWebGPU ? 'fp32' : (dtypeHint as 'q8');
+
+      // Check if model is already cached — skip download progress noise
+      const cached = await isModelCached();
+      if (cached) {
+        post({ type: 'LOAD_PROGRESS', progress: 95, status: 'loading', device });
+      }
 
       tts = await KokoroTTS.from_pretrained(MODEL_ID, {
         dtype: dtype as 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16',
@@ -46,15 +85,15 @@ async function loadModel(dtypeHint = 'q8') {
         progress_callback: (progress: any) => {
           let pct = 0;
           if (typeof progress.progress === 'number') {
-            // progress.progress can be 0-100 or 0-1 depending on version
             pct = progress.progress > 1 ? progress.progress : progress.progress * 100;
           }
-          // During 'initiate' phase, show 1% so it doesn't look frozen
           if (progress.status === 'initiate' && pct === 0) pct = 1;
+          // If cached, show progress starting from 95% (just loading into memory)
+          if (cached && pct < 95) pct = 95;
           post({
             type: 'LOAD_PROGRESS',
             progress: Math.round(pct),
-            status: progress.status || 'loading',
+            status: cached ? 'cached' : (progress.status || 'loading'),
             device,
           });
         },
