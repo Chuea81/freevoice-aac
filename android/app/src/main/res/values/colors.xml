@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- FreeVoice brand colors -->
+    <color name="primary">#F59E0B</color>
+    <color name="primary_dark">#0a1628</color>
+    <color name="accent">#F59E0B</color>
+    <color name="background">#0a1628</color>
+    <color name="text_primary">#ffffff</color>
+</resources>

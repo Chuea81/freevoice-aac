@@ -1,0 +1,95 @@
+FreeVoice AAC — Free Communication for Every Child
+
+WHY FREEVOICE?
+
+Most AAC apps cost $200–$300/year in subscriptions. Families with nonverbal children already spend thousands on therapies, equipment, and care. We decided that was wrong.
+
+FreeVoice is completely free. Forever. No hidden fees, no credit card, no subscription trap.
+
+WHAT IS AAC?
+
+Augmentative and Alternative Communication (AAC) gives nonverbal and minimally verbal children a voice. Our app lets them communicate with 1,100+ symbols, instantly speak sentences in 10 languages, and customize boards for their life.
+
+BUILT FOR ACCESSIBILITY
+
+✓ 1,100+ symbols across 66 boards (home, feelings, food, school, body, places, routines)
+✓ 10 languages: English, Spanish, French, German, Portuguese, Italian, Dutch, Arabic, Chinese, Japanese
+✓ Offline-capable (works without WiFi after first load)
+✓ Culturally diverse character avatars (14 characters × 24 emotions = 336 images)
+✓ Fully customizable (add photos, create boards, adjust colors, fonts)
+✓ Three voice options (AI voice, device voice, or record your own)
+✓ Parent Mode (PIN-protected settings)
+
+PRIVACY FIRST
+
+✓ No tracking or analytics
+✓ No advertisements
+✓ No login required
+✓ No data collection
+✓ All data stays on your device
+✓ Open-source code (inspect it yourself on GitHub)
+
+CORE FEATURES
+
+SPEECH BAR
+Build sentences symbol-by-symbol, then speak them out loud. Every symbol shows a colorful emoji, text label, and category color (verb=green, noun=orange, etc). Tap to add, long-press to remove.
+
+FAST PHRASES
+12 critical social phrases always visible — "Help," "Wait," "Done," "More," "Stop," "Look," etc. One tap away, no board navigation.
+
+SEARCH
+Find any symbol instantly. Search by word or browse categories. Type or speak to find what you need.
+
+CUSTOMIZATION
+Add your own symbols using photos or emoji. Create custom boards for specific contexts (mealtimes, school days, favorite activities). Pin frequently-used symbols to the top.
+
+VOICE
+Choose from clear AI voices, your device's built-in voice, or record a family member's voice for a personal touch.
+
+PARENT MODE
+PIN-protected access to settings. Adjust symbol size, colors, voice speed, language — tailored to each child's needs.
+
+BACKUP & SHARING
+Export your boards as JSON to back up locally. Share boards via compressed URL with therapists or caregivers. Import community boards.
+
+WHO NEEDS THIS?
+
+FreeVoice helps children with:
+→ Autism
+→ Apraxia of speech
+→ Cerebral palsy
+→ Down syndrome
+→ Selective mutism
+→ Speech apraxia
+→ And many other speech disabilities
+
+DESIGN PHILOSOPHY
+
+Built by parents who understand what families need. Every symbol, board, and feature came from real requests from the autism and nonverbal communities.
+
+NO CATCH
+
+No ads. No tracking. No "premium features." No subscription after 30 days. No data selling. It's free because your child deserves to speak, not because we want to extract money from families already stretched thin.
+
+GET STARTED
+
+Download now. Create a character. Start tapping symbols. Speak.
+
+It takes 30 seconds to get your first sentence out.
+
+REPORT ISSUES
+
+Found a bug? Want a feature? Open an issue on GitHub:
+https://github.com/Chuea81/freevoice-aac/issues
+
+SUPPORT
+
+For questions or feedback: [contact form on website]
+For accessibility accommodations: [contact]
+
+CREDITS
+
+Built by Shellcraft Labs.
+Symbols from ARASAAC (licensed under CC-BY-NC-SA) + custom designs.
+Voices powered by Kokoro TTS (on-device, no tracking).
+Created for the nonverbal community. By people who listen.

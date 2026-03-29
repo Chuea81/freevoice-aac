@@ -16,9 +16,18 @@
     "generate-assets": "npm run generate-icons && npm run generate-og",
     "license-audit": "npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC-BY-4.0;CC0-1.0;Unlicense'",
     "admin": "node admin/server.mjs",
-    "admin:install": "cd admin && npm install"
+    "admin:install": "cd admin && npm install",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open android",
+    "build:apk:debug": "npm run build && npx cap sync && cd android && ./gradlew assembleDebug && cd .. && echo '✓ Debug APK built: android/app/build/outputs/apk/debug/app-debug.apk'",
+    "build:apk:release": "npm run build && npx cap sync && cd android && ./gradlew assembleRelease && cd .. && echo '✓ Release APK built: android/app/build/outputs/apk/release/app-release.apk'",
+    "build:bundle:release": "npm run build && npx cap sync && cd android && ./gradlew bundleRelease && cd .. && echo '✓ App Bundle built: android/app/build/outputs/bundle/release/app-release.aab'",
+    "apk:generate-keystore": "bash scripts/generate-keystore.sh"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
     "dexie": "^4.3.0",
     "i18next": "^25.10.10",
     "i18next-browser-languagedetector": "^8.2.1",

@@ -26,3 +26,16 @@ dist-ssr
 # Admin tool
 admin/.env
 admin/node_modules/
+
+# APK signing — DO NOT COMMIT
+.keystore/
+.env.apk
+.env.apk.local
+
+# Android build artifacts
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+*.apk
+*.aab
