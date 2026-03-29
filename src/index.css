@@ -493,17 +493,16 @@ body {
   min-height: 0;
 }
 
-/* Custom admin-generated images — same white window as ARASAAC */
+/* Custom admin-generated images — transparent bg, card shows through */
 .symbol-custom-img {
-  width: clamp(42px, 55%, 90px);
-  height: clamp(42px, 55%, 90px);
+  position: absolute;
+  inset: 3px 1px 0 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 3px);
   object-fit: contain;
-  background: white;
-  border-radius: 12px;
-  padding: 4px;
-  z-index: 1;
-  flex-shrink: 1;
-  min-height: 0;
+  object-position: center;
+  border-radius: 0 0 19px 19px;
+  z-index: 0;
 }
 
 /* Legacy .symbol-image for fallback */

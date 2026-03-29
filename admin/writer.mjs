@@ -88,9 +88,24 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const filePath = join(SYMBOLS_DIR, fileName);
   const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-  // Just resize — no background manipulation, CSS handles display
-  await sharp(imageBuffer)
-    .resize(500, 500, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } })
+  // Resize, then make Gemini's dark bg transparent so the card bg shows through
+  const { data, info } = await sharp(imageBuffer)
+    .resize(500, 500, { fit: 'cover', position: 'center' })
+    .flatten({ background: { r: 12, g: 20, b: 40 } })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const pixels = Buffer.from(data);
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+    // Any dark blue Gemini generates as "background" — make transparent
+    if (r < 55 && g < 75 && b < 110 && (r + g + b) < 180) {
+      pixels[i+3] = 0;
+    }
+  }
+
+  await sharp(pixels, { raw: { width: info.width, height: info.height, channels: 4 } })
     .png({ compressionLevel: 8 })
     .toFile(filePath);
 

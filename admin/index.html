@@ -673,20 +673,20 @@ function showNavyPreview(base64, label) {
     const c = document.createElement('canvas');
     c.width = img.width; c.height = img.height;
     const ctx = c.getContext('2d');
-    // 1. Fill entire canvas with navy
-    ctx.fillStyle = '#0C1428';
+    // Fill with card navy, then draw image with dark bg made transparent
+    ctx.fillStyle = '#1B2845';
     ctx.fillRect(0, 0, c.width, c.height);
-    // 2. Draw image on top (transparent areas show navy beneath)
-    ctx.drawImage(img, 0, 0);
-    // 3. Replace any remaining white/light pixels with navy
-    const id = ctx.getImageData(0, 0, c.width, c.height);
+    const tmp = document.createElement('canvas');
+    tmp.width = img.width; tmp.height = img.height;
+    const tctx = tmp.getContext('2d');
+    tctx.drawImage(img, 0, 0);
+    const id = tctx.getImageData(0, 0, tmp.width, tmp.height);
     const d = id.data;
     for (let i = 0; i < d.length; i += 4) {
-      if (d[i] > 210 && d[i+1] > 210 && d[i+2] > 210) {
-        d[i] = 12; d[i+1] = 20; d[i+2] = 40; d[i+3] = 255;
-      }
+      if (d[i] < 55 && d[i+1] < 75 && d[i+2] < 110 && (d[i]+d[i+1]+d[i+2]) < 180) d[i+3] = 0;
     }
-    ctx.putImageData(id, 0, 0);
+    tctx.putImageData(id, 0, 0);
+    ctx.drawImage(tmp, 0, 0);
     card.innerHTML = '';
     card.appendChild(c);
     const lbl = document.createElement('span');

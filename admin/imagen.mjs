@@ -9,8 +9,7 @@ config({ path: join(__dir, '.env') });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Load reference style image — pick your best symbol and save it as admin/reference.png
-// Every generation will use this as a style reference for consistency
+// Load reference style image for consistency
 const REFERENCE_PATH = join(__dir, 'reference.png');
 let referenceImage = null;
 
@@ -24,45 +23,36 @@ if (existsSync(REFERENCE_PATH)) {
   };
   console.log('✅ Style reference image loaded:', REFERENCE_PATH);
 } else {
-  console.log('⚠️  No reference.png found in admin/ — generating without style reference');
-  console.log('   To improve consistency, save your best symbol as admin/reference.png');
+  console.log('⚠️  No reference.png found — generating without style reference');
 }
 
 const BASE_STYLE_PROMPT = `
-You are generating AAC pictogram symbols for a communication app used by nonverbal children.
-
-CRITICAL — MATCH THIS EXACT STYLE:
-- Plain white background
-- Simple clear line drawing with BOLD BLACK OUTLINES (2-3px thick)
-- FLAT bright colors — absolutely no gradients, no shadows, no 3D
-- Minimal detail — only what's needed to recognize the subject
-- Consistent line weight throughout the entire image
-- Skin-toned people (light peachy tone) when showing humans
-- Simple round heads, dot eyes, minimal facial features
-- Objects drawn from a straight-on or slight 3/4 angle
-- NO text, NO labels, NO letters anywhere in the image
-- Must be recognizable by a 3-year-old at 60x60 pixels
-- Professional clinical quality — used by speech therapists
-
-MATCH THE REFERENCE IMAGE STYLE EXACTLY.
-Every symbol must look like it was drawn by the same artist.
-Same line weight. Same color saturation. Same level of detail.
-Same perspective. Same proportions.
+Generate a 500x500 pixel image that FILLS THE ENTIRE CANVAS edge to edge.
+AAC (Augmentative and Alternative Communication) pictogram symbol.
+Style: ARASAAC-inspired — simple, clear, bold black outlines, flat bright colors.
+The subject must be LARGE and fill at least 80% of the canvas.
+Background: solid dark navy blue (#0C1428) filling the entire image.
+DO NOT add a white background. DO NOT add borders or frames.
+DO NOT make the symbol small in the center — it must be BIG.
+No text, no labels, no letters, no watermarks, no borders.
+Single centered subject drawn large and clear.
+Thick consistent black outlines. Flat vivid color fills.
+Must be recognizable at 60x60 pixels by a 3-year-old child.
 `.trim();
 
 const CATEGORY_STYLE_HINTS = {
-  food: 'Simple food drawing. Recognizable shape, flat colors, bold outlines. Front-facing view.',
-  drinks: 'Simple drink in a clear cup/glass. Bold outlines, flat liquid color.',
-  emotions: 'Simple round face with clear expression. Bold outlines, minimal features.',
-  people: 'Simple person figure. Clear role (uniform/tool). Bold outlines, flat colors.',
-  places: 'Simple building front view. Recognizable features, bold outlines.',
-  activities: 'Simple figure doing the action. Clear pose, bold outlines.',
-  body: 'Simple body part or health symbol. Clear, friendly, bold outlines.',
-  school: 'Simple school object. Recognizable shape, bold outlines.',
-  social: 'Simple interaction scene. Clear gesture, bold outlines.',
-  nature: 'Simple nature element. Clear shape, bold outlines.',
-  animals: 'Simple animal drawing. Recognizable species, friendly face, bold outlines.',
-  default: 'Simple pictogram. Bold black outlines, flat bright colors.',
+  food: 'Simple food pictogram. Clear recognizable shape. Bright flat colors. Like an ARASAAC food symbol but cleaner.',
+  drinks: 'Simple drink pictogram. Clear vessel shape with visible liquid. Flat colors, bold outlines.',
+  emotions: 'Simple face showing emotion clearly. Round face, minimal features, big clear expression. ARASAAC emotion style.',
+  people: 'Simple person pictogram. Clear role identifier (uniform, tool, etc). ARASAAC person style.',
+  places: 'Simple building/location pictogram. Recognizable shape, minimal detail. ARASAAC style.',
+  activities: 'Simple action pictogram. Clear pose or equipment. ARASAAC activity style.',
+  body: 'Simple body part or health pictogram. Clear, clinical but friendly. ARASAAC body style.',
+  school: 'Simple school object pictogram. Recognizable shape. ARASAAC school supply style.',
+  social: 'Simple social interaction pictogram. Clear gesture or scene. ARASAAC style.',
+  nature: 'Simple nature pictogram. Clear shape, bright colors. ARASAAC style.',
+  animals: 'Simple animal pictogram. Recognizable species, friendly. Bold outlines, flat colors. ARASAAC animal style.',
+  default: 'Simple clear pictogram. Bold outlines, flat colors. ARASAAC style.',
 };
 
 export async function generateSymbol({ label, category = 'default', extraPrompt = '' }) {
@@ -71,21 +61,23 @@ export async function generateSymbol({ label, category = 'default', extraPrompt 
   const prompt = `
 ${BASE_STYLE_PROMPT}
 
-Category: ${categoryHint}
+Category context: ${categoryHint}
 
-Generate a single AAC symbol for: "${label}"
+Subject: ${label}
+
 ${extraPrompt ? `Additional detail: ${extraPrompt}` : ''}
 
-The symbol must match the reference style exactly — same line weight, same colors, same simplicity.
+Create a single clear AAC communication symbol for "${label}".
+The image should be immediately recognizable to a child.
   `.trim();
 
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
 
-  // Build content parts — include reference image if available
+  // Include reference image if available
   const parts = [];
   if (referenceImage) {
     parts.push(referenceImage);
-    parts.push({ text: 'This is the reference style. Generate a new symbol in EXACTLY this style for the subject described below.\n\n' + prompt });
+    parts.push({ text: 'Match this style EXACTLY — same bold outlines, same vivid colors, same level of detail. Generate a new symbol:\n\n' + prompt });
   } else {
     parts.push({ text: prompt });
   }
