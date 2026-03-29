@@ -1,21 +1,5 @@
 apply plugin: 'com.android.application'
 
-// Load environment variables for signing
-def loadEnv(String envFile) {
-    def env = [:]
-    if (new File(envFile).exists()) {
-        new File(envFile).eachLine { line ->
-            if (!line.startsWith('#') && line.contains('=')) {
-                def parts = line.split('=', 2)
-                env[parts[0].trim()] = parts[1].trim()
-            }
-        }
-    }
-    return env
-}
-
-def envVars = loadEnv('.env.apk')
-
 android {
     namespace = "app.freevoiceaac.twa"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -33,19 +17,25 @@ android {
         }
     }
 
-    // Signing configuration
+    // Signing configuration — passwords loaded from environment variables ONLY
+    // SECURITY: Never hardcode passwords in this file
+    // Set environment variables before building:
+    //   export KEYSTORE_PASSWORD="your_password"
+    //   export KEY_PASSWORD="your_password"
+    //   export KEYSTORE_PATH=".keystore/freevoice.jks"
+    //   export KEY_ALIAS="freevoice"
     signingConfigs {
         release {
-            storeFile file(envVars.get('KEYSTORE_PATH', '.keystore/freevoice.jks'))
-            storePassword envVars.get('KEYSTORE_PASSWORD', '')
-            keyAlias envVars.get('KEY_ALIAS', 'freevoice')
-            keyPassword envVars.get('KEY_PASSWORD', '')
+            storeFile file(System.getenv('KEYSTORE_PATH') ?: '.keystore/freevoice.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS') ?: 'freevoice'
+            keyPassword System.getenv('KEY_PASSWORD')
         }
         debug {
-            storeFile file(envVars.get('KEYSTORE_PATH', '.keystore/freevoice.jks'))
-            storePassword envVars.get('KEYSTORE_PASSWORD', '')
-            keyAlias envVars.get('KEY_ALIAS', 'freevoice')
-            keyPassword envVars.get('KEY_PASSWORD', '')
+            storeFile file(System.getenv('KEYSTORE_PATH') ?: '.keystore/freevoice.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS') ?: 'freevoice'
+            keyPassword System.getenv('KEY_PASSWORD')
         }
     }
 
