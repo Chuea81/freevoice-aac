@@ -32,19 +32,17 @@ const BASE_STYLE_PROMPT = `
 You are generating AAC pictogram symbols for a communication app used by nonverbal children.
 
 CRITICAL — MATCH THIS EXACT STYLE:
-- White background — plain white, nothing else
-- Bold thick DARK COLORED outlines (NOT pure black) — use dark brown, dark blue, or dark gray outlines (2-3px thick)
-- RICH VIBRANT SATURATED colors — make every color punchy and bold, no pale or pastel tones
-- FLAT colors — absolutely no gradients, no shadows, no 3D effects
-- Chunky cartoon style like a children's app icon
+- Plain white background
+- Simple clear line drawing with BOLD BLACK OUTLINES (2-3px thick)
+- FLAT bright colors — absolutely no gradients, no shadows, no 3D
 - Minimal detail — only what's needed to recognize the subject
 - Consistent line weight throughout the entire image
-- Skin-toned people (warm medium tone) when showing humans
+- Skin-toned people (light peachy tone) when showing humans
 - Simple round heads, dot eyes, minimal facial features
 - Objects drawn from a straight-on or slight 3/4 angle
 - NO text, NO labels, NO letters anywhere in the image
-- Fill the entire frame — the subject should be large and centered
 - Must be recognizable by a 3-year-old at 60x60 pixels
+- Professional clinical quality — used by speech therapists
 
 MATCH THE REFERENCE IMAGE STYLE EXACTLY.
 Every symbol must look like it was drawn by the same artist.
