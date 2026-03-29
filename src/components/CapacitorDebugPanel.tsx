@@ -41,9 +41,10 @@ export function CapacitorDebugPanel() {
     setWebAudioAvailable(hasWebAudio);
 
     // Check Web Speech API availability
+    // Note: speechSynthesis might not be initialized until first use
     const hasWebSpeech = !!(
-      window.speechSynthesis &&
-      typeof window.SpeechSynthesisUtterance !== 'undefined'
+      window.speechSynthesis ||
+      (window as unknown as { speechSynthesis?: SpeechSynthesis }).speechSynthesis
     );
     setWebSpeechAvailable(hasWebSpeech);
 
@@ -215,6 +216,7 @@ export function CapacitorDebugPanel() {
               width: '100%',
               padding: '4px',
               marginTop: '8px',
+              marginBottom: '4px',
               backgroundColor: '#f59e0b',
               color: '#0a1628',
               border: 'none',
@@ -226,6 +228,28 @@ export function CapacitorDebugPanel() {
           >
             Test Audio (Beep)
           </button>
+
+          {/* Force Switch to Kokoro Button */}
+          {kokoroStatus === 'ready' && activeTier !== 'kokoro' && (
+            <button
+              onClick={() => {
+                useTTSStore.getState().setActiveTier('kokoro');
+              }}
+              style={{
+                width: '100%',
+                padding: '4px',
+                backgroundColor: '#10b981',
+                color: '#0a1628',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+              }}
+            >
+              Switch to Kokoro ✓
+            </button>
+          )}
 
           {/* Device Info */}
           <div className="debug-item" style={{ fontSize: '9px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245, 158, 11, 0.2)' }}>
