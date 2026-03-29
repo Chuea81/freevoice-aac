@@ -110,10 +110,11 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     }
 
     // Add to CUSTOM_SYMBOL_IMAGES
-    if (!content.includes(`'${upperLabel}': customPath`)) {
+    const entryValue = '`${B}symbols/custom/' + labelToFileName(label) + '.png`';
+    if (!content.includes(`'${upperLabel}':`)) {
       content = content.replace(
         /};\s*$/,
-        `  '${upperLabel}': customPath('custom', '${labelToFileName(label)}'),\n};`
+        `  '${upperLabel}': ${entryValue},\n};`
       );
     }
 
