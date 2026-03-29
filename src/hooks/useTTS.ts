@@ -69,6 +69,9 @@ function getWorker(): Worker {
 let sharedAudioCtx: AudioContext | null = null;
 let audioCtxWarmed = false;
 
+// Interrupt mode: keep track of currently playing audio source so we can stop it
+let currentAudioSource: AudioBufferSourceNode | null = null;
+
 /** Check if device is Samsung/older Android that needs audio buffer */
 function isSamsungOldAndroid(): boolean {
   const ua = navigator.userAgent.toLowerCase();
@@ -115,6 +118,16 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
     await audioCtx.resume();
   }
   await warmAudioContext(audioCtx);
+
+  // Interrupt mode: stop any currently playing audio immediately
+  if (currentAudioSource) {
+    try {
+      currentAudioSource.stop(0);
+    } catch (e) {
+      // Source may already be stopped, ignore
+    }
+  }
+
   const audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
@@ -122,9 +135,19 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
   source.buffer = audioBuffer;
   source.connect(gainNode);
   gainNode.connect(audioCtx.destination);
+
+  // Store reference for interrupt mode
+  currentAudioSource = source;
+
   source.start(0);
   return new Promise((resolve) => {
-    source.onended = () => resolve();
+    source.onended = () => {
+      // Clear the reference when speech ends naturally
+      if (currentAudioSource === source) {
+        currentAudioSource = null;
+      }
+      resolve();
+    };
   });
 }
 
@@ -136,7 +159,19 @@ function speakWithWebSpeech(
   volume: number
 ): Promise<void> {
   return new Promise((resolve) => {
+    // Interrupt mode: cancel any currently playing Web Speech immediately
     window.speechSynthesis.cancel();
+
+    // Also stop any Kokoro/Web Audio playback
+    if (currentAudioSource) {
+      try {
+        currentAudioSource.stop(0);
+        currentAudioSource = null;
+      } catch (e) {
+        // Source may already be stopped, ignore
+      }
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = rate;
     utterance.pitch = pitch;
@@ -284,7 +319,16 @@ export function useTTS() {
   const speakPreview = useCallback((text: string): void => {
     if (!text.trim()) return;
     const processed = getPronunciation(text);
+    // Interrupt mode: cancel any currently playing audio
     window.speechSynthesis.cancel();
+    if (currentAudioSource) {
+      try {
+        currentAudioSource.stop(0);
+        currentAudioSource = null;
+      } catch (e) {
+        // Source may already be stopped, ignore
+      }
+    }
     const u = new SpeechSynthesisUtterance(processed);
     u.rate = speechRate * 1.05;
     u.pitch = speechPitch;
@@ -293,7 +337,16 @@ export function useTTS() {
   }, [speechRate, speechPitch, speechVolume, getPronunciation]);
 
   const cancel = useCallback(() => {
+    // Cancel both Web Speech and Web Audio playback
     window.speechSynthesis?.cancel();
+    if (currentAudioSource) {
+      try {
+        currentAudioSource.stop(0);
+        currentAudioSource = null;
+      } catch (e) {
+        // Source may already be stopped, ignore
+      }
+    }
   }, []);
 
   return { speak, speakPreview, cancel };
