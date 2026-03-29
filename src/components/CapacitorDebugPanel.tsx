@@ -27,8 +27,10 @@ export function CapacitorDebugPanel() {
     const inCapacitor = (window as unknown as { Capacitor?: object }).Capacitor !== undefined;
     setIsCapacitor(inCapacitor);
 
-    // Only show debug panel in Capacitor
-    if (!inCapacitor) return;
+    // Show debug panel in Capacitor OR if ?debug query param is set
+    const urlParams = new URLSearchParams(window.location.search);
+    const debugMode = urlParams.get('debug') === 'true';
+    if (!inCapacitor && !debugMode) return;
 
     // Check Web Audio API availability
     const hasWebAudio = !!(
