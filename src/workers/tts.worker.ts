@@ -253,12 +253,30 @@ async function loadModel(dtypeHint = 'q8') {
 const audioCache = new Map<string, ArrayBuffer>();
 
 const PRECACHE_LIST = [
+  // Core words (immediate recognition)
   'I', 'want', 'go', 'more', 'stop', 'help', 'no', 'yes', 'done',
   'like', 'not', 'please', 'here', 'good', 'again', 'look', 'big',
+
+  // Common phrases
   'I need help', 'Wait please', "I'm done", 'More please',
   'I need a break', 'I love you', 'Thank you', 'Good job!',
   'Stop', 'Look at me', 'I do not understand',
   'I am frustrated', 'Say that again',
+
+  // Body parts (medical/safety critical)
+  'arm', 'leg', 'hand', 'head', 'eye', 'mouth', 'pain', 'hurt',
+
+  // Emotions
+  'happy', 'sad', 'angry', 'tired', 'scared', 'sick',
+
+  // Actions
+  'run', 'walk', 'sit', 'stand', 'jump', 'eat', 'drink', 'sleep', 'play',
+
+  // Communication
+  'hello', 'goodbye', 'okay', 'wait', 'come', 'go away',
+
+  // Numbers
+  'one', 'two', 'three', 'four', 'five',
 ];
 
 let precachePaused = false;

@@ -36,6 +36,9 @@ export interface TTSState {
   speechPitch: number;  // 0.5-2.0, default 1.1
   speechVolume: number; // 0-1, default 1.0
 
+  // Initialization state (runtime only, not persisted)
+  hydrated: boolean; // True when localStorage has been loaded
+
   // Actions
   setKokoroStatus: (status: TTSState['kokoroStatus']) => void;
   setKokoroProgress: (p: number) => void;
@@ -51,6 +54,7 @@ export interface TTSState {
   setSpeechRate: (r: number) => void;
   setSpeechPitch: (p: number) => void;
   setSpeechVolume: (v: number) => void;
+  setHydrated: (v: boolean) => void;
 }
 
 export const useTTSStore = create<TTSState>()(
@@ -70,6 +74,7 @@ export const useTTSStore = create<TTSState>()(
       speechRate: 0.9,
       speechPitch: 1.1,
       speechVolume: 1.0,
+      hydrated: false,
 
       setKokoroStatus: (status) => set({ kokoroStatus: status }),
       setKokoroProgress: (p) => set({ kokoroProgress: p }),
@@ -85,6 +90,7 @@ export const useTTSStore = create<TTSState>()(
       setSpeechRate: (r) => set({ speechRate: r }),
       setSpeechPitch: (p) => set({ speechPitch: p }),
       setSpeechVolume: (v) => set({ speechVolume: v }),
+      setHydrated: (v) => set({ hydrated: v }),
     }),
     {
       name: 'freevoice-tts',
@@ -99,6 +105,11 @@ export const useTTSStore = create<TTSState>()(
         speechPitch: s.speechPitch,
         speechVolume: s.speechVolume,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated(true);
+        }
+      },
     }
   )
 );

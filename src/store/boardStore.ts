@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db, seedIfNeeded, type Symbol as DbSymbol, type Board as DbBoard } from '../db';
 import { cardColor } from '../data/defaultBoards';
+import { getBritishVoiceOverride } from '../data/britishVoiceOverrides';
 
 interface NavStep {
   boardId: string;
@@ -73,7 +74,7 @@ interface BoardState {
   loadPronunciations: () => Promise<void>;
   setPronunciation: (word: string, phonetic: string) => Promise<void>;
   deletePronunciation: (word: string) => Promise<void>;
-  getPronunciation: (text: string) => string;
+  getPronunciation: (text: string, voice?: string) => string;
 
   // Persistent strips
   loadQuickFires: () => Promise<void>;
@@ -289,9 +290,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     get().loadPronunciations();
   },
 
-  getPronunciation: (text) => {
-    const { pronunciations } = get();
+  getPronunciation: (text, voice = '') => {
     let result = text;
+
+    // Apply British voice overrides first (if applicable)
+    result = getBritishVoiceOverride(result, voice);
+
+    // Then apply custom user pronunciations (which can override built-in rules)
+    const { pronunciations } = get();
     for (const [word, phonetic] of pronunciations) {
       const regex = new RegExp(`\\b${word}\\b`, 'gi');
       result = result.replace(regex, phonetic);

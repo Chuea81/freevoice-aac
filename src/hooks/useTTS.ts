@@ -191,7 +191,8 @@ export function useTTS() {
     const pitch = s.speechPitch;
     const volume = s.speechVolume;
 
-    const processed = getPronunciation(text);
+    // Pass voice to getPronunciation so British voice overrides apply
+    const processed = getPronunciation(text, voice);
 
     // Tier 1: Kokoro (best quality)
     if (tier === 'kokoro' && status === 'ready') {
@@ -242,6 +243,7 @@ export function useTTS() {
   }, [getPronunciation]);
 
   // Auditory Touch preview — always Web Speech, slightly quieter/faster
+  // Note: speakPreview doesn't pass voice since it's always Web Speech (not Kokoro)
   const speakPreview = useCallback((text: string): void => {
     if (!text.trim()) return;
     const processed = getPronunciation(text);
