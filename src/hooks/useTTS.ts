@@ -89,8 +89,11 @@ function getAudioContext(): AudioContext {
 /** Warm the AudioContext with a tiny silent buffer to flush any init garbage */
 async function warmAudioContext(ctx: AudioContext): Promise<void> {
   if (audioCtxWarmed) return;
+  // Note: We don't await resume() here because it's already been called eagerly
+  // in the first user interaction handler. This avoids blocking on double-waiting.
   if (ctx.state === 'suspended') {
-    await ctx.resume();
+    // Just try to resume fire-and-forget style since main thread already requested it
+    ctx.resume().catch(() => {});
   }
   // Play silence to flush any init artifacts
   // Samsung/older Android: 100ms buffer to prevent screech
@@ -160,11 +163,23 @@ export function useTTS() {
 
   const getPronunciation = useBoardStore((s) => s.getPronunciation);
 
-  // Unlock iOS speech synthesis + warm AudioContext on first user interaction
+  // Unlock iOS speech synthesis + eagerly resume AudioContext on first user interaction
+  // This prevents Web Audio API from blocking on first tap
   useEffect(() => {
     unlockIOSSpeech();
-    const warmOnInteraction = () => {
-      warmAudioContext(getAudioContext());
+    const warmOnInteraction = async () => {
+      const audioCtx = getAudioContext();
+      // Immediately try to resume AudioContext without waiting for warmup
+      // This fires off the resume promise without blocking, so subsequent speaks are faster
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {
+          // Non-fatal if resume fails
+        });
+      }
+      // Then warm the context in the background (with silence buffer)
+      warmAudioContext(audioCtx).catch(() => {
+        // Non-fatal if warming fails
+      });
       document.removeEventListener('pointerdown', warmOnInteraction);
     };
     document.addEventListener('pointerdown', warmOnInteraction, { once: true });

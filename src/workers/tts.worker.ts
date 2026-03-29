@@ -352,6 +352,19 @@ ctx.onmessage = async (e: MessageEvent) => {
       if (tts) {
         const voice = msg.voice ?? 'af_heart';
         const speed = msg.speed ?? 0.9;
+
+        // Pre-warm the TTS pipeline with a silent string to avoid initialization latency
+        // on the first real speech request. This primes the inference engine.
+        try {
+          // Silent pre-warm: generate a very short string to initialize everything
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const warmupAudio = await tts.generate('', { voice: voice as any, speed });
+          warmupAudio.toWav(); // Ensure full pipeline is initialized
+        } catch {
+          // Non-fatal if pre-warm fails
+        }
+
+        // Then start background precaching of common words
         preCacheCommonWords(voice, speed).catch(() => {});
       }
       break;

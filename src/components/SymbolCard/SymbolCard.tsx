@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect, type MouseEvent, type CSSProperties } from 'react';
+import { useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
@@ -129,8 +129,18 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     ? FITZGERALD_COLORS[symbol.wordType]
     : getCardColor(symbol.id);
 
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
+  // Fast immediate response on pointerdown (fires on press, not release)
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLButtonElement>) => {
+      // If dwell time is enabled, just start the timer
+      if (dwellTime > 0) {
+        dwellTimerRef.current = setTimeout(() => {
+          onTap(symbol);
+        }, dwellTime);
+        return;
+      }
+
+      // No dwell time — respond immediately on press for fastest latency
       const btn = e.currentTarget;
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -159,15 +169,8 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
       onTap(symbol);
     },
-    [symbol, onTap, auditoryTouch, previewed, speakPreview],
+    [symbol, onTap, auditoryTouch, previewed, speakPreview, dwellTime],
   );
-
-  const handlePointerDown = useCallback(() => {
-    if (dwellTime <= 0) return;
-    dwellTimerRef.current = setTimeout(() => {
-      onTap(symbol);
-    }, dwellTime);
-  }, [dwellTime, onTap, symbol]);
 
   const handlePointerUp = useCallback(() => {
     if (dwellTimerRef.current) {
@@ -190,10 +193,9 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     <button
       className={`symbol-card${symbol.hidden ? ' symbol-hidden' : ''}${previewed ? ' symbol-previewed' : ''}`}
       style={cardStyle}
-      onClick={dwellTime > 0 ? undefined : handleClick}
-      onPointerDown={dwellTime > 0 ? handlePointerDown : undefined}
-      onPointerUp={dwellTime > 0 ? handlePointerUp : undefined}
-      onPointerLeave={dwellTime > 0 ? handlePointerUp : undefined}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
       aria-label={symbol.isCategory ? `${symbol.label} category` : `Speak ${symbol.phrase}`}
       role="button"
     >
