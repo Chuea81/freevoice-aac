@@ -127,8 +127,6 @@ function speakWithWebSpeech(
 
 export function useTTS() {
   const {
-    kokoroStatus,
-    kokoroVoice,
     speechRate,
     speechPitch,
     speechVolume,
@@ -158,17 +156,10 @@ export function useTTS() {
     }
   }, []);
 
-  // Fix 3: Clear cache and re-warm when voice changes
-  useEffect(() => {
-    if (kokoroStatus === 'ready') {
-      getWorker().postMessage({ type: 'CLEAR_CACHE' });
-      getWorker().postMessage({
-        type: 'LOAD',
-        voice: kokoroVoice,
-        speed: speechRate,
-      });
-    }
-  }, [kokoroVoice]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Voice change — no need to clear cache or reload model.
+  // Different voices use different cache keys (voice:text), so
+  // old cache entries don't conflict. Model handles all voices.
+  // Precaching happens naturally as the user speaks.
 
   // speak() — reads current state from store at call time (not stale closure)
   const speak = useCallback(async (text: string): Promise<void> => {

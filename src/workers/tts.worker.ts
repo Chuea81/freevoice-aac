@@ -261,8 +261,13 @@ const PRECACHE_LIST = [
   'I am frustrated', 'Say that again',
 ];
 
+let precachePaused = false;
+
 async function preCacheCommonWords(voice: string, speed: number): Promise<void> {
+  precachePaused = false;
   for (const word of PRECACHE_LIST) {
+    // Pause precaching if a SPEAK request came in — don't block the user
+    if (precachePaused) break;
     const key = `${voice}:${word}`;
     if (audioCache.has(key)) continue;
     try {
@@ -273,7 +278,8 @@ async function preCacheCommonWords(voice: string, speed: number): Promise<void> 
     } catch {
       // Non-fatal
     }
-    await new Promise(r => setTimeout(r, 0));
+    // Yield to let SPEAK messages be processed
+    await new Promise(r => setTimeout(r, 10));
   }
   post({ type: 'PRECACHE_COMPLETE' });
 }
@@ -298,6 +304,8 @@ ctx.onmessage = async (e: MessageEvent) => {
         post({ type: 'SPEAK_ERROR', id: msg.id, error: 'Model not loaded' });
         return;
       }
+      // Pause any background precaching so this request gets priority
+      precachePaused = true;
       const cacheKey = `${msg.voice}:${msg.text}`;
       try {
         let wav: ArrayBuffer;
