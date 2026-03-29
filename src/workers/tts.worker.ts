@@ -197,27 +197,48 @@ async function loadModel(dtypeHint = 'q8') {
         post({ type: 'LOAD_PROGRESS', progress: 95, status: restoredFromIDB ? 'restored' : 'cached', device });
       }
 
-      tts = await KokoroTTS.from_pretrained(MODEL_ID, {
-        dtype: dtype as 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16',
-        device: device as 'webgpu' | 'wasm',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        progress_callback: (progress: any) => {
-          let pct = 0;
-          if (typeof progress.progress === 'number') {
-            pct = progress.progress > 1 ? progress.progress : progress.progress * 100;
-          }
-          if (progress.status === 'initiate' && pct === 0) pct = 1;
-          // If cached, show progress starting from 95% (just loading into memory)
-          if (cached && pct < 95) pct = 95;
-          post({
-            type: 'LOAD_PROGRESS',
-            progress: Math.round(pct),
-            status: cached ? 'cached' : (progress.status || 'loading'),
-            device,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const progressCb = (progress: any) => {
+        let pct = 0;
+        if (typeof progress.progress === 'number') {
+          pct = progress.progress > 1 ? progress.progress : progress.progress * 100;
+        }
+        if (progress.status === 'initiate' && pct === 0) pct = 1;
+        if (cached && pct < 95) pct = 95;
+        post({
+          type: 'LOAD_PROGRESS',
+          progress: Math.round(pct),
+          status: cached ? 'cached' : (progress.status || 'loading'),
+          device,
+        });
+      };
+
+      // Try WebGPU first if available, fall back to WASM on any error
+      let loadDevice = device;
+      if (hasWebGPU) {
+        try {
+          tts = await KokoroTTS.from_pretrained(MODEL_ID, {
+            dtype: 'fp32',
+            device: 'webgpu',
+            progress_callback: progressCb,
           });
-        },
-      });
-      post({ type: 'LOAD_COMPLETE', device });
+        } catch {
+          // WebGPU failed (e.g. "No available adapters") — fall back to WASM
+          tts = null;
+          loadDevice = 'wasm';
+        }
+      }
+
+      if (!tts) {
+        tts = await KokoroTTS.from_pretrained(MODEL_ID, {
+          dtype: (dtypeHint as 'q8') as 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16',
+          device: 'wasm',
+          progress_callback: progressCb,
+        });
+        loadDevice = 'wasm';
+      }
+
+      post({ type: 'LOAD_COMPLETE', device: loadDevice });
 
       // Backup model to IndexedDB so Android can't evict it
       backupCacheToIDB().catch(() => {});
