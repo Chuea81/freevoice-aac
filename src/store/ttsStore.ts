@@ -67,7 +67,7 @@ export const useTTSStore = create<TTSState>()(
       kokoroDownloaded: false,
       kokoroDevice: null,
       kokoroLoadingFromCache: false,
-      activeTier: 'webspeech', // Start on Web Speech; upgrade to Kokoro after download
+      activeTier: 'kokoro', // Use Kokoro by default (superior quality, works on all devices)
       kokoroVoice: 'af_heart', // Warmest, most natural — best default for a child's AAC
       webSpeechVoiceURI: null,
       personalVoiceAvailable: false,
