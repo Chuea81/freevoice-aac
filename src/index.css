@@ -551,7 +551,7 @@ body {
   text-align: center;
   line-height: 1.15;
   word-break: break-word;
-  hyphens: auto;
+  hyphens: none;
   max-width: 100%;
   flex-shrink: 0;
   z-index: 2;
