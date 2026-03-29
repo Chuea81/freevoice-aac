@@ -188,14 +188,18 @@ export function useTTS() {
 
     // Tier 1: Kokoro (best quality) with Web Speech bridge
     if (tier === 'kokoro' && status === 'ready') {
+      // WASM is slower than WebGPU — give it more time before falling back
+      const kokoroDevice = s.kokoroDevice;
+      const bridgeDelay = kokoroDevice === 'wasm' ? 1500 : 300;
+
       return new Promise<void>((resolve) => {
         let webSpeechPlayed = false;
         let kokoroResponded = false;
 
         const id = String(++callbackIdCounter);
 
-        // 300ms bridge: if Kokoro hasn't responded, it's a cache miss.
-        // Play Web Speech immediately so the child hears something.
+        // Bridge: if Kokoro hasn't responded in time, play Web Speech
+        // so the child hears something. Kokoro audio still caches for next tap.
         const bridgeTimer = setTimeout(() => {
           if (!kokoroResponded) {
             webSpeechPlayed = true;
@@ -211,7 +215,7 @@ export function useTTS() {
             }
             window.speechSynthesis.speak(u);
           }
-        }, 300);
+        }, bridgeDelay);
 
         // Register Kokoro callback
         pendingCallbacks.set(id, async (buffer: ArrayBuffer) => {
@@ -219,8 +223,8 @@ export function useTTS() {
           clearTimeout(bridgeTimer);
 
           if (webSpeechPlayed) {
-            // Web Speech already playing — don't overlap with Kokoro.
-            // The audio is now cached, so next tap will be instant Kokoro.
+            // Web Speech already playing — don't overlap.
+            // Audio is now cached, next tap will be instant Kokoro.
             resolve();
             return;
           }
