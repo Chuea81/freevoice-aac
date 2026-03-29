@@ -17,6 +17,7 @@ export function SpeechBar({ onOpenSettings }: Props) {
   const speakBtnRef = useRef<HTMLButtonElement>(null);
   const [keyboardInput, setKeyboardInput] = useState('');
   const [showKeyboard, setShowKeyboard] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,29 +26,51 @@ export function SpeechBar({ onOpenSettings }: Props) {
     }
   }, [outputTokens]);
 
-  const speakAll = useCallback(() => {
+  const speakAll = useCallback(async () => {
+    // If already speaking, stop instead
+    if (isSpeaking) {
+      cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
     if (outputTokens.length === 0 && !keyboardInput.trim()) return;
+
     const tokenText = outputTokens.map((t) => t.text).join(' ');
     const fullText = keyboardInput.trim()
       ? (tokenText ? `${tokenText} ${keyboardInput.trim()}` : keyboardInput.trim())
       : tokenText;
-    // Cancel any pending speech to ensure text input takes priority
-    cancel();
-    speak(fullText);
-    setKeyboardInput('');
 
+    setIsSpeaking(true);
     const btn = speakBtnRef.current;
     if (btn) {
-      btn.classList.remove('speaking');
-      void btn.offsetWidth;
       btn.classList.add('speaking');
     }
-  }, [outputTokens, speak, keyboardInput, cancel]);
 
-  const handleClear = useCallback(() => {
-    cancel();
-    removeLastToken();
-  }, [removeLastToken, cancel]);
+    try {
+      await speak(fullText);
+    } finally {
+      setIsSpeaking(false);
+      if (btn) {
+        btn.classList.remove('speaking');
+      }
+    }
+
+    // Do NOT clear the bar after speaking — user can speak again or clear manually
+  }, [outputTokens, speak, keyboardInput, cancel, isSpeaking]);
+
+  const handleBackspace = useCallback(() => {
+    // Remove one word at a time (one token)
+    if (keyboardInput.trim()) {
+      // If there's keyboard input, remove the last word from it
+      const words = keyboardInput.trim().split(' ');
+      words.pop();
+      setKeyboardInput(words.join(' '));
+    } else if (outputTokens.length > 0) {
+      // Otherwise remove the last token
+      removeLastToken();
+    }
+  }, [keyboardInput, outputTokens, removeLastToken]);
 
   const handleKeyboardSubmit = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && keyboardInput.trim()) {
@@ -93,31 +116,47 @@ export function SpeechBar({ onOpenSettings }: Props) {
         )}
       </div>
 
-      <button ref={speakBtnRef} className="bar-btn" id="btn-speak" onClick={speakAll} aria-label="Speak sentence">
-        <span className="btn-icon" aria-hidden="true">🔊</span>{t('speech.speak')}
-      </button>
-
-      <button
-        className={`bar-btn${showKeyboard ? ' keyboard-active' : ''}`}
-        id="btn-keyboard"
-        onClick={() => {
-          setShowKeyboard(!showKeyboard);
-          if (!showKeyboard) setTimeout(() => inputRef.current?.focus(), 50);
-        }}
-        aria-label={t('speech.type')}
-      >
-        <span className="btn-icon" aria-hidden="true">⌨️</span>{t('speech.type')}
-      </button>
-
-      <button className="bar-btn" id="btn-clear" onClick={handleClear} aria-label={t('speech.clear')}>
-        <span className="btn-icon" aria-hidden="true">⌫</span>{t('speech.clear')}
-      </button>
-
-      {onOpenSettings && (
-        <button className="bar-btn" id="btn-settings" onClick={onOpenSettings} aria-label="Settings">
-          <span className="btn-icon" aria-hidden="true">⚙️</span>Settings
+      <div className="speech-bar-buttons">
+        <button
+          ref={speakBtnRef}
+          className="bar-btn"
+          id="btn-speak"
+          onClick={speakAll}
+          aria-label={isSpeaking ? 'Stop speaking' : 'Speak sentence'}
+          title={isSpeaking ? 'Stop (tap)' : 'Speak (tap)'}
+        >
+          <span className="btn-icon" aria-hidden="true">{isSpeaking ? '⏹️' : '🔊'}</span>
+          {isSpeaking ? 'STOP' : t('speech.speak')}
         </button>
-      )}
+
+        <button
+          className={`bar-btn${showKeyboard ? ' keyboard-active' : ''}`}
+          id="btn-keyboard"
+          onClick={() => {
+            setShowKeyboard(!showKeyboard);
+            if (!showKeyboard) setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+          aria-label={t('speech.type')}
+        >
+          <span className="btn-icon" aria-hidden="true">⌨️</span>{t('speech.type')}
+        </button>
+
+        <button
+          className="bar-btn"
+          id="btn-clear"
+          onClick={handleBackspace}
+          aria-label="Delete last word"
+          title="Delete last word (one word at a time)"
+        >
+          <span className="btn-icon" aria-hidden="true">⌫</span>Delete
+        </button>
+
+        {onOpenSettings && (
+          <button className="bar-btn" id="btn-settings" onClick={onOpenSettings} aria-label="Settings">
+            <span className="btn-icon" aria-hidden="true">⚙️</span>Settings
+          </button>
+        )}
+      </div>
     </div>
   );
 }
