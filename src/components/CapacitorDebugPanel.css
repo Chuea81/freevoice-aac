@@ -1,0 +1,206 @@
+/* Capacitor Debug Panel — TTS/Audio diagnostics */
+
+.capacitor-debug-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10000;
+  font-family: monospace;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Toggle Button */
+.debug-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  color: #ffffff;
+  border: 2px solid #0a1628;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.debug-toggle:hover {
+  background-color: #d97706;
+  transform: scale(1.1);
+}
+
+.debug-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Debug Panel Content */
+.debug-content {
+  position: absolute;
+  bottom: 52px;
+  right: 0;
+  background: rgba(10, 22, 40, 0.95);
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 12px;
+  color: #ffffff;
+  width: 220px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.debug-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #f59e0b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Debug Items (status rows) */
+.debug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+  gap: 8px;
+}
+
+.debug-item:last-child {
+  border-bottom: none;
+}
+
+.debug-item .label {
+  color: #9ca3af;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* Status Indicators */
+.status-ok {
+  color: #10b981;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.status-error {
+  color: #ef4444;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.status-loading {
+  color: #3b82f6;
+  font-weight: bold;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-unknown {
+  color: #6b7280;
+  font-weight: normal;
+}
+
+.status-fallback {
+  color: #f59e0b;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Error Log */
+.debug-errors {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.errors-header {
+  color: #ef4444;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.errors-list {
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.error-item {
+  font-size: 9px;
+  color: #fecaca;
+  padding: 2px 0;
+  word-break: break-word;
+  border-left: 2px solid #ef4444;
+  padding-left: 4px;
+  margin-bottom: 2px;
+}
+
+/* Footer */
+.debug-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(245, 158, 11, 0.2);
+  font-size: 9px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* Responsive on smaller screens */
+@media (max-width: 480px) {
+  .capacitor-debug-panel {
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .debug-toggle {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .debug-content {
+    width: 180px;
+    bottom: 48px;
+    padding: 10px;
+    font-size: 10px;
+  }
+
+  .debug-item .label {
+    font-size: 9px;
+  }
+}
+
+/* Scrollbar styling */
+.debug-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.debug-content::-webkit-scrollbar-track {
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 3px;
+}
+
+.debug-content::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.4);
+  border-radius: 3px;
+}
+
+.debug-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.6);
+}

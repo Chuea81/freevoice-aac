@@ -4,6 +4,7 @@ import { Board } from './pages/Board';
 import { ParentMode } from './pages/ParentMode';
 import { useSettingsStore } from './store/settingsStore';
 import { useCharacterManifest } from './hooks/useCharacterManifest';
+import { CapacitorDebugPanel } from './components/CapacitorDebugPanel';
 import { RTL_LANGUAGES, CJK_LANGUAGES, type SupportedLanguage } from './i18n/index';
 
 function App() {
@@ -44,10 +45,20 @@ function App() {
   }, [i18n.language]);
 
   if (page === 'parent') {
-    return <ParentMode onBack={() => setPage('board')} />;
+    return (
+      <>
+        <ParentMode onBack={() => setPage('board')} />
+        <CapacitorDebugPanel />
+      </>
+    );
   }
 
-  return <Board onOpenParentMode={() => setPage('parent')} />;
+  return (
+    <>
+      <Board onOpenParentMode={() => setPage('parent')} />
+      <CapacitorDebugPanel />
+    </>
+  );
 }
 
 export default App;
