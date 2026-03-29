@@ -29,23 +29,142 @@ async function detectWebGPU(): Promise<boolean> {
   }
 }
 
-/** Check if model files are already cached in Cache Storage (transformers.js cache) */
-async function isModelCached(): Promise<boolean> {
+// ── IndexedDB model cache (Android-safe, won't be evicted) ──
+const IDB_NAME = 'FreeVoiceModelCache';
+const IDB_STORE = 'models';
+const IDB_VERSION = 1;
+
+function openModelIDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(IDB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet(db: IDBDatabase, key: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readonly');
+    const req = tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbPut(db: IDBDatabase, key: string, value: unknown): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/** Copy model files from Cache Storage → IndexedDB for Android persistence */
+async function backupCacheToIDB(): Promise<void> {
   try {
     const cacheNames = await caches.keys();
-    // transformers.js uses a cache named 'transformers-cache'
-    const tfCache = cacheNames.find(n => n.includes('transformers'));
-    if (!tfCache) return false;
-    const cache = await caches.open(tfCache);
+    const tfCacheName = cacheNames.find(n => n.includes('transformers'));
+    if (!tfCacheName) return;
+
+    const cache = await caches.open(tfCacheName);
     const keys = await cache.keys();
-    // Check if any cached URL contains our model ID
-    return keys.some(req => req.url.includes('Kokoro'));
+    const kokoroKeys = keys.filter(req => req.url.includes('Kokoro'));
+    if (kokoroKeys.length === 0) return;
+
+    const db = await openModelIDB();
+
+    // Check if already backed up
+    const marker = await idbGet(db, '__kokoro_cached');
+    if (marker) { db.close(); return; }
+
+    for (const req of kokoroKeys) {
+      const resp = await cache.match(req);
+      if (!resp) continue;
+      const blob = await resp.blob();
+      await idbPut(db, req.url, {
+        blob,
+        headers: Object.fromEntries(resp.headers.entries()),
+      });
+    }
+    await idbPut(db, '__kokoro_cached', true);
+    db.close();
+  } catch {
+    // Non-fatal
+  }
+}
+
+/** Restore model files from IndexedDB → Cache Storage (for Android re-sessions) */
+async function restoreCacheFromIDB(): Promise<boolean> {
+  try {
+    const db = await openModelIDB();
+    const marker = await idbGet(db, '__kokoro_cached');
+    if (!marker) { db.close(); return false; }
+
+    // Check if Cache Storage already has the model
+    const cacheNames = await caches.keys();
+    const tfCacheName = cacheNames.find(n => n.includes('transformers'));
+    if (tfCacheName) {
+      const cache = await caches.open(tfCacheName);
+      const keys = await cache.keys();
+      if (keys.some(req => req.url.includes('Kokoro'))) {
+        db.close();
+        return true; // Already in Cache Storage
+      }
+    }
+
+    // Restore from IDB to Cache Storage
+    const cacheName = tfCacheName || 'transformers-cache';
+    const cache = await caches.open(cacheName);
+
+    // Get all keys from IDB
+    const allKeys: string[] = await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).getAllKeys();
+      req.onsuccess = () => resolve(req.result as string[]);
+      req.onerror = () => reject(req.error);
+    });
+
+    const urlKeys = allKeys.filter(k => k.startsWith('http'));
+    for (const url of urlKeys) {
+      const entry = await idbGet(db, url) as { blob: Blob; headers: Record<string, string> } | null;
+      if (!entry) continue;
+      const resp = new Response(entry.blob, { headers: entry.headers });
+      await cache.put(new Request(url), resp);
+    }
+
+    db.close();
+    return urlKeys.length > 0;
   } catch {
     return false;
   }
 }
 
-/** Request persistent storage so the browser doesn't evict the ~80MB model cache */
+/** Check if model is available (Cache Storage or IndexedDB) */
+async function isModelCached(): Promise<boolean> {
+  try {
+    // First check Cache Storage
+    const cacheNames = await caches.keys();
+    const tfCache = cacheNames.find(n => n.includes('transformers'));
+    if (tfCache) {
+      const cache = await caches.open(tfCache);
+      const keys = await cache.keys();
+      if (keys.some(req => req.url.includes('Kokoro'))) return true;
+    }
+    // Then check IndexedDB backup
+    const db = await openModelIDB();
+    const marker = await idbGet(db, '__kokoro_cached');
+    db.close();
+    return !!marker;
+  } catch {
+    return false;
+  }
+}
+
+/** Request persistent storage so the browser doesn't evict caches */
 async function requestPersistentStorage(): Promise<void> {
   try {
     if (navigator.storage?.persist) {
@@ -55,7 +174,7 @@ async function requestPersistentStorage(): Promise<void> {
       }
     }
   } catch {
-    // Non-fatal — storage may still work, just not guaranteed persistent
+    // Non-fatal
   }
 }
 
@@ -65,17 +184,17 @@ async function loadModel(dtypeHint = 'q8') {
 
   loadingPromise = (async () => {
     try {
-      // Prevent browser from evicting model cache
       await requestPersistentStorage();
 
       const hasWebGPU = await detectWebGPU();
       const device = hasWebGPU ? 'webgpu' : 'wasm';
       const dtype = hasWebGPU ? 'fp32' : (dtypeHint as 'q8');
 
-      // Check if model is already cached — skip download progress noise
-      const cached = await isModelCached();
+      // Restore model from IndexedDB → Cache Storage if Android evicted it
+      const restoredFromIDB = await restoreCacheFromIDB();
+      const cached = restoredFromIDB || await isModelCached();
       if (cached) {
-        post({ type: 'LOAD_PROGRESS', progress: 95, status: 'loading', device });
+        post({ type: 'LOAD_PROGRESS', progress: 95, status: restoredFromIDB ? 'restored' : 'cached', device });
       }
 
       tts = await KokoroTTS.from_pretrained(MODEL_ID, {
@@ -99,6 +218,9 @@ async function loadModel(dtypeHint = 'q8') {
         },
       });
       post({ type: 'LOAD_COMPLETE', device });
+
+      // Backup model to IndexedDB so Android can't evict it
+      backupCacheToIDB().catch(() => {});
     } catch (err) {
       post({ type: 'LOAD_ERROR', error: String(err) });
       loadingPromise = null;
