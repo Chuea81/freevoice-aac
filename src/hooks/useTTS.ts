@@ -171,15 +171,22 @@ export function useTTS() {
     return () => document.removeEventListener('pointerdown', warmOnInteraction);
   }, []);
 
-  // Auto-reload Kokoro if it was previously downloaded (model cached by browser)
+  // Auto-download Kokoro on app start (if not already downloaded)
+  // Or reload if it was previously cached
   useEffect(() => {
-    const { kokoroDownloaded, kokoroStatus } = useTTSStore.getState();
-    if (kokoroDownloaded && kokoroStatus === 'idle') {
-      useTTSStore.getState().setKokoroStatus('downloading');
+    const { kokoroDownloaded, kokoroStatus, kokoroDeclined } = useTTSStore.getState();
+
+    // Only proceed if Kokoro is idle and user hasn't declined download
+    if (kokoroStatus !== 'idle' || kokoroDeclined) return;
+
+    useTTSStore.getState().setKokoroStatus('downloading');
+
+    if (kokoroDownloaded) {
       useTTSStore.getState().setKokoroLoadingFromCache(true); // Signal this is a cache reload
-      const { kokoroVoice, speechRate } = useTTSStore.getState();
-      getWorker().postMessage({ type: 'LOAD', dtype: 'q8', voice: kokoroVoice, speed: speechRate });
     }
+
+    const { kokoroVoice, speechRate } = useTTSStore.getState();
+    getWorker().postMessage({ type: 'LOAD', dtype: 'q8', voice: kokoroVoice, speed: speechRate });
   }, []);
 
   // Voice change — no need to clear cache or reload model.
@@ -265,38 +272,9 @@ export function useTTS() {
     window.speechSynthesis.speak(u);
   }, [speechRate, speechPitch, speechVolume, getPronunciation]);
 
-  const downloadKokoro = useCallback(() => {
-    const { kokoroVoice, speechRate } = useTTSStore.getState();
-    useTTSStore.getState().setKokoroStatus('downloading');
-    useTTSStore.getState().setKokoroDeclined(false);
-    getWorker().postMessage({
-      type: 'LOAD',
-      dtype: 'q8', // Worker overrides with fp32 if WebGPU detected
-      voice: kokoroVoice,
-      speed: speechRate,
-    });
-  }, []);
-
   const cancel = useCallback(() => {
     window.speechSynthesis?.cancel();
   }, []);
 
-  const removeKokoro = useCallback(async () => {
-    getWorker().postMessage({ type: 'DELETE_MODEL' });
-    // Wait for deletion to complete (listen for MODEL_DELETED message)
-    return new Promise<void>((resolve) => {
-      const checkMessage = (e: MessageEvent) => {
-        if (e.data.type === 'MODEL_DELETED') {
-          worker?.removeEventListener('message', checkMessage);
-          useTTSStore.getState().setKokoroStatus('idle');
-          useTTSStore.getState().setKokoroDownloaded(false);
-          useTTSStore.getState().setActiveTier('webspeech');
-          resolve();
-        }
-      };
-      worker?.addEventListener('message', checkMessage);
-    });
-  }, []);
-
-  return { speak, speakPreview, downloadKokoro, cancel, removeKokoro };
+  return { speak, speakPreview, cancel };
 }

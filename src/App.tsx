@@ -5,7 +5,6 @@ import { ParentMode } from './pages/ParentMode';
 import { useSettingsStore } from './store/settingsStore';
 import { useCharacterManifest } from './hooks/useCharacterManifest';
 import { CapacitorDebugPanel } from './components/CapacitorDebugPanel';
-import { AudioCapabilityWarning } from './components/AudioCapabilityWarning';
 import { RTL_LANGUAGES, CJK_LANGUAGES, type SupportedLanguage } from './i18n/index';
 
 function App() {
@@ -50,7 +49,6 @@ function App() {
       <>
         <ParentMode onBack={() => setPage('board')} />
         <CapacitorDebugPanel />
-        <AudioCapabilityWarning />
       </>
     );
   }
@@ -59,7 +57,6 @@ function App() {
     <>
       <Board onOpenParentMode={() => setPage('parent')} />
       <CapacitorDebugPanel />
-      <AudioCapabilityWarning />
     </>
   );
 }

@@ -10,7 +10,6 @@ import { FastPhrasesStrip } from '../components/FastPhrasesStrip/FastPhrasesStri
 import { CoreWordsBar } from '../components/CoreWordsBar/CoreWordsBar';
 import { IosInstallPrompt } from '../components/modals/IosInstallPrompt';
 import { AndroidInstallPrompt } from '../components/modals/AndroidInstallPrompt';
-import { VoiceDownloadPrompt, KokoroDownloadProgress } from '../components/modals/VoiceDownloadPrompt';
 import { SymbolSearch } from '../components/modals/SymbolSearch';
 import { OnboardingWizard } from '../components/modals/OnboardingWizard';
 import { UpdatePrompt } from '../components/UpdatePrompt/UpdatePrompt';
@@ -105,8 +104,6 @@ export function Board({ onOpenParentMode }: Props) {
       </button>
       <IosInstallPrompt />
       <AndroidInstallPrompt />
-      <VoiceDownloadPrompt />
-      <KokoroDownloadProgress />
       <FastPhrasesStrip />
       <BreadcrumbNav />
       <CoreWordsBar />

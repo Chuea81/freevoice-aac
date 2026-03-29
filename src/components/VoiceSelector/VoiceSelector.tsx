@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTTSStore, type KokoroVoice } from '../../store/ttsStore';
-import { classifyWebSpeechVoices } from '../../utils/voiceDetection';
 import { useTTS } from '../../hooks/useTTS';
 
 const PREVIEW_PHRASE = 'Hi, I want to play outside please';
@@ -19,20 +18,14 @@ const KOKORO_VOICES: Array<{ id: KokoroVoice; label: string; description: string
 
 export function VoiceSelector() {
   const {
-    activeTier, setActiveTier,
     kokoroStatus, kokoroVoice, setKokoroVoice,
     kokoroDevice,
-    webSpeechVoiceURI, setWebSpeechVoiceURI,
-    personalVoiceAvailable, setPersonalVoiceAvailable,
     speechRate, setSpeechRate,
     speechPitch, setSpeechPitch,
     speechVolume, setSpeechVolume,
   } = useTTSStore();
 
-  const { speak, downloadKokoro, cancel, removeKokoro } = useTTS();
-  const [webVoices, setWebVoices] = useState<ReturnType<typeof classifyWebSpeechVoices>>([]);
-  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
-  const [removing, setRemoving] = useState(false);
+  const { speak, cancel } = useTTS();
 
   // Preview voice on selection — like picking an alarm sound
   const previewVoice = useCallback((delay = 100) => {
@@ -40,89 +33,10 @@ export function VoiceSelector() {
     setTimeout(() => speak(PREVIEW_PHRASE), delay);
   }, [speak, cancel]);
 
-  const handleRemoveKokoro = useCallback(async () => {
-    setRemoving(true);
-    try {
-      await removeKokoro();
-      setShowRemoveDialog(false);
-    } catch (err) {
-      console.error('Error removing Kokoro:', err);
-    }
-    setRemoving(false);
-  }, [removeKokoro]);
-
-  useEffect(() => {
-    const load = () => {
-      const voices = window.speechSynthesis?.getVoices() || [];
-      const classified = classifyWebSpeechVoices(voices);
-      setWebVoices(classified);
-      setPersonalVoiceAvailable(classified.some((v) => v.tier === 'personal'));
-    };
-    load();
-    window.speechSynthesis?.addEventListener('voiceschanged', load);
-    return () => window.speechSynthesis?.removeEventListener('voiceschanged', load);
-  }, [setPersonalVoiceAvailable]);
-
   return (
     <div className="voice-selector">
 
-      {/* ── Voice Status Indicator ── */}
-      <section className="settings-section" style={{ paddingBottom: 0 }}>
-        <h2 className="settings-section-title" style={{ marginBottom: 0 }}>Current Voice</h2>
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginTop: '12px',
-        }}>
-          {activeTier === 'kokoro' && kokoroStatus === 'ready' && (
-            <div style={{
-              flex: 1,
-              padding: '12px 14px',
-              borderRadius: '12px',
-              background: 'rgba(34, 197, 94, 0.1)',
-              border: '1px solid #22C55E',
-              color: '#16A34A',
-              fontSize: '14px',
-              fontWeight: 600,
-              textAlign: 'center',
-            }}>
-              🤖 AI Voice (Kokoro) — Active
-            </div>
-          )}
-          {activeTier === 'webspeech' && (
-            <div style={{
-              flex: 1,
-              padding: '12px 14px',
-              borderRadius: '12px',
-              background: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid #3B82F6',
-              color: '#1D4ED8',
-              fontSize: '14px',
-              fontWeight: 600,
-              textAlign: 'center',
-            }}>
-              📱 Device Voice — Active
-            </div>
-          )}
-          {activeTier === 'personal' && (
-            <div style={{
-              flex: 1,
-              padding: '12px 14px',
-              borderRadius: '12px',
-              background: 'rgba(236, 72, 153, 0.1)',
-              border: '1px solid #EC4899',
-              color: '#BE185D',
-              fontSize: '14px',
-              fontWeight: 600,
-              textAlign: 'center',
-            }}>
-              ⭐ Personal Voice — Active
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── TIER 1: Kokoro AI Voices ── */}
+      {/* ── Kokoro AI Voices ── */}
       <section className="settings-section">
         <div className="voice-section-header">
           <h2 className="settings-section-title">
@@ -133,14 +47,6 @@ export function VoiceSelector() {
               </span>
             )}
           </h2>
-          {kokoroStatus === 'idle' && (
-            <button className="voice-download-pill" onClick={downloadKokoro}>
-              Download Free (80MB)
-            </button>
-          )}
-          {kokoroStatus === 'downloading' && (
-            <span className="voice-status downloading">Downloading…</span>
-          )}
           {kokoroStatus === 'ready' && (
             <span className="voice-status ready">✓ Ready · Offline</span>
           )}
@@ -150,93 +56,23 @@ export function VoiceSelector() {
         </div>
 
         {kokoroStatus === 'ready' ? (
-          <>
-            <div className="voice-grid">
-              {KOKORO_VOICES.map((v) => (
-                <button
-                  key={v.id}
-                  onClick={() => { setKokoroVoice(v.id); setActiveTier('kokoro'); previewVoice(200); }}
-                  className={`voice-option${activeTier === 'kokoro' && kokoroVoice === v.id ? ' active' : ''}`}
-                >
-                  <div className="voice-option-name">{v.label}</div>
-                  <div className="voice-option-desc">{v.description}</div>
-                </button>
-              ))}
-            </div>
-            <button
-              className="voice-remove-btn"
-              onClick={() => setShowRemoveDialog(true)}
-              style={{
-                marginTop: '16px',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                border: '1px solid var(--border-raised)',
-                background: 'var(--bg-surface)',
-                color: 'var(--text-secondary)',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                opacity: 0.8,
-              }}
-            >
-              🗑️ Remove AI Voices (~80MB freed)
-            </button>
-          </>
+          <div className="voice-grid">
+            {KOKORO_VOICES.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => { setKokoroVoice(v.id); previewVoice(200); }}
+                className={`voice-option${kokoroVoice === v.id ? ' active' : ''}`}
+              >
+                <div className="voice-option-name">{v.label}</div>
+                <div className="voice-option-desc">{v.description}</div>
+              </button>
+            ))}
+          </div>
         ) : (
           <p className="voice-placeholder">
-            Download the AI voice model to unlock natural, human-sounding voices.
-            Works offline after download. Free forever.
+            Downloading AI voice model…
           </p>
         )}
-      </section>
-
-      {/* ── TIER 2: Personal Voice (iOS 17+ only) ── */}
-      {personalVoiceAvailable && (
-        <section className="settings-section">
-          <h2 className="settings-section-title">⭐ Your Personal Voice</h2>
-          {webVoices
-            .filter((v) => v.tier === 'personal')
-            .map((v) => (
-              <button
-                key={v.voice.voiceURI}
-                onClick={() => {
-                  setWebSpeechVoiceURI(v.voice.voiceURI);
-                  setActiveTier('personal');
-                  previewVoice();
-                }}
-                className={`voice-option wide${activeTier === 'personal' ? ' active' : ''}`}
-              >
-                <div className="voice-option-name">{v.label}</div>
-                <div className="voice-option-desc">{v.description}</div>
-              </button>
-            ))}
-        </section>
-      )}
-
-      {/* ── TIER 3: Web Speech / Device Voices ── */}
-      <section className="settings-section">
-        <h2 className="settings-section-title">Device Voices</h2>
-        <div className="voice-list">
-          {webVoices
-            .filter((v) => v.tier !== 'personal')
-            .map((v) => (
-              <button
-                key={v.voice.voiceURI}
-                onClick={() => {
-                  setWebSpeechVoiceURI(v.voice.voiceURI);
-                  setActiveTier('webspeech');
-                  previewVoice();
-                }}
-                className={`voice-option wide${activeTier === 'webspeech' && webSpeechVoiceURI === v.voice.voiceURI ? ' active' : ''}`}
-              >
-                <div className="voice-option-name">{v.label}</div>
-                <div className="voice-option-desc">{v.description}</div>
-              </button>
-            ))}
-          {webVoices.filter((v) => v.tier !== 'personal').length === 0 && (
-            <p className="voice-placeholder">No English device voices found.</p>
-          )}
-        </div>
       </section>
 
       {/* ── Speech Controls ── */}
@@ -263,35 +99,6 @@ export function VoiceSelector() {
       >
         🔊 Test Voice
       </button>
-
-      {/* ── Remove AI Voices Dialog ── */}
-      {showRemoveDialog && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget && !removing) setShowRemoveDialog(false); }}>
-          <div className="modal">
-            <h2 className="modal-title">Remove AI Voices?</h2>
-            <p style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '14px' }}>
-              This will free approximately 80MB of storage. You can download AI voices again anytime at no cost.
-            </p>
-            <div className="modal-actions">
-              <button
-                className="modal-btn cancel"
-                onClick={() => setShowRemoveDialog(false)}
-                disabled={removing}
-              >
-                Keep
-              </button>
-              <button
-                className="modal-btn primary"
-                onClick={handleRemoveKokoro}
-                disabled={removing}
-                style={{ background: removing ? '#ccc' : 'var(--danger, #ef4444)' }}
-              >
-                {removing ? 'Removing...' : 'Remove'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
