@@ -227,9 +227,17 @@ export function CapacitorDebugPanel() {
             Test Audio (Beep)
           </button>
 
+          {/* Device Info */}
+          <div className="debug-item" style={{ fontSize: '9px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(245, 158, 11, 0.2)' }}>
+            <span className="label">Android:</span>
+            <span style={{ fontSize: '9px', color: '#9ca3af' }}>
+              {navigator.userAgent.split('Android ')[1]?.split(';')[0] || 'Unknown'}
+            </span>
+          </div>
+
           {/* Instructions */}
           <div className="debug-footer">
-            ⚠️ If beep doesn't play, device volume may be muted
+            Report: Android version + device model if no sound
           </div>
         </div>
       )}
