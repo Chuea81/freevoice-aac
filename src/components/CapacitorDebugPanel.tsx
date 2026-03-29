@@ -11,6 +11,7 @@ export function CapacitorDebugPanel() {
   const [isVisible, setIsVisible] = useState(false);
   const [isCapacitor, setIsCapacitor] = useState(false);
   const [webAudioAvailable, setWebAudioAvailable] = useState(false);
+  const [webSpeechAvailable, setWebSpeechAvailable] = useState(false);
   const [sharedArrayBufferAvailable, setSharedArrayBufferAvailable] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<'unknown' | 'initialized' | 'error'>('unknown');
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
@@ -38,6 +39,13 @@ export function CapacitorDebugPanel() {
       (window as unknown as { webkitAudioContext?: AudioContext }).webkitAudioContext
     );
     setWebAudioAvailable(hasWebAudio);
+
+    // Check Web Speech API availability
+    const hasWebSpeech = !!(
+      window.speechSynthesis &&
+      typeof window.SpeechSynthesisUtterance !== 'undefined'
+    );
+    setWebSpeechAvailable(hasWebSpeech);
 
     // Check SharedArrayBuffer availability
     const hasSAB = typeof SharedArrayBuffer !== 'undefined';
@@ -103,6 +111,14 @@ export function CapacitorDebugPanel() {
             <span className="label">Web Audio:</span>
             <span className={webAudioAvailable ? 'status-ok' : 'status-error'}>
               {webAudioAvailable ? '✓ Available' : '✗ Missing'}
+            </span>
+          </div>
+
+          {/* Web Speech API Status */}
+          <div className="debug-item">
+            <span className="label">Web Speech:</span>
+            <span className={webSpeechAvailable ? 'status-ok' : 'status-error'}>
+              {webSpeechAvailable ? '✓ Available' : '✗ Missing'}
             </span>
           </div>
 
