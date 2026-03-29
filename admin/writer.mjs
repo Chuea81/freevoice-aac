@@ -99,17 +99,10 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const { data, info } = resized;
   const pixels = Buffer.from(data);
 
-  // Replace light pixels (R>200, G>200, B>200) with navy
+  // Replace only white/near-white pixels with navy — leave everything else untouched
   for (let i = 0; i < pixels.length; i += 4) {
     const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-    if (r > 200 && g > 200 && b > 200) {
-      pixels[i] = navy.r;
-      pixels[i+1] = navy.g;
-      pixels[i+2] = navy.b;
-      pixels[i+3] = 255;
-    }
-    // Also catch near-black/dark gray backgrounds Gemini sometimes uses
-    if (r < 40 && g < 40 && b < 50) {
+    if (r > 220 && g > 220 && b > 220) {
       pixels[i] = navy.r;
       pixels[i+1] = navy.g;
       pixels[i+2] = navy.b;

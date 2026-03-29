@@ -337,7 +337,7 @@ function updatePromptPreview() {
   const extra = document.getElementById('input-extra').value.trim();
   document.getElementById('prompt-preview').textContent = !label
     ? 'Fill in label and category to see prompt...'
-    : `Flat cartoon illustration. Thick black outlines. Vibrant colors. Dark navy background. Clear AAC symbol for "${label}"${cat ? ` (${cat})` : ''}.${extra ? ' ' + extra : ''}`;
+    : `Chunky cartoon icon. Bold dark outlines. Rich vibrant colors on white bg (composited to navy). AAC symbol for "${label}"${cat ? ` (${cat})` : ''}.${extra ? ' ' + extra : ''}`;
 }
 
 async function generateSymbol(extraOverride = '') {
