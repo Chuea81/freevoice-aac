@@ -42,7 +42,7 @@ export function SpeechBar({ onOpenSettings }: Props) {
       void btn.offsetWidth;
       btn.classList.add('speaking');
     }
-  }, [outputTokens, speak, keyboardInput]);
+  }, [outputTokens, speak, keyboardInput, cancel]);
 
   const handleClear = useCallback(() => {
     cancel();
