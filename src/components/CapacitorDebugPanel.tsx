@@ -24,7 +24,7 @@ export function CapacitorDebugPanel() {
 
   // Check if running in Capacitor and detect capabilities
   useEffect(() => {
-    const inCapacitor = (window as any).Capacitor !== undefined;
+    const inCapacitor = (window as unknown as { Capacitor?: object }).Capacitor !== undefined;
     setIsCapacitor(inCapacitor);
 
     // Only show debug panel in Capacitor
@@ -33,7 +33,7 @@ export function CapacitorDebugPanel() {
     // Check Web Audio API availability
     const hasWebAudio = !!(
       window.AudioContext ||
-      (window as any).webkitAudioContext
+      (window as unknown as { webkitAudioContext?: AudioContext }).webkitAudioContext
     );
     setWebAudioAvailable(hasWebAudio);
 
