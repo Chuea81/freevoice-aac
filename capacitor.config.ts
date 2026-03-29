@@ -20,6 +20,8 @@ const config: CapacitorConfig = {
     },
   },
   android: {
+    allowMixedContent: true,
+    webContentsDebuggingEnabled: true,
     buildOptions: {
       keystorePath: './.keystore/freevoice.jks',
       keystorePassword: process.env.KEYSTORE_PASSWORD || 'password',
