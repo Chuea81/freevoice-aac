@@ -73,7 +73,11 @@ export function CapacitorDebugPanel() {
     }
   }, [kokoroStatus, kokoroError]);
 
-  if (!isCapacitor) {
+  // Check if we should show the panel
+  const showPanel = isCapacitor || (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('debug') === 'true');
+
+  if (!showPanel) {
     return null; // Don't show in browser or production
   }
 
@@ -176,9 +180,39 @@ export function CapacitorDebugPanel() {
             </div>
           )}
 
+          {/* Test Audio Button */}
+          <button
+            onClick={() => {
+              const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.frequency.value = 440; // A4 note
+              gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+              osc.start(audioCtx.currentTime);
+              osc.stop(audioCtx.currentTime + 0.5);
+            }}
+            style={{
+              width: '100%',
+              padding: '4px',
+              marginTop: '8px',
+              backgroundColor: '#f59e0b',
+              color: '#0a1628',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            Test Audio (Beep)
+          </button>
+
           {/* Instructions */}
           <div className="debug-footer">
-            Check Chrome DevTools at chrome://inspect for full logs
+            ⚠️ If beep doesn't play, device volume may be muted
           </div>
         </div>
       )}
