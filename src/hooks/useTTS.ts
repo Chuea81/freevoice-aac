@@ -186,49 +186,13 @@ export function useTTS() {
 
     const processed = getPronunciation(text);
 
-    // Tier 1: Kokoro (best quality) with Web Speech bridge
+    // Tier 1: Kokoro (best quality)
     if (tier === 'kokoro' && status === 'ready') {
-      // WASM is slower than WebGPU — give it more time before falling back
-      const kokoroDevice = s.kokoroDevice;
-      const bridgeDelay = kokoroDevice === 'wasm' ? 1500 : 300;
-
       return new Promise<void>((resolve) => {
-        let webSpeechPlayed = false;
-        let kokoroResponded = false;
-
         const id = String(++callbackIdCounter);
 
-        // Bridge: if Kokoro hasn't responded in time, play Web Speech
-        // so the child hears something. Kokoro audio still caches for next tap.
-        const bridgeTimer = setTimeout(() => {
-          if (!kokoroResponded) {
-            webSpeechPlayed = true;
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(processed);
-            u.rate = rate;
-            u.pitch = pitch;
-            u.volume = volume;
-            if (wsVoiceURI) {
-              const voices = window.speechSynthesis.getVoices();
-              const match = voices.find(v => v.voiceURI === wsVoiceURI);
-              if (match) u.voice = match;
-            }
-            window.speechSynthesis.speak(u);
-          }
-        }, bridgeDelay);
-
-        // Register Kokoro callback
+        // Register Kokoro callback — wait for it, no bridge fallback
         pendingCallbacks.set(id, async (buffer: ArrayBuffer) => {
-          kokoroResponded = true;
-          clearTimeout(bridgeTimer);
-
-          if (webSpeechPlayed) {
-            // Web Speech already playing — don't overlap.
-            // Audio is now cached, next tap will be instant Kokoro.
-            resolve();
-            return;
-          }
-
           try {
             await playArrayBuffer(buffer, volume);
           } catch {
@@ -245,17 +209,24 @@ export function useTTS() {
           id,
         });
 
-        // Hard timeout: if nothing responds in 10s, resolve anyway
+        // Background-cache the sentence words for next time
+        const words = processed.split(/\s+/).filter(w => w.length > 1);
+        for (const word of words) {
+          getWorker().postMessage({
+            type: 'SPEAK_AND_CACHE',
+            text: word,
+            voice,
+            speed: rate,
+          });
+        }
+
+        // Hard timeout: if Kokoro doesn't respond in 15s, fall back to Web Speech
         setTimeout(() => {
           if (pendingCallbacks.has(id)) {
             pendingCallbacks.delete(id);
-            if (!webSpeechPlayed) {
-              speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume).then(resolve);
-            } else {
-              resolve();
-            }
+            speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume).then(resolve);
           }
-        }, 10000);
+        }, 15000);
       });
     }
 
