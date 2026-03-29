@@ -114,23 +114,9 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
           </div>
         )}
 
+        {/* Photo upload — first and most prominent */}
         <div className="modal-field">
-          <label>Choose an Emoji</label>
-          <div className="emoji-picker">
-            {EMOJI_OPTIONS.map((e) => (
-              <div
-                key={e}
-                className={`emoji-opt${e === selectedEmoji ? ' selected' : ''}`}
-                onClick={() => setSelectedEmoji(e)}
-              >
-                {e}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="modal-field">
-          <label>Or Upload a Photo</label>
+          <label>📷 Add a Photo (or emoji below)</label>
           <div className="photo-upload-area">
             {photoPreview ? (
               <div className="photo-preview-container">
@@ -144,10 +130,25 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
               </div>
             ) : (
               <button className="photo-upload-btn" onClick={() => fileInputRef.current?.click()}>
-                📷 Choose Photo
+                📷 Choose Photo from Device
               </button>
             )}
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+          </div>
+        </div>
+
+        <div className="modal-field">
+          <label>Or Choose an Emoji</label>
+          <div className="emoji-picker">
+            {EMOJI_OPTIONS.map((e) => (
+              <div
+                key={e}
+                className={`emoji-opt${e === selectedEmoji ? ' selected' : ''}`}
+                onClick={() => setSelectedEmoji(e)}
+              >
+                {e}
+              </div>
+            ))}
           </div>
         </div>
 

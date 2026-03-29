@@ -9,6 +9,7 @@ import { TabBar } from '../components/TabBar/TabBar';
 import { FastPhrasesStrip } from '../components/FastPhrasesStrip/FastPhrasesStrip';
 import { CoreWordsBar } from '../components/CoreWordsBar/CoreWordsBar';
 import { IosInstallPrompt } from '../components/modals/IosInstallPrompt';
+import { AndroidInstallPrompt } from '../components/modals/AndroidInstallPrompt';
 import { VoiceDownloadPrompt, KokoroDownloadProgress } from '../components/modals/VoiceDownloadPrompt';
 import { SymbolSearch } from '../components/modals/SymbolSearch';
 import { OnboardingWizard } from '../components/modals/OnboardingWizard';
@@ -23,6 +24,7 @@ interface Props {
 export function Board({ onOpenParentMode }: Props) {
   const seedDatabase = useBoardStore((s) => s.seedDatabase);
   const isSeeded = useBoardStore((s) => s.isSeeded);
+  const currentBoardId = useBoardStore((s) => s.currentBoardId);
   const onboardingDone = useSettingsStore((s) => s.onboardingDone);
   const loaded = useSettingsStore((s) => s.loaded);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -102,13 +104,14 @@ export function Board({ onOpenParentMode }: Props) {
         🔍
       </button>
       <IosInstallPrompt />
+      <AndroidInstallPrompt />
       <VoiceDownloadPrompt />
       <KokoroDownloadProgress />
       <FastPhrasesStrip />
       <BreadcrumbNav />
       <CoreWordsBar />
       <SymbolGrid />
-      <TabBar />
+      <TabBar isParentMode={currentBoardId === 'custom'} />
       <SymbolSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <UpdatePrompt />
     </>

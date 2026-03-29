@@ -284,6 +284,46 @@ async function preCacheCommonWords(voice: string, speed: number): Promise<void> 
   post({ type: 'PRECACHE_COMPLETE' });
 }
 
+/** Delete Kokoro model from Cache Storage and IndexedDB */
+async function deleteModel(): Promise<void> {
+  try {
+    // Clear Cache Storage
+    const cacheNames = await caches.keys();
+    const tfCacheName = cacheNames.find(n => n.includes('transformers'));
+    if (tfCacheName) {
+      const cache = await caches.open(tfCacheName);
+      const keys = await cache.keys();
+      const kokoroKeys = keys.filter(req => req.url.includes('Kokoro'));
+      for (const req of kokoroKeys) {
+        await cache.delete(req);
+      }
+    }
+    // Clear IndexedDB
+    const db = await openModelIDB();
+    const allKeys: string[] = await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).getAllKeys();
+      req.onsuccess = () => resolve(req.result as string[]);
+      req.onerror = () => reject(tx.error);
+    });
+    const deleteTx = db.transaction(IDB_STORE, 'readwrite');
+    for (const key of allKeys) {
+      deleteTx.objectStore(IDB_STORE).delete(key);
+    }
+    await new Promise<void>((resolve, reject) => {
+      deleteTx.oncomplete = () => resolve();
+      deleteTx.onerror = () => reject(deleteTx.error);
+    });
+    db.close();
+    // Clear audio cache
+    audioCache.clear();
+    // Unload model
+    tts = null;
+  } catch (err) {
+    console.error('Error deleting model:', err);
+  }
+}
+
 // ── Message handler ──
 ctx.onmessage = async (e: MessageEvent) => {
   const msg = e.data;
@@ -349,6 +389,12 @@ ctx.onmessage = async (e: MessageEvent) => {
       if (!tts) return;
       const voices = tts.list_voices();
       post({ type: 'VOICES_LIST', voices });
+      break;
+    }
+
+    case 'DELETE_MODEL': {
+      await deleteModel();
+      post({ type: 'MODEL_DELETED' });
       break;
     }
   }

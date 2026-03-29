@@ -387,6 +387,11 @@ async function approveSymbol() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Save failed');
     toast(`✅ ${label} approved and saved!`, 'success');
+    // Mark as done in food/drink queue tracker
+    const done = JSON.parse(localStorage.getItem('fv_food_done') || '{}');
+    done[label] = true;
+    localStorage.setItem('fv_food_done', JSON.stringify(done));
+    refreshFoodQueue();
     await loadApproved(); resetForm();
   } catch (e) { toast('Save failed: ' + e.message, 'error'); }
   finally { btn.disabled = false; btn.innerHTML = '✅ Approve'; }
@@ -1026,13 +1031,13 @@ function loadFoodSymbol(label) {
   updatePromptPreview();
 }
 
-// Mark a food symbol as done after approval
-const _origApprove = window.approveSymbol;
-window.markFoodDone = function(label) {
-  const done = JSON.parse(localStorage.getItem('fv_food_done') || '{}');
-  done[label] = true;
-  localStorage.setItem('fv_food_done', JSON.stringify(done));
-};
+// Refresh food queue display if tab exists
+function refreshFoodQueue() {
+  try {
+    const grid = document.getElementById('food-grid');
+    if (grid) loadFoodDrinkQueue();
+  } catch {}
+}
 
 init();
 </script>

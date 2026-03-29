@@ -330,6 +330,21 @@ export function Settings({ onBack }: { onBack: () => void }) {
               </button>
             ))}
           </div>
+          <p style={{ marginTop: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+            Want to help translate FreeVoice into your language?{' '}
+            <a
+              href="https://github.com/Chuea81/freevoice-aac/blob/main/TRANSLATING.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: 'var(--accent-color, #4FC3F7)',
+                textDecoration: 'underline',
+                fontWeight: 600,
+              }}
+            >
+              See the translation guide on GitHub
+            </a>
+          </p>
         </section>
 
         {/* ── SECURITY ── */}

@@ -31,6 +31,8 @@ export function SpeechBar({ onOpenSettings }: Props) {
     const fullText = keyboardInput.trim()
       ? (tokenText ? `${tokenText} ${keyboardInput.trim()}` : keyboardInput.trim())
       : tokenText;
+    // Cancel any pending speech to ensure text input takes priority
+    cancel();
     speak(fullText);
     setKeyboardInput('');
 

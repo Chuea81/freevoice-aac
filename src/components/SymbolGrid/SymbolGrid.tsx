@@ -19,6 +19,7 @@ export function SymbolGrid({ isParentMode }: Props) {
   const addToken = useBoardStore((s) => s.addToken);
   const deleteCustomSymbol = useBoardStore((s) => s.deleteCustomSymbol);
   const moveSymbolToBoard = useBoardStore((s) => s.moveSymbolToBoard);
+  const createBoard = useBoardStore((s) => s.createBoard);
   const autoSpeak = useSettingsStore((s) => s.autoSpeak);
   const gridColumns = useSettingsStore((s) => s.gridColumns);
   const symbolSize = useSettingsStore((s) => s.symbolSize);
@@ -30,6 +31,9 @@ export function SymbolGrid({ isParentMode }: Props) {
   const [contextOpen, setContextOpen] = useState(false);
   const [addToBoardId, setAddToBoardId] = useState<string | null>(null);
   const [movePickerOpen, setMovePickerOpen] = useState(false);
+  const [showCreateBoardModal, setShowCreateBoardModal] = useState(false);
+  const [newBoardName, setNewBoardName] = useState('');
+  const [newBoardEmoji, setNewBoardEmoji] = useState('📁');
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
@@ -116,6 +120,21 @@ export function SymbolGrid({ isParentMode }: Props) {
     setAddToBoardId(null);
   }, []);
 
+  const handleCreateSubBoard = useCallback(async () => {
+    const trimmedName = newBoardName.trim();
+    if (!trimmedName) return;
+    try {
+      const newBoardId = await createBoard(trimmedName, newBoardEmoji, currentBoardId);
+      setShowCreateBoardModal(false);
+      setNewBoardName('');
+      setNewBoardEmoji('📁');
+      // Toast: "Board created ✓"
+      console.log(`Board "${trimmedName}" created with ID: ${newBoardId}`);
+    } catch (err) {
+      console.error('Error creating board:', err);
+    }
+  }, [newBoardName, newBoardEmoji, currentBoardId, createBoard]);
+
   if (symbols.length === 0 && !showAddButton) {
     return (
       <div id="grid-area" className="scroll-thin">
@@ -147,18 +166,41 @@ export function SymbolGrid({ isParentMode }: Props) {
             </div>
           ))}
 
-          {/* Add Symbol card — always LAST in grid, only in edit mode */}
+          {/* Add Symbol card — always visible in edit mode, styled in Parent Mode */}
           {showAddButton && (
             <button
-              className="symbol-card add-word-card"
+              className={`symbol-card add-word-card${isParentMode ? ' parent-mode-add' : ''}`}
               onClick={() => {
                 setEditingSymbol(null);
                 setAddToBoardId(currentBoardId);
                 setModalOpen(true);
               }}
+              style={isParentMode ? {
+                borderStyle: 'dashed',
+                borderColor: '#F59E0B',
+                borderWidth: '2px',
+              } : undefined}
             >
               <span className="symbol-emoji">➕</span>
-              <span className="symbol-label">Add Symbol</span>
+              <span className="symbol-label">
+                {isParentMode ? 'ADD SYMBOL' : 'Add Symbol'}
+              </span>
+            </button>
+          )}
+
+          {/* New Board Inside card — Parent Mode only, after Add Symbol */}
+          {isParentMode && showAddButton && (
+            <button
+              className="symbol-card add-word-card"
+              onClick={() => setShowCreateBoardModal(true)}
+              style={{
+                borderStyle: 'dashed',
+                borderColor: '#F59E0B',
+                borderWidth: '2px',
+              }}
+            >
+              <span className="symbol-emoji">📁</span>
+              <span className="symbol-label">NEW BOARD INSIDE</span>
             </button>
           )}
 
@@ -195,6 +237,78 @@ export function SymbolGrid({ isParentMode }: Props) {
         onSelect={handleMoveSelect}
         onClose={() => { setMovePickerOpen(false); setContextSymbol(null); }}
       />
+
+      {/* Create Sub-Board Modal */}
+      {showCreateBoardModal && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateBoardModal(false); }}>
+          <div className="modal">
+            <h2 className="modal-title">Create a board inside</h2>
+            <p style={{ marginBottom: '16px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+              {symbols.length > 0 ? symbols[0].label : 'current board'}
+            </p>
+
+            <div className="modal-field">
+              <label>Board name</label>
+              <input
+                type="text"
+                placeholder="e.g. Breakfast"
+                maxLength={30}
+                value={newBoardName}
+                onChange={(e) => setNewBoardName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleCreateSubBoard(); }}
+                autoFocus
+              />
+            </div>
+
+            <div className="modal-field">
+              <label>Emoji</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                padding: '12px',
+                borderRadius: '12px',
+                border: '1px solid var(--border-raised)',
+                fontSize: '32px',
+                background: 'var(--bg-surface)',
+              }}>
+                <input
+                  type="text"
+                  value={newBoardEmoji}
+                  onChange={(e) => setNewBoardEmoji(e.target.value.slice(0, 2))}
+                  maxLength={2}
+                  style={{
+                    width: '60px',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'center',
+                    fontSize: '24px',
+                    fontFamily: 'system-ui',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="modal-btn cancel"
+                onClick={() => setShowCreateBoardModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn primary"
+                onClick={handleCreateSubBoard}
+                disabled={!newBoardName.trim()}
+              >
+                Create Board
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

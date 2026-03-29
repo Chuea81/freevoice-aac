@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTTSStore } from '../../store/ttsStore';
 import { useTTS } from '../../hooks/useTTS';
+import { detectLowPowerDevice } from '../../utils/devicePerformance';
 
 export function VoiceDownloadPrompt() {
   const { kokoroStatus, kokoroDeclined, kokoroDownloaded } = useTTSStore();
   const setKokoroDeclined = useTTSStore((s) => s.setKokoroDeclined);
   const { downloadKokoro } = useTTS();
   const [visible, setVisible] = useState(false);
+  const [performanceInfo] = useState(() => detectLowPowerDevice());
 
   // Don't show if already downloaded (persisted), declined, or currently downloading/ready
   useEffect(() => {
@@ -23,6 +25,31 @@ export function VoiceDownloadPrompt() {
   }, [setKokoroDeclined]);
 
   if (!visible || kokoroStatus !== 'idle' || kokoroDeclined || kokoroDownloaded) return null;
+
+  // Show low-power device warning instead of standard prompt
+  if (performanceInfo.isLowPower) {
+    return (
+      <div className="voice-download-banner warning">
+        <div className="voice-download-content">
+          <span className="voice-download-icon">⚠️</span>
+          <div className="voice-download-text">
+            <strong>AI voices may cause lag on this device</strong>
+            <span className="voice-download-sub">
+              {performanceInfo.reason || 'Your device voice works great and has no lag.'}
+            </span>
+          </div>
+        </div>
+        <div className="voice-download-actions">
+          <button className="voice-download-btn dismiss" onClick={handleDismiss}>
+            Keep Device Voice
+          </button>
+          <button className="voice-download-btn primary" onClick={downloadKokoro}>
+            Try AI Voices Anyway
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="voice-download-banner">

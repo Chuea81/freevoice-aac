@@ -59,6 +59,15 @@ function getWorker(): Worker {
 let sharedAudioCtx: AudioContext | null = null;
 let audioCtxWarmed = false;
 
+/** Check if device is Samsung/older Android that needs audio buffer */
+function isSamsungOldAndroid(): boolean {
+  const ua = navigator.userAgent.toLowerCase();
+  const isSamsung = ua.includes('samsung') || ua.includes('galaxys') || ua.includes('samsungbrowser');
+  const androidMatch = ua.match(/android\s+(\d+)/);
+  const androidVersion = androidMatch ? parseInt(androidMatch[1], 10) : 0;
+  return isSamsung && androidVersion < 12;
+}
+
 function getAudioContext(): AudioContext {
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
     sharedAudioCtx = new AudioContext();
@@ -73,8 +82,11 @@ async function warmAudioContext(ctx: AudioContext): Promise<void> {
   if (ctx.state === 'suspended') {
     await ctx.resume();
   }
-  // Play 50ms of silence to flush any init artifacts
-  const silent = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+  // Play silence to flush any init artifacts
+  // Samsung/older Android: 100ms buffer to prevent screech
+  // Other devices: 50ms
+  const silenceDuration = isSamsungOldAndroid() ? 0.1 : 0.05;
+  const silent = ctx.createBuffer(1, ctx.sampleRate * silenceDuration, ctx.sampleRate);
   const src = ctx.createBufferSource();
   src.buffer = silent;
   src.connect(ctx.destination);
@@ -85,6 +97,10 @@ async function warmAudioContext(ctx: AudioContext): Promise<void> {
 
 async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<void> {
   const audioCtx = getAudioContext();
+  // Verify context is running, resume if suspended
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
   await warmAudioContext(audioCtx);
   const audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
   const source = audioCtx.createBufferSource();
@@ -253,5 +269,22 @@ export function useTTS() {
     window.speechSynthesis?.cancel();
   }, []);
 
-  return { speak, speakPreview, downloadKokoro, cancel };
+  const removeKokoro = useCallback(async () => {
+    getWorker().postMessage({ type: 'DELETE_MODEL' });
+    // Wait for deletion to complete (listen for MODEL_DELETED message)
+    return new Promise<void>((resolve) => {
+      const checkMessage = (e: MessageEvent) => {
+        if (e.data.type === 'MODEL_DELETED') {
+          worker?.removeEventListener('message', checkMessage);
+          useTTSStore.getState().setKokoroStatus('idle');
+          useTTSStore.getState().setKokoroDownloaded(false);
+          useTTSStore.getState().setActiveTier('webspeech');
+          resolve();
+        }
+      };
+      worker?.addEventListener('message', checkMessage);
+    });
+  }, []);
+
+  return { speak, speakPreview, downloadKokoro, cancel, removeKokoro };
 }

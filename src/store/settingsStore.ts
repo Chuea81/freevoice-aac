@@ -20,6 +20,7 @@ interface SettingsState {
   showFastPhrases: boolean;
   showCoreWords: boolean;
   onboardingDone: boolean;
+  androidInstallDismissed: boolean;
 
   setGridColumns: (cols: number) => void;
   setSymbolSize: (size: 'small' | 'medium' | 'large') => void;
@@ -33,6 +34,7 @@ interface SettingsState {
   setShowFastPhrases: (on: boolean) => void;
   setShowCoreWords: (on: boolean) => void;
   setOnboardingDone: (done: boolean) => void;
+  setAndroidInstallDismissed: (dismissed: boolean) => void;
   loadFromDb: () => Promise<void>;
 }
 
@@ -54,6 +56,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   showFastPhrases: true,
   showCoreWords: true,
   onboardingDone: false,
+  androidInstallDismissed: false,
 
   setGridColumns: (cols) => { set({ gridColumns: cols }); persist('gridColumns', String(cols)); },
   setSymbolSize: (size) => { set({ symbolSize: size }); persist('symbolSize', size); },
@@ -67,6 +70,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setShowFastPhrases: (on) => { set({ showFastPhrases: on }); persist('showFastPhrases', String(on)); },
   setShowCoreWords: (on) => { set({ showCoreWords: on }); persist('showCoreWords', String(on)); },
   setOnboardingDone: (done) => { set({ onboardingDone: done }); persist('onboardingDone', String(done)); },
+  setAndroidInstallDismissed: (dismissed) => { set({ androidInstallDismissed: dismissed }); persist('androidInstallDismissed', String(dismissed)); },
 
   loadFromDb: async () => {
     const all = await db.settings.toArray();
@@ -88,6 +92,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         : map.has('showQuickFires') ? { showFastPhrases: map.get('showQuickFires') === 'true' } : {}),
       ...(map.has('showCoreWords') && { showCoreWords: map.get('showCoreWords') === 'true' }),
       ...(map.has('onboardingDone') && { onboardingDone: map.get('onboardingDone') === 'true' }),
+      ...(map.has('androidInstallDismissed') && { androidInstallDismissed: map.get('androidInstallDismissed') === 'true' }),
     });
   },
 }));
