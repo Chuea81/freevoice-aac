@@ -188,8 +188,6 @@ async function loadModel(dtypeHint = 'q8') {
 
       const hasWebGPU = await detectWebGPU();
       const device = hasWebGPU ? 'webgpu' : 'wasm';
-      const dtype = hasWebGPU ? 'fp32' : (dtypeHint as 'q8');
-
       // Restore model from IndexedDB → Cache Storage if Android evicted it
       const restoredFromIDB = await restoreCacheFromIDB();
       const cached = restoredFromIDB || await isModelCached();
@@ -263,7 +261,6 @@ const PRECACHE_LIST = [
   'I am frustrated', 'Say that again',
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function preCacheCommonWords(voice: string, speed: number): Promise<void> {
   for (const word of PRECACHE_LIST) {
     const key = `${voice}:${word}`;
