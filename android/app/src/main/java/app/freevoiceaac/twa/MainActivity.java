@@ -17,6 +17,11 @@ public class MainActivity extends BridgeActivity {
         webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
         webView.getSettings().setJavaScriptEnabled(true);
 
+        // Enable Web Speech API (required for device voice synthesis)
+        // Some Android versions block this by default
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setDatabaseEnabled(true);
+
         // Enable SharedArrayBuffer for Kokoro TTS (requires COOP/COEP headers)
         webView.setWebViewClient(new WebViewClient() {
             @Override
