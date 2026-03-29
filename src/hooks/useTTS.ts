@@ -176,8 +176,13 @@ export function useTTS() {
   useEffect(() => {
     const { kokoroDownloaded, kokoroStatus, kokoroDeclined } = useTTSStore.getState();
 
-    // Only proceed if Kokoro is idle and user hasn't declined download
-    if (kokoroStatus !== 'idle' || kokoroDeclined) return;
+    // Only proceed if Kokoro is idle
+    if (kokoroStatus !== 'idle') return;
+
+    // Reset kokoroDeclined flag — old app version set this, but now we auto-download unconditionally
+    if (kokoroDeclined) {
+      useTTSStore.getState().setKokoroDeclined(false);
+    }
 
     useTTSStore.getState().setKokoroStatus('downloading');
 
