@@ -23,6 +23,7 @@ export interface TTSState {
   kokoroDeclined: boolean; // User said "not now" to download prompt
   kokoroDownloaded: boolean; // Model was successfully downloaded (persisted)
   kokoroDevice: 'webgpu' | 'wasm' | null; // Which device loaded
+  kokoroLoadingFromCache: boolean; // True when reloading cached model (not fresh download)
 
   // Voice selection
   activeTier: VoiceTier;
@@ -42,6 +43,7 @@ export interface TTSState {
   setKokoroDeclined: (v: boolean) => void;
   setKokoroDownloaded: (v: boolean) => void;
   setKokoroDevice: (d: 'webgpu' | 'wasm') => void;
+  setKokoroLoadingFromCache: (v: boolean) => void;
   setActiveTier: (tier: VoiceTier) => void;
   setKokoroVoice: (voice: KokoroVoice) => void;
   setWebSpeechVoiceURI: (uri: string | null) => void;
@@ -60,6 +62,7 @@ export const useTTSStore = create<TTSState>()(
       kokoroDeclined: false,
       kokoroDownloaded: false,
       kokoroDevice: null,
+      kokoroLoadingFromCache: false,
       activeTier: 'webspeech', // Start on Web Speech; upgrade to Kokoro after download
       kokoroVoice: 'af_heart', // Warmest, most natural — best default for a child's AAC
       webSpeechVoiceURI: null,
@@ -74,6 +77,7 @@ export const useTTSStore = create<TTSState>()(
       setKokoroDeclined: (v) => set({ kokoroDeclined: v }),
       setKokoroDownloaded: (v) => set({ kokoroDownloaded: v }),
       setKokoroDevice: (d) => set({ kokoroDevice: d }),
+      setKokoroLoadingFromCache: (v) => set({ kokoroLoadingFromCache: v }),
       setActiveTier: (tier) => set({ activeTier: tier }),
       setKokoroVoice: (voice) => set({ kokoroVoice: voice }),
       setWebSpeechVoiceURI: (uri) => set({ webSpeechVoiceURI: uri }),

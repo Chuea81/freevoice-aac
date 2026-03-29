@@ -861,7 +861,9 @@ body {
   font-family: var(--font-body);
 }
 .voice-download-banner.downloading { border-color: rgba(79,195,247,0.3); }
+.voice-download-banner.ready { border-color: rgba(39,174,96,0.3); animation: readyFade 3s ease-out forwards; }
 .voice-download-banner.error { border-color: rgba(225,29,72,0.3); }
+@keyframes readyFade { 0%,70% { opacity:1; } 100% { opacity:0; } }
 
 .voice-download-content { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .voice-download-icon { font-size: 28px; flex-shrink: 0; }

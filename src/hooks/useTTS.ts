@@ -35,12 +35,16 @@ function getWorker(): Worker {
       }
       if (msg.type === 'LOAD_PROGRESS') {
         useTTSStore.getState().setKokoroProgress(Math.round(msg.progress));
+        if (msg.status === 'cached' || msg.status === 'restored') {
+          useTTSStore.getState().setKokoroLoadingFromCache(true);
+        }
       }
       if (msg.type === 'LOAD_COMPLETE') {
         useTTSStore.getState().setKokoroStatus('ready');
         useTTSStore.getState().setKokoroDevice(msg.device);
         useTTSStore.getState().setKokoroDownloaded(true);
         useTTSStore.getState().setActiveTier('kokoro');
+        useTTSStore.getState().setKokoroLoadingFromCache(false);
       }
       if (msg.type === 'LOAD_ERROR') {
         useTTSStore.getState().setKokoroStatus('error');
@@ -148,6 +152,7 @@ export function useTTS() {
     const { kokoroDownloaded, kokoroStatus } = useTTSStore.getState();
     if (kokoroDownloaded && kokoroStatus === 'idle') {
       useTTSStore.getState().setKokoroStatus('downloading');
+      useTTSStore.getState().setKokoroLoadingFromCache(true); // Signal this is a cache reload
       const { kokoroVoice, speechRate } = useTTSStore.getState();
       getWorker().postMessage({ type: 'LOAD', dtype: 'q8', voice: kokoroVoice, speed: speechRate });
     }

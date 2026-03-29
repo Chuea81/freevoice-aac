@@ -52,23 +52,59 @@ export function KokoroDownloadProgress() {
   const kokoroStatus = useTTSStore((s) => s.kokoroStatus);
   const kokoroProgress = useTTSStore((s) => s.kokoroProgress);
   const kokoroError = useTTSStore((s) => s.kokoroError);
+  const loadingFromCache = useTTSStore((s) => s.kokoroLoadingFromCache);
   const { downloadKokoro } = useTTS();
   const setKokoroDeclined = useTTSStore((s) => s.setKokoroDeclined);
+  const [showReady, setShowReady] = useState(false);
+  const [prevStatus, setPrevStatus] = useState(kokoroStatus);
+
+  // Show "Ready" indicator briefly when Kokoro finishes loading
+  useEffect(() => {
+    if (prevStatus === 'downloading' && kokoroStatus === 'ready') {
+      setShowReady(true);
+      const timer = setTimeout(() => setShowReady(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    setPrevStatus(kokoroStatus);
+  }, [kokoroStatus, prevStatus]);
+
+  if (showReady) {
+    return (
+      <div className="voice-download-banner ready">
+        <div className="voice-download-content">
+          <span className="voice-download-icon">🎙️</span>
+          <div className="voice-download-text">
+            <strong>AI voice ready</strong>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (kokoroStatus === 'downloading') {
     return (
       <div className="voice-download-banner downloading">
         <div className="voice-download-content">
-          <span className="voice-download-icon">⬇️</span>
+          <span className="voice-download-icon">{loadingFromCache ? '🎙️' : '⬇️'}</span>
           <div className="voice-download-text">
-            <strong>Downloading AI voices… {kokoroProgress}%</strong>
-            <div className="voice-progress-bar">
-              <div
-                className="voice-progress-fill"
-                style={{ width: `${Math.max(kokoroProgress, 2)}%` }}
-              />
-            </div>
-            <span className="voice-download-sub">One time only · Works offline after this</span>
+            <strong>
+              {loadingFromCache
+                ? 'Loading AI voice…'
+                : `Downloading AI voices… ${kokoroProgress}%`}
+            </strong>
+            {!loadingFromCache && (
+              <div className="voice-progress-bar">
+                <div
+                  className="voice-progress-fill"
+                  style={{ width: `${Math.max(kokoroProgress, 2)}%` }}
+                />
+              </div>
+            )}
+            <span className="voice-download-sub">
+              {loadingFromCache
+                ? 'Using device voice until ready'
+                : 'One time only · Works offline after this'}
+            </span>
           </div>
         </div>
       </div>
