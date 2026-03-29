@@ -105,6 +105,83 @@ export function Settings({ onBack }: { onBack: () => void }) {
     setPronPhonetic('');
   }, [pronWord, pronPhonetic, boardStore]);
 
+  const handleFactoryReset = useCallback(async () => {
+    if (!confirm('⚠️ Factory Reset will:\n\n• Delete ALL custom boards and symbols\n• Delete ALL settings and preferences\n• Clear all caches\n• Delete the AI voice model\n\nYou will start with a fresh app.\n\nThis CANNOT be undone. Continue?')) {
+      return;
+    }
+    if (!confirm('Are you absolutely sure? This will delete everything.')) {
+      return;
+    }
+    try {
+      // Clear all databases
+      await db.boards.clear();
+      await db.symbols.clear();
+      await db.settings.clear();
+      await db.symbolCache.clear();
+
+      // Reset all stores to defaults
+      useSettingsStore.setState({
+        gridColumns: 0,
+        symbolSize: 'medium',
+        cardStyle: 'colors',
+        autoSpeak: true,
+        labelPosition: 'below',
+        colorScheme: 'default',
+        skinTone: 'default',
+        auditoryTouch: false,
+        dwellTime: 0,
+        showFastPhrases: true,
+        showCoreWords: true,
+        onboardingDone: false,
+        androidInstallDismissed: false,
+      });
+
+      // Delete AI voice model
+      try {
+        const cacheNames = await caches.keys();
+        const tfCacheName = cacheNames.find(n => n.includes('transformers'));
+        if (tfCacheName) {
+          const cache = await caches.open(tfCacheName);
+          const keys = await cache.keys();
+          const kokoroKeys = keys.filter(req => req.url.includes('Kokoro'));
+          for (const req of kokoroKeys) {
+            await cache.delete(req);
+          }
+        }
+      } catch {
+        // Non-fatal if cache deletion fails
+      }
+
+      // Clear IndexedDB model cache
+      try {
+        const idbNames = await indexedDB.databases?.() || [];
+        for (const idbDb of idbNames) {
+          if (!idbDb.name) continue;
+          const req = indexedDB.deleteDatabase(idbDb.name);
+          await new Promise((resolve, reject) => {
+            req.onsuccess = () => resolve(null);
+            req.onerror = () => reject(req.error);
+          });
+        }
+      } catch {
+        // Non-fatal if IDB deletion fails
+      }
+
+      // Clear localStorage except language preference
+      const savedLanguage = localStorage.getItem('fv_language');
+      localStorage.clear();
+      if (savedLanguage) {
+        localStorage.setItem('fv_language', savedLanguage);
+      }
+
+      // Reload the app
+      window.location.reload();
+    } catch (err) {
+      console.error('Factory reset error:', err);
+      alert('An error occurred during factory reset. Please try again.');
+    }
+  }, []);
+
   return (
     <div className="settings-page">
       <div className="settings-header">
@@ -354,6 +431,13 @@ export function Settings({ onBack }: { onBack: () => void }) {
             <label>{t('settings.changePin')}</label>
             <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>{t('settings.changePin')}</button>
           </div>
+          <div className="settings-row">
+            <label>Factory Reset</label>
+            <button className="settings-action-btn" style={{ background: '#ef4444', color: 'white' }} onClick={handleFactoryReset}>
+              ⚠️ Reset Everything
+            </button>
+          </div>
+          <p className="settings-hint">Deletes all boards, symbols, settings, and AI voices. Keeps language preference. Cannot be undone.</p>
         </section>
 
         {/* ── ABOUT ── */}
