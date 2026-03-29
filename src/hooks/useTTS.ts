@@ -49,7 +49,17 @@ function getWorker(): Worker {
       if (msg.type === 'LOAD_ERROR') {
         useTTSStore.getState().setKokoroStatus('error');
         useTTSStore.getState().setKokoroError(msg.error);
+        // Auto-fallback to Web Speech on Kokoro error (e.g., SharedArrayBuffer not available in WebView)
+        useTTSStore.getState().setActiveTier('webspeech');
       }
+    };
+    // Catch worker initialization errors (e.g., SharedArrayBuffer not available)
+    worker.onerror = (error) => {
+      console.error('[TTS Worker Error]', error.message);
+      useTTSStore.getState().setKokoroStatus('error');
+      useTTSStore.getState().setKokoroError(error.message || 'Worker initialization failed');
+      useTTSStore.getState().setActiveTier('webspeech');
+      // Continue running without Kokoro — user will hear Web Speech instead
     };
   }
   return worker;
