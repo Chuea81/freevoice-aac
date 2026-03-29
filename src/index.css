@@ -101,7 +101,10 @@ body {
 #speech-bar {
   background: linear-gradient(to bottom, var(--bg-base), rgba(6,12,26,0.95));
   border-bottom: 2px solid var(--border-accent);
-  padding: 12px 16px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;

@@ -26,6 +26,8 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
     webContentsDebuggingEnabled: true,
+    backgroundColor: '#000000',
+    overScrollMode: 'never',
     buildOptions: {
       keystorePath: './.keystore/freevoice.jks',
       keystorePassword: process.env.KEYSTORE_PASSWORD || 'password',

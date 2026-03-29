@@ -1,16 +1,22 @@
 package app.freevoiceaac.twa;
 
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Enable edge-to-edge layout so content extends to system UI edges
+        // Window insets will be handled via CSS safe-area properties
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         // Fix audio playback in WebView for TTS and Web Audio API
         WebView webView = getBridge().getWebView();
