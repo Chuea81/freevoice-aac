@@ -37,6 +37,8 @@ export function SymbolGrid({ isParentMode }: Props) {
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
+  const isScrolling = useRef(false);
+  const touchStartY = useRef(0);
 
   const isCustomBoard = currentBoardId === 'custom';
   const allowEdit = isCustomBoard || isParentMode;
@@ -44,8 +46,9 @@ export function SymbolGrid({ isParentMode }: Props) {
 
   const handleTap = useCallback(
     (symbol: DbSymbol) => {
-      if (longPressTriggered.current) {
+      if (longPressTriggered.current || isScrolling.current) {
         longPressTriggered.current = false;
+        isScrolling.current = false;
         return;
       }
       if (symbol.isCategory && symbol.targetBoardId) {
@@ -58,9 +61,16 @@ export function SymbolGrid({ isParentMode }: Props) {
     [navigateToBoard, addToken, speak, autoSpeak],
   );
 
-  const handleLongPressStart = useCallback((symbol: DbSymbol) => {
+  const handleLongPressStart = useCallback((symbol: DbSymbol, e?: React.TouchEvent | React.MouseEvent) => {
     if (!allowEdit) return;
+    isScrolling.current = false;
     longPressTriggered.current = false;
+
+    // Track initial touch position for scroll detection
+    if (e && 'touches' in e) {
+      touchStartY.current = e.touches[0]?.clientY || 0;
+    }
+
     longPressTimer.current = setTimeout(() => {
       longPressTriggered.current = true;
       setContextSymbol(symbol);
@@ -72,6 +82,16 @@ export function SymbolGrid({ isParentMode }: Props) {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const currentY = e.touches[0]?.clientY || 0;
+    const delta = Math.abs(currentY - touchStartY.current);
+    // If touch moved more than 10px, consider it a scroll
+    if (delta > 10) {
+      isScrolling.current = true;
+      handleLongPressEnd();
     }
   }, []);
 
@@ -155,12 +175,12 @@ export function SymbolGrid({ isParentMode }: Props) {
           {symbols.map((symbol) => (
             <div
               key={symbol.id}
-              onMouseDown={() => handleLongPressStart(symbol)}
+              onMouseDown={(e) => handleLongPressStart(symbol, e)}
               onMouseUp={handleLongPressEnd}
               onMouseLeave={handleLongPressEnd}
-              onTouchStart={() => handleLongPressStart(symbol)}
+              onTouchStart={(e) => handleLongPressStart(symbol, e)}
               onTouchEnd={handleLongPressEnd}
-              onTouchMove={handleLongPressEnd}
+              onTouchMove={handleTouchMove}
             >
               <SymbolCard symbol={symbol} onTap={handleTap} isParentMode={isParentMode} />
             </div>
