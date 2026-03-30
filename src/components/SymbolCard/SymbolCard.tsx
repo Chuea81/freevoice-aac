@@ -65,31 +65,10 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const hasCharacterImage = category !== null && !!characterImageUrl;
   const isCustomSymbol = ARASAAC_IDS[symbol.label?.toUpperCase() || ''] === -1;
 
-  // DEBUG
-  if (symbol.label === 'bottom') {
-    console.log('[SymbolCard] bottom symbol', {
-      label: symbol.label,
-      upperLabel: symbol.label?.toUpperCase(),
-      arasaacId: symbol.arasaacId,
-      staticId: ARASAAC_IDS[symbol.label?.toUpperCase() || ''],
-      isCustomSymbol,
-      customImagePath: CUSTOM_SYMBOL_IMAGES[symbol.label?.toUpperCase() || ''],
-    });
-  }
-
   // Resolve image URL at render time.
-  // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
+  // Priority: character image > user photo > ARASAAC static ID > custom symbol > Dexie > cache > emoji
   useEffect(() => {
     setImgFailed(false);
-
-    // HARDCODE: Always use custom image for bottom (case-insensitive)
-    if (symbol.label?.toLowerCase() === 'bottom') {
-      console.log('[TEST] Setting bottom image URL');
-      (window as any).testBottomSymbol = { label: symbol.label, url: CUSTOM_SYMBOL_IMAGES['BOTTOM'] };
-      setResolvedUrl(CUSTOM_SYMBOL_IMAGES['BOTTOM']);
-      console.log('[TEST] After setResolvedUrl, resolvedUrl should be:', CUSTOM_SYMBOL_IMAGES['BOTTOM']);
-      return;
-    }
 
     // 0. Custom character image — highest priority
     if (hasCharacterImage && characterImageUrl) {

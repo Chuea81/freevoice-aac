@@ -1,5 +1,6 @@
 import { useBoardStore } from '../../store/boardStore';
 import { db } from '../../db';
+import { fetchDefaultSymbols } from '../../services/symbolsApi';
 import { useEffect, useState } from 'react';
 
 export function BreadcrumbNav() {
@@ -9,9 +10,16 @@ export function BreadcrumbNav() {
   const [rootLabel, setRootLabel] = useState('Home');
 
   useEffect(() => {
-    db.boards.get(activeTab).then((board) => {
-      if (board) setRootLabel(board.name);
-    });
+    async function fetchBoardName() {
+      // Try IDB first (user-created boards)
+      const board = await db.boards.get(activeTab);
+      if (board) { setRootLabel(board.name); return; }
+      // Fall back to JSON defaults
+      const { boards } = await fetchDefaultSymbols();
+      const defaultBoard = boards.find(b => b.id === activeTab);
+      setRootLabel(defaultBoard?.name ?? 'Home');
+    }
+    fetchBoardName();
   }, [activeTab]);
 
   return (

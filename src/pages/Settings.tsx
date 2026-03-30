@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/boardStore';
 import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
-import { db, seedIfNeeded } from '../db';
+import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
 
@@ -118,6 +118,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
       await db.symbols.clear();
       await db.settings.clear();
       await db.symbolCache.clear();
+      await db.symbolHidden.clear();
 
       // Reset all stores to defaults
       useSettingsStore.setState({
@@ -174,10 +175,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
         localStorage.setItem('fv_language', savedLanguage);
       }
 
-      // Re-seed fresh data before reload
-      await seedIfNeeded();
-
-      // Reload the app
+      // Reload the app (default data will load from symbols.json)
       window.location.reload();
     } catch (err) {
       console.error('Factory reset error:', err);

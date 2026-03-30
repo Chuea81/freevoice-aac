@@ -65,13 +65,17 @@ export async function importProfile(file: File): Promise<{ success: boolean; err
     }
 
     // Support both old format (boards at root) and new format (profile wrapper)
-    const boards = data.profile?.boards || data.boards;
-    const symbols = data.profile?.symbols || data.symbols;
+    let boards = data.profile?.boards || data.boards;
+    let symbols = data.profile?.symbols || data.symbols;
     const settings = data.profile?.settings || data.settings;
 
     if (!boards || !symbols) {
       return { success: false, error: 'Invalid backup file.' };
     }
+
+    // Filter out default-* boards/symbols to prevent duplicates
+    boards = boards.filter((b: Board) => !b.id.startsWith('default-'));
+    symbols = symbols.filter((s: Symbol) => !s.id.startsWith('default-'));
 
     // Auto-backup before replacing
     await exportProfile();
@@ -98,8 +102,12 @@ export async function mergeImport(file: File): Promise<{ success: boolean; count
     const text = await file.text();
     const data = JSON.parse(text);
 
-    const boards: Board[] = data.profile?.boards || data.boards || [];
-    const symbols: Symbol[] = data.profile?.symbols || data.symbols || [];
+    let boards: Board[] = data.profile?.boards || data.boards || [];
+    let symbols: Symbol[] = data.profile?.symbols || data.symbols || [];
+
+    // Filter out default-* to prevent duplicates
+    boards = boards.filter((b) => !b.id.startsWith('default-'));
+    symbols = symbols.filter((s) => !s.id.startsWith('default-'));
 
     if (boards.length === 0 && symbols.length === 0) {
       return { success: false, count: 0, error: 'No boards or symbols found.' };

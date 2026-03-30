@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { db, seedIfNeeded, type Symbol as DbSymbol, type Board as DbBoard } from '../db';
+import { db, type Symbol as DbSymbol, type Board as DbBoard } from '../db';
 import { cardColor } from '../data/defaultBoards';
 import { getBritishVoiceOverride } from '../data/britishVoiceOverrides';
+import { fetchDefaultSymbols, getCachedDefaultSymbols } from '../services/symbolsApi';
 
 interface NavStep {
   boardId: string;
@@ -124,11 +125,28 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   loadSymbols: async (boardId: string) => {
-    const symbols = await db.symbols
-      .where('boardId')
-      .equals(boardId)
-      .sortBy('order');
-    set({ symbols });
+    const { symbols: defaultSymbols } = await fetchDefaultSymbols();
+
+    // Get defaults for this board
+    const defaults = defaultSymbols.filter(s => s.boardId === boardId);
+
+    // Get hidden overrides for default symbols
+    const hiddenIds = new Set(
+      (await db.symbolHidden.toArray()).filter(h => h.hidden).map(h => h.id)
+    );
+
+    // Apply hidden overrides to default symbols
+    const defaultsWithHidden = defaults.map(s => ({
+      ...s,
+      hidden: hiddenIds.has(s.id) ? true : s.hidden,
+    }));
+
+    // Get user-created symbols for this board
+    const userSymbols = await db.symbols.where('boardId').equals(boardId).sortBy('order');
+
+    // Merge: defaults first (preserving order), then user symbols
+    const merged = [...defaultsWithHidden, ...userSymbols];
+    set({ symbols: merged });
   },
 
   addToken: (emoji: string, text: string) => {
@@ -148,7 +166,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   seedDatabase: async () => {
-    await seedIfNeeded();
+    // No seeding needed — default symbols come from symbols.json
     set({ isSeeded: true });
     get().loadSymbols('home');
     get().loadQuickFires();
@@ -224,16 +242,29 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // Get all boards for picker
   getAllBoards: async () => {
-    return db.boards.orderBy('order').toArray();
+    const { boards: defaultBoards } = await fetchDefaultSymbols();
+    const userBoards = await db.boards.orderBy('order').toArray();
+    return [...defaultBoards, ...userBoards];
   },
 
   // Vocab filter
   toggleSymbolHidden: async (id) => {
-    const sym = await db.symbols.get(id);
-    if (sym) {
-      await db.symbols.update(id, { hidden: !sym.hidden });
-      get().loadSymbols(get().currentBoardId);
+    if (id.startsWith('default-')) {
+      // Toggle hidden state in symbolHidden table
+      const existing = await db.symbolHidden.get(id);
+      if (existing) {
+        await db.symbolHidden.put({ id, hidden: !existing.hidden });
+      } else {
+        // First time hiding — get current state from JSON
+        const cached = getCachedDefaultSymbols();
+        const sym = cached?.symbols.find(s => s.id === id);
+        await db.symbolHidden.put({ id, hidden: !(sym?.hidden ?? false) });
+      }
+    } else {
+      const sym = await db.symbols.get(id);
+      if (sym) await db.symbols.update(id, { hidden: !sym.hidden });
     }
+    get().loadSymbols(get().currentBoardId);
   },
 
   // Sort
@@ -256,7 +287,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       return;
     }
     const q = query.toLowerCase();
-    const all = await db.symbols.toArray();
+
+    // Search both defaults and user symbols
+    const { symbols: defaultSymbols } = await fetchDefaultSymbols();
+    const userSymbols = await db.symbols.toArray();
+    const all = [...defaultSymbols, ...userSymbols];
+
     const results = all.filter((s) =>
       s.label.toLowerCase().includes(q) ||
       s.phrase.toLowerCase().includes(q)
@@ -307,18 +343,38 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // Persistent strips
   loadQuickFires: async () => {
-    const symbols = await db.symbols
-      .where('boardId')
-      .equals('quickfires')
-      .sortBy('order');
-    set({ quickFireSymbols: symbols });
+    const { symbols: defaultSymbols } = await fetchDefaultSymbols();
+    const defaults = defaultSymbols.filter(s => s.boardId === 'quickfires');
+
+    const hiddenIds = new Set(
+      (await db.symbolHidden.toArray()).filter(h => h.hidden).map(h => h.id)
+    );
+
+    const defaultsWithHidden = defaults.map(s => ({
+      ...s,
+      hidden: hiddenIds.has(s.id) ? true : s.hidden,
+    }));
+
+    const userSymbols = await db.symbols.where('boardId').equals('quickfires').sortBy('order');
+    const merged = [...defaultsWithHidden, ...userSymbols];
+    set({ quickFireSymbols: merged });
   },
 
   loadCoreWords: async () => {
-    const symbols = await db.symbols
-      .where('boardId')
-      .equals('corewords')
-      .sortBy('order');
-    set({ coreWordSymbols: symbols });
+    const { symbols: defaultSymbols } = await fetchDefaultSymbols();
+    const defaults = defaultSymbols.filter(s => s.boardId === 'corewords');
+
+    const hiddenIds = new Set(
+      (await db.symbolHidden.toArray()).filter(h => h.hidden).map(h => h.id)
+    );
+
+    const defaultsWithHidden = defaults.map(s => ({
+      ...s,
+      hidden: hiddenIds.has(s.id) ? true : s.hidden,
+    }));
+
+    const userSymbols = await db.symbols.where('boardId').equals('corewords').sortBy('order');
+    const merged = [...defaultsWithHidden, ...userSymbols];
+    set({ coreWordSymbols: merged });
   },
 }));

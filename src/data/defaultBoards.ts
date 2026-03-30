@@ -1773,9 +1773,6 @@ export function getDefaultSymbols(): Symbol[] {
         wordType: item.wordType,
         arasaacId: item.arasaacId,
       };
-      if (item.label === 'BOTTOM') {
-        console.log('[getDefaultSymbols] BOTTOM:', sym);
-      }
       symbols.push(sym);
     });
   }

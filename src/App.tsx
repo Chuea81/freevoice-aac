@@ -12,15 +12,6 @@ function App() {
   const cardStyle = useSettingsStore((s) => s.cardStyle);
   const { i18n } = useTranslation();
 
-  // Unregister service workers on every load (temporary fix for caching issues)
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => reg.unregister());
-      });
-    }
-  }, []);
-
   useEffect(() => { loadFromDb(); }, [loadFromDb]);
   useCharacterManifest();
 

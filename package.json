@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/assemble-dist.mjs",
+    "generate-symbols": "node --import tsx/esm scripts/generate-symbols-json.mjs",
+    "build": "npm run generate-symbols && tsc -b && vite build && node scripts/assemble-dist.mjs",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",

@@ -39,6 +39,11 @@ export interface SymbolCache {
   cachedAt: number;
 }
 
+export interface SymbolHidden {
+  id: string;
+  hidden: boolean;
+}
+
 // ── Database ──
 
 const SCHEMA = {
@@ -46,6 +51,7 @@ const SCHEMA = {
   symbols: 'id, boardId, order, [boardId+order]',
   settings: 'key',
   symbolCache: 'keyword, cachedAt',
+  symbolHidden: 'id',
 };
 
 class FreeVoiceDB extends Dexie {
@@ -53,6 +59,7 @@ class FreeVoiceDB extends Dexie {
   symbols!: Table<Symbol, string>;
   settings!: Table<Setting, string>;
   symbolCache!: Table<SymbolCache, string>;
+  symbolHidden!: Table<SymbolHidden, string>;
 
   constructor() {
     super('FreeVoiceDB');
@@ -162,43 +169,18 @@ class FreeVoiceDB extends Dexie {
       await tx.table('symbols').bulkPut(freshSymbols);
       console.log('[Migration v8] Re-synced all symbols — fixed inappropriate emoji usage');
     });
+
+    // v9: Migrate to symbols-api architecture.
+    // Default symbols no longer stored in IDB — they come from public/api/symbols.json.
+    // Delete all default-* boards/symbols and add symbolHidden table for overrides.
+    this.version(9).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+      await tx.table('symbols').where('id').startsWith('default-').delete();
+      await tx.table('boards').where('id').startsWith('default-').delete();
+      await tx.table('settings').where('key').equals('dataVersion').delete();
+      console.log('[Migration v9] Migrated to symbols-api: default symbols removed from IDB');
+    });
   }
 }
 
 export const db = new FreeVoiceDB();
-
-// ── Seed on first launch (PRD 4.2) ──
-
-const CURRENT_DATA_VERSION = 99; // Update when defaultBoards.ts changes
-
-export async function seedIfNeeded(): Promise<void> {
-  const count = await db.boards.count();
-
-  // Check if we have cached data AND if it's the current version
-  if (count > 0) {
-    const versionSetting = await db.settings.get('dataVersion');
-    const cachedVersion = versionSetting ? parseInt(versionSetting.value, 10) : 0;
-
-    // If cached version matches current version, use it
-    if (cachedVersion === CURRENT_DATA_VERSION) {
-      return;
-    }
-
-    // Version mismatch — clear old data and re-seed with fresh data
-    console.log(`[seedIfNeeded] Data version mismatch: cached=${cachedVersion}, current=${CURRENT_DATA_VERSION}. Re-seeding...`);
-    await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
-      await db.boards.clear();
-      await db.symbols.clear();
-      await db.settings.delete('dataVersion');
-    });
-  }
-
-  // Seed fresh data from current source
-  const boards = getDefaultBoards();
-  const symbols = getDefaultSymbols();
-  await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
-    await db.boards.bulkPut(boards);
-    await db.symbols.bulkPut(symbols);
-    await db.settings.put({ key: 'dataVersion', value: String(CURRENT_DATA_VERSION) });
-  });
-}
