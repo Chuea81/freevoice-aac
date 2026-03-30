@@ -169,7 +169,7 @@ export const db = new FreeVoiceDB();
 
 // ── Seed on first launch (PRD 4.2) ──
 
-const CURRENT_DATA_VERSION = 10; // Update when defaultBoards.ts changes
+const CURRENT_DATA_VERSION = 11; // Update when defaultBoards.ts changes
 
 export async function seedIfNeeded(): Promise<void> {
   const count = await db.boards.count();
@@ -189,6 +189,7 @@ export async function seedIfNeeded(): Promise<void> {
     await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
       await db.boards.clear();
       await db.symbols.clear();
+      await db.settings.delete('dataVersion');
     });
   }
 

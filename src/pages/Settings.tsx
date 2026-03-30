@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/boardStore';
 import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
-import { db } from '../db';
+import { db, seedIfNeeded } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
 
@@ -173,6 +173,9 @@ export function Settings({ onBack }: { onBack: () => void }) {
       if (savedLanguage) {
         localStorage.setItem('fv_language', savedLanguage);
       }
+
+      // Re-seed fresh data before reload
+      await seedIfNeeded();
 
       // Reload the app
       window.location.reload();
