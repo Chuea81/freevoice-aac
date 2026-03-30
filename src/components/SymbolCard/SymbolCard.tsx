@@ -80,8 +80,13 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   // Resolve image URL at render time.
   // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
   useEffect(() => {
-    if (symbol.label === 'BOTTOM') (window as any).bottomSymbol = symbol;
     setImgFailed(false);
+
+    // HARDCODE: Always use custom image for BOTTOM
+    if (symbol.label === 'BOTTOM') {
+      setResolvedUrl(CUSTOM_SYMBOL_IMAGES['BOTTOM']);
+      return;
+    }
 
     // 0. Custom character image — highest priority
     if (hasCharacterImage && characterImageUrl) {
