@@ -1772,6 +1772,7 @@ export function getDefaultSymbols(): Symbol[] {
         targetBoardId: item.category,
         wordType: item.wordType,
         arasaacId: item.arasaacId,
+        imageUrl: item.imageUrl,
       };
       symbols.push(sym);
     });
