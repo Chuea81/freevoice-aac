@@ -142,13 +142,13 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   try {
     let boardsContent = await readFile(BOARDS_FILE, 'utf8');
 
-    // Find the symbol by label in the items arrays and add imageUrl
-    // Pattern: matches a symbol with a matching label and adds/updates imageUrl
-    const imageUrlPath = `data:image/png;base64,${imageBase64.slice(0, 50)}...`; // Store with imageUrl pointing to custom PNG
-
-    // More robust: find the symbol definition with this label and add imageUrl field
+    // Find the symbol by label (case-insensitive) and add imageUrl
+    // Handles both regular symbols and category symbols
+    // Pattern 1: { emoji: '...', label: 'Label', ... }
+    // Pattern 2: { emoji: '...', label: 'Label', category: '...' }
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const symbolPattern = new RegExp(
-      `(\\{\\s*emoji:\\s*'[^']*',\\s*label:\\s*'${label}',)([^}]*?)(\\})`,
+      `(\\{\\s*emoji:\\s*'[^']*',\\s*label:\\s*'${escapedLabel}',)([^}]*?)(\\})`,
       'i'
     );
 
