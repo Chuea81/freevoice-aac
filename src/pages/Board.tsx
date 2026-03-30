@@ -29,6 +29,17 @@ export function Board({ onOpenParentMode }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Force unregister old service workers on load
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (const reg of registrations) {
+          reg.unregister();
+        }
+      });
+    }
+  }, []);
+
   // useTTS handles iOS unlock internally via useEffect
   useTTS();
   useArasaac();
