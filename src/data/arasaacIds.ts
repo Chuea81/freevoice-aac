@@ -191,5 +191,5 @@ export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {
   'CRANBERRY JUICE':`${B}symbols/drinks/cranberry_juice.png`,
   'PEACH JUICE':    `${B}symbols/drinks/peach_juice.png`,
   'ROOT BEER':      `${B}symbols/drinks/root_beer.png`,
-  'bottom': `${B}symbols/custom/bottom.png`,
+  'BOTTOM': `${B}symbols/custom/bottom.png`,
 };
