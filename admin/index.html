@@ -450,15 +450,18 @@ async function exportApprovedSymbols() {
       return;
     }
     const lines = [];
-    lines.push('// Approved custom symbols — paste into defaultBoards.ts');
+    lines.push('// Approved custom symbols from Symbol Builder');
+    lines.push('// Paste these into the appropriate board in defaultBoards.ts');
     lines.push('');
     for (const sym of symbols) {
-      const label = sym.label.toUpperCase();
-      lines.push(`      { emoji: '✨', label: '${sym.label}', phrase: '${sym.label.toLowerCase()}', wordType: 'noun', arasaacId: -1 },`);
+      // fileName is like "tree.png", label is "Tree"
+      const phrase = sym.label.toLowerCase();
+      const parts = [`emoji: '✨'`, `label: '${sym.label}'`, `phrase: '${phrase}'`, `wordType: 'noun'`, `arasaacId: -1`];
+      lines.push(`      { ${parts.join(', ')} },`);
     }
     const ts = lines.join('\n');
     await navigator.clipboard.writeText(ts);
-    toast(`✅ Exported ${symbols.length} approved symbols to clipboard!`, 'success');
+    toast(`✅ Exported ${symbols.length} symbols to clipboard! Paste into defaultBoards.ts items array.`, 'success');
   } catch (e) {
     toast('Export failed: ' + e.message, 'error');
     console.error('Export error:', e);
