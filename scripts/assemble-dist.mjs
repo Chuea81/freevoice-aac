@@ -18,6 +18,12 @@ mkdirSync(dist, { recursive: true });
 copyFileSync(join(pub, 'index.html'), join(dist, 'index.html'));
 console.log('✓ dist/index.html (landing page)');
 
+// Copy 404.html for GitHub Pages SPA routing
+if (existsSync(join(pub, '404.html'))) {
+  copyFileSync(join(pub, '404.html'), join(dist, '404.html'));
+  console.log('✓ dist/404.html (SPA router)');
+}
+
 // Copy terms page
 if (existsSync(join(pub, 'terms.html'))) {
   copyFileSync(join(pub, 'terms.html'), join(dist, 'terms.html'));

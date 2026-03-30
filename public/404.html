@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FreeVoice</title>
+    <script>
+        // GitHub Pages SPA router: preserve static asset requests, route others to /app/
+        const path = window.location.pathname;
+
+        // List of static asset paths to preserve
+        const staticPatterns = [
+            /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico)$/i,
+            /^\/symbols\//,
+            /^\/screenshots\//,
+            /^\/icons\//,
+            /\.html$/,
+        ];
+
+        const isStatic = staticPatterns.some(pattern => pattern.test(path));
+
+        if (!isStatic && !path.startsWith('/app/')) {
+            // Redirect to SPA
+            window.location.replace('/app/');
+        }
+    </script>
+</head>
+<body>
+    If you are not redirected, <a href="/app/">click here</a>.
+</body>
+</html>
