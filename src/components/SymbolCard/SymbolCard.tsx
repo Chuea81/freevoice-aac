@@ -91,6 +91,15 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     const upperLabel = symbol.label?.toUpperCase() || '';
     const staticId = ARASAAC_IDS[upperLabel];
 
+    if (symbol.label === 'bottom') {
+      console.log('[SymbolCard] bottom resolution START:', {
+        label: symbol.label,
+        upperLabel,
+        staticId,
+        isInArasaacIds: upperLabel in ARASAAC_IDS,
+      });
+    }
+
     // 1. Static lookup says "force emoji" (ID=0) — skip all ARASAAC
     if (staticId === 0) {
       setResolvedUrl(null);
