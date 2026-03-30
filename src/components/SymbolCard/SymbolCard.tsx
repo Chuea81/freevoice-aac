@@ -47,8 +47,9 @@ interface Props {
 }
 
 export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
-  if (symbol.label === 'bottom' || symbol.label === 'Bottom') {
-    console.log('[SymbolCard] RENDER bottom symbol:', symbol);
+  // DEBUG: Log ALL symbols to verify rendering
+  if (symbol.boardId === 'body_parts' && (symbol.order === 25 || symbol.order === 26 || symbol.order === 27 || symbol.order === 28)) {
+    console.log(`[SymbolCard] body_parts order=${symbol.order}:`, { label: symbol.label, arasaacId: symbol.arasaacId });
   }
 
   const [imgFailed, setImgFailed] = useState(false);
