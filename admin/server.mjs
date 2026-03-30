@@ -38,6 +38,7 @@ app.get('/api/boards', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
 // GET /api/boards-full — returns complete board data (all symbol fields)
 app.get('/api/boards-full', async (req, res) => {
   try {
@@ -48,7 +49,6 @@ app.get('/api/boards-full', async (req, res) => {
       import { getDefaultBoards, getDefaultSymbols } from './src/data/defaultBoards.ts';
       const boards = getDefaultBoards();
       const symbols = getDefaultSymbols();
-      // Group symbols by boardId
       const byBoard = {};
       for (const s of symbols) {
         if (!byBoard[s.boardId]) byBoard[s.boardId] = [];
