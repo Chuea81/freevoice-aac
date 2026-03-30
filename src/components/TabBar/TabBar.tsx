@@ -8,7 +8,7 @@ const TABS = [
   { id: 'food', label: 'FOOD', emoji: '🍎' },
   { id: 'activities', label: 'PLAY', emoji: '⚽' },
   { id: 'social', label: 'SOCIAL', emoji: '💬' },
-  { id: 'body', label: 'BODY', emoji: '🧠' },
+  { id: 'body', label: 'BODY', emoji: '👋' },
   { id: 'school', label: 'SCHOOL', emoji: '🏫' },
   { id: 'places', label: 'PLACES', emoji: '📍' },
   { id: 'routines', label: 'ROUTINES', emoji: '📅' },
