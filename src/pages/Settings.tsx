@@ -444,7 +444,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
         <section className="settings-section">
           <h2 className="settings-section-title">About</h2>
           <p className="settings-about"><strong>FreeVoice AAC</strong> — Free, open-source communication for every child.</p>
-          <p className="settings-about">Shellcraft Labs LLC · MIT License · v1.0.0</p>
+          <p className="settings-about">Shellcraft Labs LLC · MIT License · v1.2.1</p>
           <p className="settings-about" style={{ marginTop: 8 }}>Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón</p>
           <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
         </section>
