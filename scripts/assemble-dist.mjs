@@ -64,4 +64,10 @@ if (existsSync(join(pub, 'screenshots'))) {
   console.log('✓ dist/screenshots/');
 }
 
+// Copy symbols directory (custom and drink images)
+if (existsSync(join(pub, 'symbols'))) {
+  cpSync(join(pub, 'symbols'), join(dist, 'symbols'), { recursive: true });
+  console.log('✓ dist/symbols/');
+}
+
 console.log('\n✅ dist/ assembled: landing at /, React app at /app/');
