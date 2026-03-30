@@ -169,14 +169,37 @@ export const db = new FreeVoiceDB();
 
 // ── Seed on first launch (PRD 4.2) ──
 
+const CURRENT_DATA_VERSION = 8; // Update when defaultBoards.ts changes
+
 export async function seedIfNeeded(): Promise<void> {
   const count = await db.boards.count();
-  if (count > 0) return;
 
+  // Check if we have cached data AND if it's the current version
+  if (count > 0) {
+    const versionSetting = await db.settings.get('dataVersion');
+    const cachedVersion = versionSetting ? parseInt(versionSetting.value, 10) : 0;
+
+    // If cached version matches current version, use it
+    if (cachedVersion === CURRENT_DATA_VERSION) {
+      return;
+    }
+
+    // Version mismatch — clear old data and re-seed with fresh data
+    console.log(`[seedIfNeeded] Data version mismatch: cached=${cachedVersion}, current=${CURRENT_DATA_VERSION}. Re-seeding...`);
+    await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
+      await db.boards.clear();
+      await db.symbols.clear();
+    });
+  }
+
+  // Seed fresh data from current source
   const boards = getDefaultBoards();
   const symbols = getDefaultSymbols();
-  await db.transaction('rw', db.boards, db.symbols, async () => {
+  await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
     await db.boards.bulkPut(boards);
     await db.symbols.bulkPut(symbols);
+    await db.settings.put({ key: 'dataVersion', value: String(CURRENT_DATA_VERSION) });
   });
+
+  console.log(`[seedIfNeeded] Seeded fresh data v${CURRENT_DATA_VERSION}`);
 }
