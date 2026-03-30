@@ -184,7 +184,8 @@
     <div class="approved-section">
       <div class="approved-header">
         <h3>Approved Symbols</h3><span class="approved-count" id="approved-count">0</span>
-        <button onclick="startBulkPipeline()" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.1);color:var(--amber);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer">⚡ Bulk Generate Board</button>
+        <button id="btn-export-approved" onclick="exportApprovedSymbols()" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid rgba(39,174,96,0.3);background:rgba(39,174,96,0.1);color:#86EFAC;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-right:10px">📋 Export Approved</button>
+        <button onclick="startBulkPipeline()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.1);color:var(--amber);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer">⚡ Bulk Generate Board</button>
       </div>
       <div class="approved-grid" id="approved-grid"><div style="font-size:13px;color:var(--muted);font-weight:700;padding:8px 0">Approved symbols appear here...</div></div>
     </div>
@@ -433,6 +434,38 @@ function toast(msg, type = 'success') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = `toast ${type} show`;
   setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── EXPORT APPROVED SYMBOLS ────────────────────────────────────
+async function exportApprovedSymbols() {
+  const btn = document.getElementById('btn-export-approved');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  try {
+    const symbols = await fetch(`${API}/symbols`).then(r => r.json());
+    if (symbols.length === 0) {
+      toast('No approved symbols to export', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '📋 Export Approved';
+      return;
+    }
+    const lines = [];
+    lines.push('// Approved custom symbols — paste into defaultBoards.ts');
+    lines.push('');
+    for (const sym of symbols) {
+      const label = sym.label.toUpperCase();
+      lines.push(`      { emoji: '✨', label: '${sym.label}', phrase: '${sym.label.toLowerCase()}', wordType: 'noun', arasaacId: -1 },`);
+    }
+    const ts = lines.join('\n');
+    await navigator.clipboard.writeText(ts);
+    toast(`✅ Exported ${symbols.length} approved symbols to clipboard!`, 'success');
+  } catch (e) {
+    toast('Export failed: ' + e.message, 'error');
+    console.error('Export error:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📋 Export Approved';
+  }
 }
 
 // ── EXPORT TO CLIPBOARD ───────────────────────────────────────
