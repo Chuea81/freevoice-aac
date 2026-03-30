@@ -82,6 +82,9 @@
   .approved-thumb::before { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--amber); }
   .approved-thumb img { width:44px; height:44px; object-fit:contain; }
   .approved-thumb span { font-size:7px; font-weight:900; text-transform:uppercase; color:rgba(255,255,255,0.6); text-align:center; padding:0 4px; }
+  .approved-thumb-delete { position:absolute; top:2px; right:2px; background:rgba(225,29,72,0.9); border:none; border-radius:4px; width:18px; height:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:white; opacity:0; transition:opacity 0.2s; z-index:10; }
+  .approved-thumb:hover .approved-thumb-delete { opacity:1; }
+  .approved-thumb-delete:hover { background:rgba(225,29,72,1); }
 
   .toast { position:fixed; bottom:24px; right:24px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 20px; font-size:14px; font-weight:800; display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; z-index:100; }
   .toast.show { opacity:1; transform:none; }
@@ -185,6 +188,7 @@
       <div class="approved-header">
         <h3>Approved Symbols</h3><span class="approved-count" id="approved-count">0</span>
         <button id="btn-export-approved" onclick="exportApprovedSymbols()" style="margin-left:auto;padding:6px 14px;border-radius:8px;border:1px solid rgba(39,174,96,0.3);background:rgba(39,174,96,0.1);color:#86EFAC;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-right:10px">📋 Export Approved</button>
+        <button onclick="clearAllApproved()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.1);color:#fca5a5;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer;margin-right:10px">🗑️ Clear All</button>
         <button onclick="startBulkPipeline()" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(245,158,11,0.3);background:rgba(245,158,11,0.1);color:var(--amber);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer">⚡ Bulk Generate Board</button>
       </div>
       <div class="approved-grid" id="approved-grid"><div style="font-size:13px;color:var(--muted);font-weight:700;padding:8px 0">Approved symbols appear here...</div></div>
@@ -426,7 +430,10 @@ async function loadApproved() {
     const grid = document.getElementById('approved-grid');
     grid.innerHTML = symbols.length === 0
       ? '<div style="font-size:13px;color:var(--muted);font-weight:700;padding:8px 0">Approved symbols appear here...</div>'
-      : symbols.map(sym => `<div class="approved-thumb" title="${sym.label}"><img src="${sym.url}" alt="${sym.label}" onerror="this.style.display='none'"><span>${sym.label}</span></div>`).join('');
+      : symbols.map(sym => `<div class="approved-thumb" title="${sym.label} (${sym.boardName || 'Unknown Board'})" onclick="previewApprovedSymbol('${sym.url}', '${sym.label}', '${sym.boardName || 'Unknown Board'}', '${sym.fileName}')" style="position:relative; cursor:pointer;">
+        <button class="approved-thumb-delete" onclick="deleteApprovedSymbol(event, '${sym.fileName}', '${sym.label}')" title="Delete">✕</button>
+        <img src="${sym.url}" alt="${sym.label}" onerror="this.style.display='none'"><span>${sym.label}</span>
+      </div>`).join('');
   } catch {}
 }
 
@@ -437,37 +444,85 @@ function toast(msg, type = 'success') {
 }
 
 // ── EXPORT APPROVED SYMBOLS ────────────────────────────────────
+let currentlySelectedSymbol = null;
+
+function previewApprovedSymbol(url, label, boardName, fileName) {
+  currentlySelectedSymbol = { url, label, boardName, fileName };
+  const card = `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px;">
+      <img src="${url}" style="width:200px; height:200px; object-fit:contain; border-radius:12px; border:1px solid var(--border);">
+      <div style="text-align:center;">
+        <div style="font-size:18px; font-weight:900; color:var(--text);">${label}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">📍 ${boardName}</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:8px;">Approved Symbol</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('preview-card').innerHTML = card;
+}
+
 async function exportApprovedSymbols() {
+  if (!currentlySelectedSymbol) {
+    toast('⚠️ Click a symbol to select it first, then export', 'error');
+    return;
+  }
+
   const btn = document.getElementById('btn-export-approved');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div>';
   try {
-    const symbols = await fetch(`${API}/symbols`).then(r => r.json());
-    if (symbols.length === 0) {
-      toast('No approved symbols to export', 'error');
-      btn.disabled = false;
-      btn.innerHTML = '📋 Export Approved';
-      return;
-    }
-    const lines = [];
-    lines.push('// Approved custom symbols from Symbol Builder');
-    lines.push('// Paste these into the appropriate board in defaultBoards.ts');
-    lines.push('');
-    for (const sym of symbols) {
-      // fileName is like "tree.png", label is "Tree"
-      const phrase = sym.label.toLowerCase();
-      const parts = [`emoji: '✨'`, `label: '${sym.label}'`, `phrase: '${phrase}'`, `wordType: 'noun'`, `arasaacId: -1`];
-      lines.push(`      { ${parts.join(', ')} },`);
-    }
-    const ts = lines.join('\n');
+    const sym = currentlySelectedSymbol;
+    const phrase = sym.label.toLowerCase();
+    const parts = [`emoji: '✨'`, `label: '${sym.label}'`, `phrase: '${phrase}'`, `wordType: 'noun'`, `arasaacId: -1`];
+    const ts = `      { ${parts.join(', ')} },`;
+
     await navigator.clipboard.writeText(ts);
-    toast(`✅ Exported ${symbols.length} symbols to clipboard! Paste into defaultBoards.ts items array.`, 'success');
+    toast(`✅ Exported "${sym.label}" to clipboard! Paste into defaultBoards.ts items array.`, 'success');
   } catch (e) {
     toast('Export failed: ' + e.message, 'error');
     console.error('Export error:', e);
   } finally {
     btn.disabled = false;
     btn.innerHTML = '📋 Export Approved';
+  }
+}
+
+async function deleteApprovedSymbol(event, fileName, label) {
+  event.stopPropagation();
+  if (!confirm(`Delete "${label}"?`)) return;
+  try {
+    const res = await fetch(`${API}/symbols?delete=${encodeURIComponent(fileName)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Delete failed');
+    toast(`✅ Deleted "${label}"`, 'success');
+    await loadApproved();
+  } catch (e) {
+    toast(`❌ ${e.message}`, 'error');
+  }
+}
+
+async function clearAllApproved() {
+  if (!confirm('Delete ALL approved symbols? This cannot be undone.')) return;
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const res = await fetch(`${API}/symbols?clearAll=1`);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Clear failed');
+
+    currentlySelectedSymbol = null;
+    document.getElementById('preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Generate a symbol<br>to preview it here</p></div>`;
+    await loadApproved();
+    toast(`✅ Deleted ${data.deleted} approved symbols`, 'success');
+  } catch (e) {
+    toast(`❌ Clear failed: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🗑️ Clear All';
   }
 }
 
@@ -722,7 +777,7 @@ async function loadBoards() {
         </div>
         <div class="board-symbols" data-board="${b.id}">
           ${b.symbols.map(s => `
-            <div class="board-sym" onclick="prefillFromBoard('${s.label.replace(/'/g,"\\'")}','${b.id}')">
+            <div class="board-sym" onclick="prefillFromBoard('${s.label.replace(/'/g,"\\'")}','${b.id}')" oncontextmenu="addBoardSymbolToApproved(event, '${s.emoji}', '${s.label}', '${b.name}')">
               <span class="sym-emoji">${s.emoji}</span>
               <span class="sym-label">${s.label}</span>
             </div>
@@ -747,6 +802,53 @@ function prefillFromBoard(label, boardId) {
   autoFillPhrase();
   updatePromptPreview();
   toast(`Loaded "${label}" — generate to replace`, 'success');
+}
+
+async function addBoardSymbolToApproved(event, emoji, label, boardName) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  try {
+    // Create a simple approved symbol with the board emoji
+    const fileName = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '') + '.txt';
+    const imageUrl = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50" y="60" font-size="80" text-anchor="middle" fill="none">' + emoji + '</text></svg>';
+
+    // Create a mock image from the emoji
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    ctx.font = 'bold 80px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, 50, 50);
+
+    const imageBase64 = canvas.toDataURL('image/png').split(',')[1];
+
+    // Approve it with metadata
+    const res = await fetch(`${API}/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        label,
+        category: boardName,
+        subcategory: boardName,
+        phrase: label.toLowerCase(),
+        imageBase64,
+        arasaacFallbackId: null
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to add');
+
+    await loadApproved();
+    currentlySelectedSymbol = null;
+    document.getElementById('preview-card').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Generate a symbol<br>to preview it here</p></div>`;
+    toast(`✅ Added "${label}" from ${boardName} to approved list`, 'success');
+  } catch (e) {
+    toast(`❌ Failed to add: ${e.message}`, 'error');
+  }
 }
 
 // ── NAVY PREVIEW — replace white bg with app navy in preview ──

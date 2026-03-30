@@ -36,13 +36,29 @@ export async function getExistingSymbols() {
   if (!existsSync(SYMBOLS_DIR)) return [];
   try {
     const files = await readdir(SYMBOLS_DIR);
-    return files
-      .filter(f => f.endsWith('.png') || f.endsWith('.webp'))
-      .map(f => ({
+    const symbols = [];
+    for (const f of files) {
+      if (!f.endsWith('.png') && !f.endsWith('.webp')) continue;
+      const base = f.replace(/\.(png|webp)$/, '');
+      const metaFile = join(SYMBOLS_DIR, base + '.json');
+      let boardName = 'Unknown Board';
+
+      // Try to read metadata
+      if (existsSync(metaFile)) {
+        try {
+          const meta = JSON.parse(await readFile(metaFile, 'utf8'));
+          boardName = meta.boardName || boardName;
+        } catch {}
+      }
+
+      symbols.push({
         fileName: f,
-        label: f.replace(/\.(png|webp)$/, '').replace(/_/g, ' '),
+        label: base.replace(/_/g, ' '),
         url: `/symbols/custom/${f}`,
-      }));
+        boardName,
+      });
+    }
+    return symbols;
   } catch {
     return [];
   }
@@ -108,6 +124,16 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   await sharp(pixels, { raw: { width: info.width, height: info.height, channels: 4 } })
     .png({ compressionLevel: 8 })
     .toFile(filePath);
+
+  // Save metadata (category/subcategory for tooltip)
+  const metaPath = join(SYMBOLS_DIR, fileName.replace(/\.png$/, '.json'));
+  await writeFile(metaPath, JSON.stringify({
+    label,
+    category,
+    subcategory: subcategory || category,
+    boardName: subcategory ? `${category} > ${subcategory}` : category,
+    savedAt: new Date().toISOString(),
+  }, null, 2), 'utf8');
 
   const publicPath = `/symbols/custom/${fileName}`;
   const upperLabel = label.toUpperCase();

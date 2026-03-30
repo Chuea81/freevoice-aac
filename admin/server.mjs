@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,12 +13,13 @@ config({ path: join(__dir, '.env') });
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
-app.use(express.static(__dir));
+app.use((req, res, next) => {
+  console.log(`[ALL] ${req.method} ${req.path}`);
+  next();
+});
 
 app.get('/', (req, res) => res.sendFile(join(__dir, 'index.html')));
 app.get('/emoji', (req, res) => res.sendFile(join(__dir, 'emoji-audit.html')));
-app.use('/symbols', express.static(join(ROOT, 'public', 'symbols')));
-app.use('/characters', express.static(join(ROOT, 'public', 'characters')));
 
 app.get('/api/categories', async (req, res) => {
   try { res.json(await getCategories()); }
@@ -26,8 +27,68 @@ app.get('/api/categories', async (req, res) => {
 });
 
 app.get('/api/symbols', async (req, res) => {
+  // Handle clear all request
+  if (req.query.clearAll === '1') {
+    try {
+      const { readdir, unlink } = await import('fs/promises');
+      const { existsSync } = await import('fs');
+      const customDir = join(ROOT, 'public', 'symbols', 'custom');
+
+      if (!existsSync(customDir)) {
+        return res.json({ ok: true, deleted: 0 });
+      }
+
+      const files = await readdir(customDir);
+      let deleted = 0;
+      for (const file of files) {
+        try {
+          await unlink(join(customDir, file));
+          deleted++;
+        } catch (e) {
+          console.warn('Delete failed:', file);
+        }
+      }
+
+      return res.json({ ok: true, deleted });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // Normal list request
   try { res.json(await getExistingSymbols()); }
   catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/clear-symbols — delete all approved symbols
+app.post('/api/clear-symbols', async (req, res) => {
+  try {
+    const { readdir, unlink } = await import('fs/promises');
+    const { existsSync } = await import('fs');
+    const customDir = join(ROOT, 'public', 'symbols', 'custom');
+
+    if (!existsSync(customDir)) {
+      return res.json({ ok: true, deleted: 0, message: 'No symbols to delete' });
+    }
+
+    const files = await readdir(customDir);
+    let deleted = 0;
+
+    for (const file of files) {
+      try {
+        const filePath = join(customDir, file);
+        await unlink(filePath);
+        deleted++;
+      } catch (e) {
+        console.warn('Failed to delete:', file, e.message);
+      }
+    }
+
+    res.json({ ok: true, deleted, message: `Deleted ${deleted} files` });
+  } catch (e) {
+    console.error('Clear symbols error:', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // GET /api/boards — returns all boards with their symbols from defaultBoards.ts
@@ -256,6 +317,11 @@ app.post('/api/bulk', async (req, res) => {
   }
   res.end();
 });
+
+// Static file serving (MUST come after ALL API routes)
+app.use(express.static(__dir));
+app.use('/symbols', express.static(join(ROOT, 'public', 'symbols')));
+app.use('/characters', express.static(join(ROOT, 'public', 'characters')));
 
 const PORT = 3333;
 app.listen(PORT, () => {
