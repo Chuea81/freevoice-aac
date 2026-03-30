@@ -32,27 +32,8 @@ jobs:
           path: dist/
           retention-days: 30
       
-      - name: Create deployment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const deployment = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.ref,
-              environment: 'production',
-              required_contexts: [],
-              auto_merge: false,
-            });
-            
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: deployment.data.id,
-              state: 'success',
-              environment_url: 'https://freevoiceaac.app',
-              description: 'Built and ready for deployment',
-            });
-            
-            console.log(`✅ Build succeeded for commit ${context.sha}`);
-            console.log(`📦 Artifacts available for deployment`);
+      - name: Build summary
+        run: |
+          echo "✅ Build succeeded"
+          echo "📦 Artifacts: dist/ (30 day retention)"
+          echo "🔗 Download from: Actions → [latest run] → Artifacts"
