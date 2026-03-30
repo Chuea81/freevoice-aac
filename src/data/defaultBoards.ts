@@ -1065,7 +1065,7 @@ const BOARD_DEFS: BoardDef[] = [
       { emoji: '🦵', label: 'Knee', phrase: 'Knee', wordType: 'noun' },
       { emoji: '🩳', label: 'Penis', phrase: 'Penis', wordType: 'noun' },
       { emoji: '🩳', label: 'Vagina', phrase: 'Vagina', wordType: 'noun' },
-      { emoji: '🙏', label: 'Bottom', phrase: 'Bottom', wordType: 'noun' },
+      { emoji: '🍆', label: 'Bottom', phrase: 'Bottom', wordType: 'noun' },
       { emoji: '💔', label: 'Bottom Hurts', phrase: 'My bottom hurts', wordType: 'descriptor' },
       { emoji: '🔒', label: 'Private Parts', phrase: 'Private parts', wordType: 'noun' },
       { emoji: '😫', label: 'My Private Parts Hurt', phrase: 'My private parts hurt', wordType: 'descriptor' },
