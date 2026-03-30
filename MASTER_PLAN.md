@@ -1,5 +1,5 @@
 # FreeVoice AAC — Master Plan
-## Shellcraft Labs LLC · Last updated March 28, 2026
+## Shellcraft Labs LLC · Last updated March 29, 2026
 
 ---
 
@@ -128,7 +128,7 @@ Give every nonverbal child a voice — free, forever, on any device.
 
 ## What's In Progress
 
-### Symbol Expansion Sprint (BUILT LOCALLY — NOT YET DEPLOYED)
+### Symbol Expansion Sprint (BUILT & LIVE)
 - [x] 1145 symbols, 66 boards — built and tested locally
 - [x] Dexie migration v6 auto-syncs all defaults on upgrade
 - [x] Dexie migration v7 fixes unsupported emoji (re-syncs all defaults)
@@ -136,7 +136,14 @@ Give every nonverbal child a voice — free, forever, on any device.
 - [x] SLP verb+noun phrase patterns across all food boards
 - [x] Routines, Transportation, Technology, Nature boards
 - [x] Emoji compatibility audit — all 1145 symbols render on Android 10+, iOS 13+, Windows 10+
-- [ ] **Deploy to production** (waiting for user go-ahead)
+
+### UX & Accessibility Fixes (March 29, 2026)
+- [x] **Sentence bar overflow** — max-height 80px, horizontal scroll, grid fills remaining space
+- [x] **Scroll-tap conflict** — 10px movement threshold guard, prevents accidental tile activation
+- [x] **Settings debug display** — URL and version now visible in About section
+- [x] **Bottom emoji** — changed from 🙏 to 🩳 (shorts) for clarity
+- [x] **System overlay interference** — fixed WebView fullscreen conflicts
+- [x] **Voice persistence** — settings now survive force close (Zustand hydration)
 
 ### Character Art
 - [ ] Medium-light girl character (Priya — South Asian)
@@ -152,6 +159,9 @@ Give every nonverbal child a voice — free, forever, on any device.
 - [ ] Wire remaining components with t() calls (OnboardingWizard, VoiceDownloadPrompt, ParentMode, About, etc.)
 - [ ] TTS voice auto-selection based on language
 - [ ] Community translation contributions (TRANSLATING.md)
+- [ ] French translation (autism center volunteer, in progress)
+- [ ] Danish translation (AKemist onboarded)
+- [ ] Polish translation (interest expressed)
 
 ### Polish
 - [ ] Replace landing page mockup designs with real app screenshots
@@ -161,6 +171,20 @@ Give every nonverbal child a voice — free, forever, on any device.
 ---
 
 ## Planned (v1.1)
+
+### Adult Boards (Community-Driven)
+- [ ] Work (job, office, colleague, task, break, salary, etc.)
+- [ ] Medical (doctor, pharmacy, appointment, symptom, medication, etc.)
+- [ ] Money (bank, credit card, payment, bill, loan, budget, etc.)
+- [ ] Relationships (friend, family, dating, partner, boundaries, etc.)
+- [ ] Transportation (car, bus, train, taxi, directions, gas station, etc.)
+- [ ] Mental Health (anxiety, depression, therapy, counselor, support, etc.)
+- [ ] Self-Advocacy (accommodation, accessibility need, boundary, right, etc.)
+
+### Adult Character Set
+- [ ] Same art style as children characters
+- [ ] Adult-presenting diverse options
+- [ ] 24 emotion states per character
 
 ### Communication Features
 - [ ] Sentence prediction — suggest next word based on context
@@ -265,6 +289,9 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 | First load time | <3s | ~2s |
 | Offline capable | Yes | Yes |
 | Monthly active users | Track after launch | Not tracked (zero analytics) |
+| Reddit community response | Strong | 320+ upvotes, 104 comments, 213 shares |
+| Play Store status | Approved | Identity verification pending |
+| International contributors | Growing | Danish, Polish, French onboarded |
 
 ---
 
@@ -276,13 +303,14 @@ freevoiceaac.app/terms.html → Terms of use (static HTML)
 
 ## Manual Tasks Remaining
 
-1. Create more character sprite sheets (Priya medium-light girl, 4 neutral options)
-2. Create custom icon sprite sheets for remaining categories (animals, school, etc.)
-3. Take real app screenshots for landing page (replace mockup designs)
-4. Deploy symbol expansion sprint to production (say "deploy" when ready)
-5. App Store listings (when native apps are built)
-6. Outreach to SLP communities, autism parent groups, school districts
-7. Submit to AAC resource directories
+1. **Play Store identity verification** — submitted, awaiting Google approval (~2-3 days)
+2. **APK rebuild** — for shorts emoji fix (local only, Mike's keystore)
+3. **Adult character sprites** — diverse adult-presenting options
+4. **Create custom icon sprite sheets** — for remaining categories (animals, school, etc.)
+5. **Take real app screenshots** — for landing page (replace mockup designs)
+6. **Community translation review** — French (autism center), Danish (AKemist), Polish (pending)
+7. **Outreach to SLP communities** — autism parent groups, school districts
+8. **Submit to AAC resource directories** — after Play Store approval
 
 ---
 
