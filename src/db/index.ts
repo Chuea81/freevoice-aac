@@ -196,6 +196,10 @@ export async function seedIfNeeded(): Promise<void> {
   // Seed fresh data from current source
   const boards = getDefaultBoards();
   const symbols = getDefaultSymbols();
+  const bottomSymbol = symbols.find(s => s.label === 'bottom');
+  console.log(`[seedIfNeeded] About to seed: ${boards.length} boards, ${symbols.length} symbols`);
+  console.log(`[seedIfNeeded] bottom symbol:`, bottomSymbol);
+
   await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
     await db.boards.bulkPut(boards);
     await db.symbols.bulkPut(symbols);
