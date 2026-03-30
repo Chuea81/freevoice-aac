@@ -1760,7 +1760,7 @@ export function getDefaultSymbols(): Symbol[] {
 
   for (const board of BOARD_DEFS) {
     board.items.forEach((item, idx) => {
-      const sym = {
+      symbols.push({
         id: `default-${globalId++}`,
         boardId: board.id,
         emoji: item.emoji,
@@ -1772,11 +1772,7 @@ export function getDefaultSymbols(): Symbol[] {
         targetBoardId: item.category,
         wordType: item.wordType,
         arasaacId: item.arasaacId,
-      };
-      if (item.label === 'bottom' || item.label === 'Bottom') {
-        console.log('[getDefaultSymbols] Found bottom symbol:', sym);
-      }
-      symbols.push(sym);
+      });
     });
   }
 

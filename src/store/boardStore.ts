@@ -128,10 +128,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       .where('boardId')
       .equals(boardId)
       .sortBy('order');
-    const bottomSym = symbols.find(s => s.label === 'bottom');
-    if (bottomSym) {
-      console.log('[loadSymbols] bottom symbol from DB:', bottomSym);
-    }
     set({ symbols });
   },
 

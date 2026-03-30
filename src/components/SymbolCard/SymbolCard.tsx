@@ -47,11 +47,6 @@ interface Props {
 }
 
 export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
-  // DEBUG: Log ALL symbols to verify rendering
-  if (symbol.boardId === 'body_parts' && (symbol.order === 25 || symbol.order === 26 || symbol.order === 27 || symbol.order === 28)) {
-    console.log(`[SymbolCard] body_parts order=${symbol.order}:`, { label: symbol.label, arasaacId: symbol.arasaacId });
-  }
-
   const [imgFailed, setImgFailed] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
@@ -96,15 +91,6 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     const upperLabel = symbol.label?.toUpperCase() || '';
     const staticId = ARASAAC_IDS[upperLabel];
 
-    if (symbol.label === 'bottom') {
-      console.log('[SymbolCard] bottom resolution START:', {
-        label: symbol.label,
-        upperLabel,
-        staticId,
-        isInArasaacIds: upperLabel in ARASAAC_IDS,
-      });
-    }
-
     // 1. Static lookup says "force emoji" (ID=0) — skip all ARASAAC
     if (staticId === 0) {
       setResolvedUrl(null);
@@ -114,13 +100,6 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     // 1b. Custom symbol image (ID=-1) — use custom path
     if (staticId === -1) {
       const customUrl = CUSTOM_SYMBOL_IMAGES[upperLabel];
-      if (symbol.label === 'bottom') {
-        console.log('[SymbolCard] Custom image check for bottom:', {
-          upperLabel,
-          customUrl,
-          CUSTOM_SYMBOL_IMAGES_keys: Object.keys(CUSTOM_SYMBOL_IMAGES).filter(k => k.includes('BOTTOM')),
-        });
-      }
       if (customUrl) {
         setResolvedUrl(customUrl);
         return;
