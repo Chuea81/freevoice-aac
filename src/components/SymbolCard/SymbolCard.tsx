@@ -84,8 +84,10 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
     // HARDCODE: Always use custom image for bottom (case-insensitive)
     if (symbol.label?.toLowerCase() === 'bottom') {
-      const url = CUSTOM_SYMBOL_IMAGES['BOTTOM'];
-      setResolvedUrl(url);
+      console.log('[TEST] Setting bottom image URL');
+      (window as any).testBottomSymbol = { label: symbol.label, url: CUSTOM_SYMBOL_IMAGES['BOTTOM'] };
+      setResolvedUrl(CUSTOM_SYMBOL_IMAGES['BOTTOM']);
+      console.log('[TEST] After setResolvedUrl, resolvedUrl should be:', CUSTOM_SYMBOL_IMAGES['BOTTOM']);
       return;
     }
 
