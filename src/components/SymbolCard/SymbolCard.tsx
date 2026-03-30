@@ -57,6 +57,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerStartRef = useRef<{x: number, y: number} | null>(null);
 
   // Check for custom character image (emotions only for now)
   const category = boardToCategory(symbol.boardId);
@@ -129,9 +130,11 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     ? FITZGERALD_COLORS[symbol.wordType]
     : getCardColor(symbol.id);
 
-  // Fast immediate response on pointerdown (fires on press, not release)
+  // Track pointer start position for scroll detection
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLButtonElement>) => {
+      pointerStartRef.current = { x: e.clientX, y: e.clientY };
+
       // If dwell time is enabled, just start the timer
       if (dwellTime > 0) {
         dwellTimerRef.current = setTimeout(() => {
@@ -140,7 +143,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         return;
       }
 
-      // No dwell time — respond immediately on press for fastest latency
+      // Show instant feedback (ripple + auditory preview) but delay the tap
       const btn = e.currentTarget;
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -166,18 +169,30 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         btn.classList.add('speaking');
         setTimeout(() => btn.classList.remove('speaking'), 300);
       }
-
-      onTap(symbol);
     },
-    [symbol, onTap, auditoryTouch, previewed, speakPreview, dwellTime],
+    [symbol, auditoryTouch, previewed, speakPreview, dwellTime],
   );
 
-  const handlePointerUp = useCallback(() => {
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     if (dwellTimerRef.current) {
       clearTimeout(dwellTimerRef.current);
       dwellTimerRef.current = null;
+      return; // Dwell mode — tap already fired or cancelled
     }
-  }, []);
+
+    // Check if pointer moved more than 10px (scroll guard)
+    const start = pointerStartRef.current;
+    if (start) {
+      const dx = Math.abs(e.clientX - start.x);
+      const dy = Math.abs(e.clientY - start.y);
+      if (dx > 10 || dy > 10) {
+        return; // Treat as scroll — don't fire the tap
+      }
+    }
+
+    // True tap — fire the action
+    onTap(symbol);
+  }, [symbol, onTap]);
 
   if (symbol.hidden && !isParentMode) return null;
 

@@ -114,7 +114,8 @@ body {
 
 #speech-output {
   width: 100%;
-  min-height: 80px;
+  min-height: 56px;
+  max-height: 80px;
   background: var(--bg-surface);
   border: 2px solid var(--border-raised);
   border-radius: 16px;
@@ -124,10 +125,10 @@ body {
   gap: 10px;
   cursor: text;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  flex-wrap: nowrap;
+  align-content: center;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
 }
 #speech-output::-webkit-scrollbar { display: none; }
