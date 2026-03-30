@@ -38,6 +38,35 @@ app.get('/api/boards', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET /api/boards-full — returns complete board data (all symbol fields)
+app.get('/api/boards-full', async (req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    const { writeFileSync, unlinkSync } = await import('fs');
+    const tmpFile = join(ROOT, '_dump_boards.ts');
+    writeFileSync(tmpFile, `
+      import { getDefaultBoards, getDefaultSymbols } from './src/data/defaultBoards.ts';
+      const boards = getDefaultBoards();
+      const symbols = getDefaultSymbols();
+      // Group symbols by boardId
+      const byBoard = {};
+      for (const s of symbols) {
+        if (!byBoard[s.boardId]) byBoard[s.boardId] = [];
+        byBoard[s.boardId].push(s);
+      }
+      const result = boards.map(b => ({...b, symbols: byBoard[b.id] || []}));
+      process.stdout.write(JSON.stringify(result));
+    `);
+    const cmd = 'npx tsx "' + tmpFile + '"';
+    const json = execSync(cmd, { cwd: ROOT, maxBuffer: 10 * 1024 * 1024 }).toString();
+    try { unlinkSync(tmpFile); } catch {}
+    res.json(JSON.parse(json));
+  } catch (e) {
+    console.error('boards-full error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Pre-written Gemini prompts from emoji audit Section 3
 app.get('/api/gemini-prompts', (_req, res) => {
   res.json({
