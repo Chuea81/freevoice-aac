@@ -65,6 +65,18 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const hasCharacterImage = category !== null && !!characterImageUrl;
   const isCustomSymbol = ARASAAC_IDS[symbol.label?.toUpperCase() || ''] === -1;
 
+  // DEBUG
+  if (symbol.label === 'bottom') {
+    console.log('[SymbolCard] bottom symbol', {
+      label: symbol.label,
+      upperLabel: symbol.label?.toUpperCase(),
+      arasaacId: symbol.arasaacId,
+      staticId: ARASAAC_IDS[symbol.label?.toUpperCase() || ''],
+      isCustomSymbol,
+      customImagePath: CUSTOM_SYMBOL_IMAGES[symbol.label?.toUpperCase() || ''],
+    });
+  }
+
   // Resolve image URL at render time.
   // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
   useEffect(() => {
