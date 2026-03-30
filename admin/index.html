@@ -65,9 +65,9 @@
   .preview-placeholder .ph-icon { font-size:64px; margin-bottom:12px; opacity:0.3; }
   .preview-placeholder p { font-size:14px; font-weight:700; }
 
-  .regen-strip { display:flex; gap:8px; margin-top:20px; }
-  .regen-btn { flex:1; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; color:var(--muted); font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all 0.15s; }
-  .regen-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+  .regen-strip { display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+  .regen-btn { flex:0 1 calc(50% - 3px); padding:8px 10px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; color:var(--muted); font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+  .regen-btn:hover { background:rgba(255,255,255,0.1); color:var(--text); border-color:var(--amber); }
 
   .approved-section { border-top:1px solid var(--border); background:var(--surface); flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
   .approved-header { padding:12px 20px; display:flex; align-items:center; gap:12px; }
@@ -176,11 +176,21 @@
         <div class="preview-card" id="preview-card">
           <div class="preview-placeholder"><div class="ph-icon">🎨</div><p>Generate a symbol<br>to preview it here</p></div>
         </div>
-        <div class="regen-strip" id="regen-strip" style="display:none">
-          <button class="regen-btn" onclick="generateSymbol()">↺ Regenerate</button>
-          <button class="regen-btn" onclick="generateVariant('more colorful')">🎨 More colorful</button>
-          <button class="regen-btn" onclick="generateVariant('simpler')">✂️ Simpler</button>
-          <button class="regen-btn" onclick="generateVariant('more cartoon')">😄 More cartoon</button>
+        <div class="regen-strip" id="regen-strip" style="display:none;flex-wrap:wrap;justify-content:center;padding:0 10px">
+          <button class="regen-btn" onclick="generateSymbol()" style="flex:1 1 100%;margin-bottom:4px">↺ Regenerate</button>
+          <!-- Style variations -->
+          <button class="regen-btn" onclick="generateVariant('photorealistic')">📷 Photorealistic</button>
+          <button class="regen-btn" onclick="generateVariant('bold cartoon style')">😄 Bold Cartoon</button>
+          <button class="regen-btn" onclick="generateVariant('simple minimalist')">✂️ Minimalist</button>
+          <button class="regen-btn" onclick="generateVariant('vibrant colors')">🎨 Vibrant</button>
+          <button class="regen-btn" onclick="generateVariant('pastel soft colors')">🎀 Pastel</button>
+          <button class="regen-btn" onclick="generateVariant('watercolor illustration')">🌊 Watercolor</button>
+          <button class="regen-btn" onclick="generateVariant('flat design style')">📦 Flat Design</button>
+          <button class="regen-btn" onclick="generateVariant('3D rendered')">🎭 3D Style</button>
+          <button class="regen-btn" onclick="generateVariant('vector art style')">📐 Vector Art</button>
+          <button class="regen-btn" onclick="generateVariant('more details and textures')">🔍 More Detail</button>
+          <button class="regen-btn" onclick="generateVariant('bold outlines')">🖌️ Bold Outlines</button>
+          <button class="regen-btn" onclick="generateVariant('gradient background')">🌈 With Gradient</button>
         </div>
       </div>
     </div>
