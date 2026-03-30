@@ -150,6 +150,18 @@ class FreeVoiceDB extends Dexie {
       await tx.table('symbols').bulkPut(freshSymbols);
       console.log('[Migration v7] Fixed unsupported emoji — all symbols now use Emoji 12.0 or below');
     });
+
+    // v8: Force re-sync of all default boards to pick up peach emoji fix.
+    // Users with cached old data need fresh symbols.
+    this.version(8).stores(SCHEMA).upgrade(async (tx) => {
+      await tx.table('symbolCache').clear();
+      await tx.table('symbols').where('id').startsWith('default-').delete();
+      const freshSymbols = getDefaultSymbols();
+      const freshBoards = getDefaultBoards();
+      await tx.table('boards').bulkPut(freshBoards);
+      await tx.table('symbols').bulkPut(freshSymbols);
+      console.log('[Migration v8] Re-synced all symbols — fixed inappropriate emoji usage');
+    });
   }
 }
 
