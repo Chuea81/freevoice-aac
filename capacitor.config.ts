@@ -29,9 +29,9 @@ const config: CapacitorConfig = {
     backgroundColor: '#000000',
     overScrollMode: 'never',
     buildOptions: {
-      keystorePath: './.keystore/freevoice.jks',
+      keystorePath: './.keystore/freevoice2.jks',
       keystorePassword: process.env.KEYSTORE_PASSWORD || 'password',
-      keyAlias: 'freevoice',
+      keyAlias: process.env.KEY_ALIAS || 'freevoice',
       keyPassword: process.env.KEY_PASSWORD || 'password',
     },
   },
