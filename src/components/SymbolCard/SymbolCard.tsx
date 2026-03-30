@@ -180,17 +180,25 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       return; // Dwell mode — tap already fired or cancelled
     }
 
+    // Only fire tap on explicit pointer up, not on leave
+    if (e.type !== 'pointerup') {
+      pointerStartRef.current = null;
+      return;
+    }
+
     // Check if pointer moved more than 10px (scroll guard)
     const start = pointerStartRef.current;
     if (start) {
       const dx = Math.abs(e.clientX - start.x);
       const dy = Math.abs(e.clientY - start.y);
       if (dx > 10 || dy > 10) {
+        pointerStartRef.current = null;
         return; // Treat as scroll — don't fire the tap
       }
     }
 
     // True tap — fire the action
+    pointerStartRef.current = null;
     onTap(symbol);
   }, [symbol, onTap]);
 
