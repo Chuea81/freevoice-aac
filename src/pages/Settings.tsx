@@ -447,6 +447,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
           <p className="settings-about">Shellcraft Labs LLC · MIT License · v1.2.1</p>
           <p className="settings-about" style={{ marginTop: 8 }}>Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón</p>
           <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
+          <p className="settings-about" style={{ marginTop: 8, fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>Running from: {window.location.href}</p>
         </section>
 
       </div>
