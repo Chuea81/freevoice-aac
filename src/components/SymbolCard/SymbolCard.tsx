@@ -84,7 +84,9 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
     // HARDCODE: Always use custom image for BOTTOM
     if (symbol.label === 'BOTTOM') {
-      setResolvedUrl(CUSTOM_SYMBOL_IMAGES['BOTTOM']);
+      const url = CUSTOM_SYMBOL_IMAGES['BOTTOM'];
+      console.log('[SymbolCard] BOTTOM hardcode:', { url, hasCustomEntry: 'BOTTOM' in CUSTOM_SYMBOL_IMAGES });
+      setResolvedUrl(url);
       return;
     }
 
