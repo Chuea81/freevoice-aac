@@ -100,6 +100,13 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     // 1b. Custom symbol image (ID=-1) — use custom path
     if (staticId === -1) {
       const customUrl = CUSTOM_SYMBOL_IMAGES[upperLabel];
+      if (symbol.label === 'bottom') {
+        console.log('[SymbolCard] Custom image check for bottom:', {
+          upperLabel,
+          customUrl,
+          CUSTOM_SYMBOL_IMAGES_keys: Object.keys(CUSTOM_SYMBOL_IMAGES).filter(k => k.includes('BOTTOM')),
+        });
+      }
       if (customUrl) {
         setResolvedUrl(customUrl);
         return;
