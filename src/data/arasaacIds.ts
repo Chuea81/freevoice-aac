@@ -190,5 +190,5 @@ export const CUSTOM_SYMBOL_IMAGES: Record<string, string> = {
   'CRANBERRY JUICE':`/symbols/drinks/cranberry_juice.png`,
   'PEACH JUICE':    `/symbols/drinks/peach_juice.png`,
   'ROOT BEER':      `/symbols/drinks/root_beer.png`,
-  'BOTTOM': `https://raw.githubusercontent.com/Chuea81/freevoice-aac/main/public/symbols/custom/bottom.png`,
+  'BOTTOM': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23FF6B6B' width='100' height='100'/%3E%3C/svg%3E`,
 };
