@@ -295,6 +295,30 @@ app.post('/api/approve', async (req, res) => {
   try {
     const { label, category, subcategory, phrase, imageBase64, arasaacFallbackId } = req.body;
     const result = await approveSymbol({ label, category, subcategory, phrase, imageBase64, arasaacFallbackId });
+
+    // Regenerate public/api/symbols.json from updated defaultBoards.ts
+    try {
+      const { execSync } = await import('child_process');
+      execSync('npm run generate-symbols', { cwd: ROOT, stdio: 'inherit' });
+      console.log(`✅ Regenerated symbols.json after approving ${label}`);
+    } catch (e) {
+      console.warn(`⚠️ Could not regenerate symbols.json: ${e.message}`);
+    }
+
+    // Git commit and push (optional — can be disabled if no git setup)
+    try {
+      const { execSync } = await import('child_process');
+      execSync('git add -A', { cwd: ROOT, stdio: 'pipe' });
+      execSync(`git commit -m "Admin: Add custom symbol ${label}"`, { cwd: ROOT, stdio: 'pipe' });
+      execSync('git push origin feature/symbols-api', { cwd: ROOT, stdio: 'pipe' });
+      console.log(`✅ Committed and pushed to feature/symbols-api`);
+      result.committed = true;
+    } catch (e) {
+      // Non-fatal — git might not be configured or on wrong branch
+      console.warn(`⚠️ Could not auto-commit: ${e.message}`);
+      result.committed = false;
+    }
+
     res.json(result);
   } catch (e) {
     console.error('Approve error:', e);

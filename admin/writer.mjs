@@ -138,13 +138,43 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
   const publicPath = `/symbols/custom/${fileName}`;
   const upperLabel = label.toUpperCase();
 
-  // Add to CUSTOM_SYMBOL_IMAGES in arasaacIds.ts
+  // Update defaultBoards.ts to set imageUrl for this symbol
   try {
-    let content = await readFile(ARASAAC_IDS_FILE, 'utf8');
+    let boardsContent = await readFile(BOARDS_FILE, 'utf8');
+
+    // Find the symbol by label in the items arrays and add imageUrl
+    // Pattern: matches a symbol with a matching label and adds/updates imageUrl
+    const imageUrlPath = `data:image/png;base64,${imageBase64.slice(0, 50)}...`; // Store with imageUrl pointing to custom PNG
+
+    // More robust: find the symbol definition with this label and add imageUrl field
+    const symbolPattern = new RegExp(
+      `(\\{\\s*emoji:\\s*'[^']*',\\s*label:\\s*'${label}',)([^}]*?)(\\})`,
+      'i'
+    );
+
+    if (symbolPattern.test(boardsContent)) {
+      // Symbol exists, update its imageUrl
+      boardsContent = boardsContent.replace(
+        symbolPattern,
+        `$1\n        imageUrl: '${publicPath}',\n        $2$3`
+      );
+      console.log(`✅ Updated ${label} in defaultBoards.ts with imageUrl`);
+    } else {
+      console.warn(`⚠️ Could not find symbol "${label}" in defaultBoards.ts`);
+    }
+
+    await writeFile(BOARDS_FILE, boardsContent, 'utf8');
+  } catch (e) {
+    console.warn(`⚠️ Could not update defaultBoards.ts: ${e.message}`);
+  }
+
+  // Update arasaacIds.ts for backward compat (if needed)
+  try {
+    let arasaacContent = await readFile(ARASAAC_IDS_FILE, 'utf8');
 
     // Add to ARASAAC_IDS (ID=-1 for custom)
-    if (!content.includes(`'${upperLabel}'`)) {
-      content = content.replace(
+    if (!arasaacContent.includes(`'${upperLabel}'`)) {
+      arasaacContent = arasaacContent.replace(
         /};\s*\n\s*\/\*\*\s*\n\s*\* Custom symbol/,
         `  '${upperLabel}': -1,\n};\n\n/**\n * Custom symbol`
       );
@@ -152,18 +182,17 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
 
     // Add to CUSTOM_SYMBOL_IMAGES
     const entryValue = '`${B}symbols/custom/' + labelToFileName(label) + '.png`';
-    if (!content.includes(`'${upperLabel}':`)) {
-      content = content.replace(
+    if (!arasaacContent.includes(`'${upperLabel}':`)) {
+      arasaacContent = arasaacContent.replace(
         /};\s*$/,
         `  '${upperLabel}': ${entryValue},\n};`
       );
     }
 
-    await writeFile(ARASAAC_IDS_FILE, content, 'utf8');
+    await writeFile(ARASAAC_IDS_FILE, arasaacContent, 'utf8');
     console.log(`✅ Updated arasaacIds.ts with ${upperLabel}`);
   } catch (e) {
     console.warn(`⚠️ Could not update arasaacIds.ts: ${e.message}`);
-    console.warn(`   Add manually: '${upperLabel}': -1, and customPath entry`);
   }
 
   return {
@@ -171,5 +200,7 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     fileName,
     publicPath,
     message: `✅ ${label} saved to ${publicPath}`,
+    label,
+    upperLabel,
   };
 }
