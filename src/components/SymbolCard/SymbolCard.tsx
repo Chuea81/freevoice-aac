@@ -47,6 +47,10 @@ interface Props {
 }
 
 export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
+  if (symbol.label === 'bottom' || symbol.label === 'Bottom') {
+    console.log('[SymbolCard] RENDER bottom symbol:', symbol);
+  }
+
   const [imgFailed, setImgFailed] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
