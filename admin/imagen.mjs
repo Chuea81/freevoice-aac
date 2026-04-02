@@ -55,15 +55,53 @@ const CATEGORY_STYLE_HINTS = {
   default: 'Simple clear pictogram. Bold outlines, flat colors. ARASAAC style.',
 };
 
-export async function generateSymbol({ label, category = 'default', extraPrompt = '' }) {
+// Food subcategory type hints for disambiguation
+const FOOD_TYPE_HINTS = {
+  'american': 'hamburger, hot dog, or french fries',
+  'mexican & latin': 'taco, burrito, or tortilla',
+  'food_american': 'hamburger, hot dog, or french fries',
+  'food_latin': 'taco, burrito, or enchilada',
+  'food_eastasian': 'noodles, rice bowl, or dumpling',
+  'food_southasian': 'curry bowl or rice dish',
+  'food_middleeastern': 'flatbread, hummus, or kebab',
+  'food_african': 'african stew or grain bowl',
+  'food_caribbean': 'tropical fruit or rice and beans',
+  'food_soul': 'fried chicken, collard greens, or cornbread',
+};
+
+export async function generateSymbol({ label, category = 'default', subcategory = '', extraPrompt = '' }) {
   const categoryHint = CATEGORY_STYLE_HINTS[category.toLowerCase()] || CATEGORY_STYLE_HINTS.default;
+
+  // Build full context string
+  let fullContext = label;
+  if (subcategory && subcategory !== category) {
+    fullContext = `${subcategory} (${label})`;
+  } else if (category && category !== 'default') {
+    fullContext = `${category} - ${label}`;
+  }
+
+  // Add category-specific clarification with food type hints
+  let clarification = '';
+  if (category === 'food') {
+    const foodHint = FOOD_TYPE_HINTS[subcategory?.toLowerCase()] || FOOD_TYPE_HINTS[label?.toLowerCase()];
+    clarification = `
+CRITICAL: This is FOOD, not patriotism, emotion, flags, or unrelated concepts.
+Generate an actual food item (dish, ingredient, or meal).${foodHint ? `\nSpecifically: ${foodHint}` : ''}
+NOT: flags, eagles, patriotic symbols, faces, or anything non-food.`;
+  } else if (category === 'drinks') {
+    clarification = `
+CRITICAL: This is a DRINK/BEVERAGE.
+Generate a drinkable item in a cup, glass, or bottle.
+Examples: cup of coffee, glass of juice, soda can, water bottle, milk carton.
+NOT: food items, patriotic symbols, or non-beverage objects.`;
+  }
 
   const prompt = `
 ${BASE_STYLE_PROMPT}
 
 Category context: ${categoryHint}
 
-Subject: ${label}
+Subject: ${fullContext}${clarification}
 
 ${extraPrompt ? `Additional detail: ${extraPrompt}` : ''}
 

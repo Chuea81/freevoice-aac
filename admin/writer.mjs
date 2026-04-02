@@ -17,7 +17,7 @@ function labelToFileName(label) {
 export async function getCategories() {
   return [
     { id: 'feelings',  label: 'Feelings',      subcategories: [] },
-    { id: 'food',      label: 'Food',           subcategories: ['American', 'Mexican & Latin', 'African American', 'East Asian', 'South Asian', 'Middle Eastern', 'African', 'Caribbean', 'European', 'Snacks', 'Desserts'] },
+    { id: 'food',      label: 'Food',           subcategories: ['American', 'Mexican & Latin', 'African', 'East Asian', 'South Asian', 'Middle Eastern', 'Caribbean', 'European', 'Snacks', 'Desserts'] },
     { id: 'drinks',    label: 'Drinks',         subcategories: [] },
     { id: 'activities',label: 'Play',           subcategories: ['Sports', 'Creative', 'Outdoor', 'Games'] },
     { id: 'school',    label: 'School',         subcategories: ['Supplies', 'Academic', 'Routines'] },
@@ -113,12 +113,38 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     .toBuffer({ resolveWithObject: true });
 
   const pixels = Buffer.from(data);
-  for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
-    // Any dark blue Gemini generates as "background" — make transparent
-    if (r < 55 && g < 75 && b < 110 && (r + g + b) < 180) {
-      pixels[i+3] = 0;
-    }
+  const w = info.width, h = info.height;
+
+  // Flood-fill from edges to remove navy background only
+  // flatten() already converts any white/transparent bg to navy (#0C1428)
+  // so we only need to match navy — this preserves white objects (eggs, plates, bowls)
+  const visited = new Uint8Array(w * h);
+  const isBg = (r, g, b) => r < 65 && g < 85 && b < 120 && (r + g + b) < 220;
+
+  // Seed flood fill from all edge pixels
+  const queue = [];
+  for (let x = 0; x < w; x++) {
+    queue.push(x);               // top row
+    queue.push((h - 1) * w + x); // bottom row
+  }
+  for (let y = 0; y < h; y++) {
+    queue.push(y * w);            // left col
+    queue.push(y * w + (w - 1));  // right col
+  }
+
+  while (queue.length > 0) {
+    const idx = queue.pop();
+    if (idx < 0 || idx >= w * h || visited[idx]) continue;
+    visited[idx] = 1;
+    const pi = idx * 4;
+    const r = pixels[pi], g = pixels[pi + 1], b = pixels[pi + 2];
+    if (!isBg(r, g, b)) continue;
+    pixels[pi + 3] = 0; // make transparent
+    const x = idx % w, y = (idx / w) | 0;
+    if (x > 0) queue.push(idx - 1);
+    if (x < w - 1) queue.push(idx + 1);
+    if (y > 0) queue.push(idx - w);
+    if (y < h - 1) queue.push(idx + w);
   }
 
   await sharp(pixels, { raw: { width: info.width, height: info.height, channels: 4 } })
@@ -153,12 +179,18 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     );
 
     if (symbolPattern.test(boardsContent)) {
-      // Symbol exists, update its imageUrl
-      boardsContent = boardsContent.replace(
-        symbolPattern,
-        `$1\n        imageUrl: '${publicPath}',\n        $2$3`
-      );
-      console.log(`✅ Updated ${label} in defaultBoards.ts with imageUrl`);
+      // Check if this symbol already has an imageUrl to prevent double-insertion
+      const match = symbolPattern.exec(boardsContent);
+      const symbolBlock = match ? match[0] : '';
+      if (symbolBlock.includes('imageUrl')) {
+        console.log(`ℹ️ ${label} already has imageUrl in defaultBoards.ts — skipping`);
+      } else {
+        boardsContent = boardsContent.replace(
+          symbolPattern,
+          `$1\n        imageUrl: '${publicPath}',\n        $2$3`
+        );
+        console.log(`✅ Updated ${label} in defaultBoards.ts with imageUrl`);
+      }
     } else {
       console.warn(`⚠️ Could not find symbol "${label}" in defaultBoards.ts`);
     }
@@ -168,31 +200,55 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     console.warn(`⚠️ Could not update defaultBoards.ts: ${e.message}`);
   }
 
-  // Update arasaacIds.ts for backward compat (if needed)
+  // Update arasaacIds.ts to mark custom symbol (ID=-1)
+  let arasaacMessage = '';
   try {
     let arasaacContent = await readFile(ARASAAC_IDS_FILE, 'utf8');
 
-    // Add to ARASAAC_IDS (ID=-1 for custom)
-    if (!arasaacContent.includes(`'${upperLabel}'`)) {
+    // Check if already exists
+    if (arasaacContent.includes(`'${upperLabel}'`)) {
+      const re = new RegExp(`'${upperLabel}':\\s*-?\\d+`);
+      const before = arasaacContent.match(re);
+      console.log(`[ARASAAC] ${upperLabel} found in file, current value: ${before ? before[0] : 'NO MATCH'}`);
+      // Update value to -1 if it's not already
+      arasaacContent = arasaacContent.replace(re, `'${upperLabel}': -1`);
+      const after = arasaacContent.match(new RegExp(`'${upperLabel}':\\s*-?\\d+`));
+      console.log(`[ARASAAC] ${upperLabel} after replace: ${after ? after[0] : 'NO MATCH'}`);
+      arasaacMessage = `✅ Updated ${upperLabel} to -1 in arasaacIds.ts`;
+    } else {
+      // Add new entry before closing brace
       arasaacContent = arasaacContent.replace(
-        /};\s*\n\s*\/\*\*\s*\n\s*\* Custom symbol/,
-        `  '${upperLabel}': -1,\n};\n\n/**\n * Custom symbol`
+        /^(export const ARASAAC_IDS:.*?\{[\s\S]*?)(\n\};)/,
+        `$1\n  '${upperLabel}': -1,$2`
       );
-    }
-
-    // Add to CUSTOM_SYMBOL_IMAGES
-    const entryValue = '`${B}symbols/custom/' + labelToFileName(label) + '.png`';
-    if (!arasaacContent.includes(`'${upperLabel}':`)) {
-      arasaacContent = arasaacContent.replace(
-        /};\s*$/,
-        `  '${upperLabel}': ${entryValue},\n};`
-      );
+      arasaacMessage = `✅ Added ${upperLabel} to ARASAAC_IDS with value -1`;
+      console.log(arasaacMessage);
     }
 
     await writeFile(ARASAAC_IDS_FILE, arasaacContent, 'utf8');
-    console.log(`✅ Updated arasaacIds.ts with ${upperLabel}`);
   } catch (e) {
-    console.warn(`⚠️ Could not update arasaacIds.ts: ${e.message}`);
+    arasaacMessage = `⚠️ Could not update arasaacIds.ts: ${e.message}`;
+    console.warn(arasaacMessage);
+  }
+
+  // Directly patch symbols.json to add imageUrl — no dependency on generate-symbols
+  const symbolsJsonPath = join(ROOT, 'public', 'api', 'symbols.json');
+  try {
+    const symbolsData = JSON.parse(await readFile(symbolsJsonPath, 'utf8'));
+    const appPath = `/app/symbols/custom/${fileName}`;
+    let patched = false;
+    for (const sym of symbolsData.symbols) {
+      if (sym.label?.toLowerCase() === label.toLowerCase() && !sym.imageUrl) {
+        sym.imageUrl = appPath;
+        patched = true;
+        console.log(`✅ Patched symbols.json: ${sym.label} → ${appPath}`);
+      }
+    }
+    if (patched) {
+      await writeFile(symbolsJsonPath, JSON.stringify(symbolsData, null, 2), 'utf8');
+    }
+  } catch (e) {
+    console.warn(`⚠️ Could not patch symbols.json: ${e.message}`);
   }
 
   return {
@@ -202,5 +258,6 @@ export async function approveSymbol({ label, category, subcategory, phrase, imag
     message: `✅ ${label} saved to ${publicPath}`,
     label,
     upperLabel,
+    arasaacMessage,
   };
 }

@@ -473,7 +473,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": true,
-      "targetBoardId": "food"
+      "targetBoardId": "food",
+      "imageUrl": "/app/symbols/custom/food.png"
     },
     {
       "id": "default-1",
@@ -484,7 +485,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": true,
-      "targetBoardId": "feelings"
+      "targetBoardId": "feelings",
+      "imageUrl": "/app/symbols/custom/feelings.png"
     },
     {
       "id": "default-2",
@@ -495,7 +497,8 @@
       "color": "#81C784",
       "order": 2,
       "isCategory": true,
-      "targetBoardId": "activities"
+      "targetBoardId": "activities",
+      "imageUrl": "/app/symbols/custom/play.png"
     },
     {
       "id": "default-3",
@@ -506,7 +509,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": true,
-      "targetBoardId": "social"
+      "targetBoardId": "social",
+      "imageUrl": "/app/symbols/custom/social.png"
     },
     {
       "id": "default-4",
@@ -517,7 +521,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": true,
-      "targetBoardId": "body"
+      "targetBoardId": "body",
+      "imageUrl": "/app/symbols/custom/body.png"
     },
     {
       "id": "default-5",
@@ -528,7 +533,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": true,
-      "targetBoardId": "school"
+      "targetBoardId": "school",
+      "imageUrl": "/app/symbols/custom/school.png"
     },
     {
       "id": "default-6",
@@ -539,7 +545,8 @@
       "color": "#F48FB1",
       "order": 6,
       "isCategory": true,
-      "targetBoardId": "bedtime"
+      "targetBoardId": "bedtime",
+      "imageUrl": "/app/symbols/custom/bedtime.png"
     },
     {
       "id": "default-7",
@@ -550,7 +557,8 @@
       "color": "#FFCC80",
       "order": 7,
       "isCategory": true,
-      "targetBoardId": "animals"
+      "targetBoardId": "animals",
+      "imageUrl": "/app/symbols/custom/animals.png"
     },
     {
       "id": "default-8",
@@ -561,7 +569,8 @@
       "color": "#AED581",
       "order": 8,
       "isCategory": true,
-      "targetBoardId": "places"
+      "targetBoardId": "places",
+      "imageUrl": "/app/symbols/custom/places.png"
     },
     {
       "id": "default-9",
@@ -572,7 +581,8 @@
       "color": "#90CAF9",
       "order": 9,
       "isCategory": true,
-      "targetBoardId": "clothing"
+      "targetBoardId": "clothing",
+      "imageUrl": "/app/symbols/custom/clothing.png"
     },
     {
       "id": "default-10",
@@ -583,7 +593,8 @@
       "color": "#FF8A65",
       "order": 10,
       "isCategory": true,
-      "targetBoardId": "routines"
+      "targetBoardId": "routines",
+      "imageUrl": "/app/symbols/custom/routines.png"
     },
     {
       "id": "default-11",
@@ -594,7 +605,8 @@
       "color": "#64B5F6",
       "order": 11,
       "isCategory": true,
-      "targetBoardId": "transportation"
+      "targetBoardId": "transportation",
+      "imageUrl": "/app/symbols/custom/transportation.png"
     },
     {
       "id": "default-12",
@@ -605,7 +617,8 @@
       "color": "#81C784",
       "order": 12,
       "isCategory": true,
-      "targetBoardId": "technology"
+      "targetBoardId": "technology",
+      "imageUrl": "/app/symbols/custom/technology.png"
     },
     {
       "id": "default-13",
@@ -616,7 +629,8 @@
       "color": "#FFD54F",
       "order": 13,
       "isCategory": true,
-      "targetBoardId": "nature"
+      "targetBoardId": "nature",
+      "imageUrl": "/app/symbols/custom/nature.png"
     },
     {
       "id": "default-14",
@@ -627,7 +641,8 @@
       "color": "#CE93D8",
       "order": 14,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/yes.png"
     },
     {
       "id": "default-15",
@@ -638,7 +653,8 @@
       "color": "#80CBC4",
       "order": 15,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/no.png"
     },
     {
       "id": "default-16",
@@ -649,7 +665,8 @@
       "color": "#F48FB1",
       "order": 16,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/please.png"
     },
     {
       "id": "default-17",
@@ -660,7 +677,8 @@
       "color": "#FFCC80",
       "order": 17,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/thank_you.png"
     },
     {
       "id": "default-18",
@@ -671,7 +689,8 @@
       "color": "#AED581",
       "order": 18,
       "isCategory": false,
-      "wordType": "descriptor"
+      "wordType": "descriptor",
+      "imageUrl": "/app/symbols/custom/hurts.png"
     },
     {
       "id": "default-19",
@@ -682,7 +701,8 @@
       "color": "#90CAF9",
       "order": 19,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/help.png"
     },
     {
       "id": "default-20",
@@ -693,7 +713,8 @@
       "color": "#FF8A65",
       "order": 20,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/stop.png"
     },
     {
       "id": "default-21",
@@ -704,7 +725,8 @@
       "color": "#64B5F6",
       "order": 21,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/more.png"
     },
     {
       "id": "default-22",
@@ -715,7 +737,8 @@
       "color": "#81C784",
       "order": 22,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/hi.png"
     },
     {
       "id": "default-23",
@@ -726,7 +749,8 @@
       "color": "#FFD54F",
       "order": 23,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/wait.png"
     },
     {
       "id": "default-24",
@@ -737,7 +761,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/help.png"
     },
     {
       "id": "default-25",
@@ -748,7 +773,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/wait.png"
     },
     {
       "id": "default-26",
@@ -781,7 +807,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/more.png"
     },
     {
       "id": "default-29",
@@ -792,7 +819,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/stop.png"
     },
     {
       "id": "default-30",
@@ -814,7 +842,8 @@
       "color": "#FFCC80",
       "order": 7,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/please.png"
     },
     {
       "id": "default-32",
@@ -825,7 +854,8 @@
       "color": "#AED581",
       "order": 8,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/thank_you.png"
     },
     {
       "id": "default-33",
@@ -836,7 +866,8 @@
       "color": "#90CAF9",
       "order": 9,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/hurts.png"
     },
     {
       "id": "default-34",
@@ -1078,7 +1109,8 @@
       "color": "#90CAF9",
       "order": 19,
       "isCategory": false,
-      "wordType": "verb"
+      "wordType": "verb",
+      "imageUrl": "/app/symbols/custom/play.png"
     },
     {
       "id": "default-56",
@@ -1298,7 +1330,8 @@
       "color": "#90CAF9",
       "order": 39,
       "isCategory": false,
-      "wordType": "descriptor"
+      "wordType": "descriptor",
+      "imageUrl": "/app/symbols/custom/more.png"
     },
     {
       "id": "default-76",
@@ -1850,7 +1883,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": true,
-      "targetBoardId": "food_american"
+      "targetBoardId": "food_american",
+      "imageUrl": "/app/symbols/custom/american.png"
     },
     {
       "id": "default-124",
@@ -1861,7 +1895,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": true,
-      "targetBoardId": "food_latin"
+      "targetBoardId": "food_latin",
+      "imageUrl": "/app/symbols/custom/mexican__latin.png"
     },
     {
       "id": "default-125",
@@ -1872,7 +1907,8 @@
       "color": "#81C784",
       "order": 2,
       "isCategory": true,
-      "targetBoardId": "food_soul"
+      "targetBoardId": "food_soul",
+      "imageUrl": "/app/symbols/custom/soul_food.png"
     },
     {
       "id": "default-126",
@@ -1883,7 +1919,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": true,
-      "targetBoardId": "food_eastasian"
+      "targetBoardId": "food_eastasian",
+      "imageUrl": "/app/symbols/custom/east_asian.png"
     },
     {
       "id": "default-127",
@@ -1894,7 +1931,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": true,
-      "targetBoardId": "food_southasian"
+      "targetBoardId": "food_southasian",
+      "imageUrl": "/app/symbols/custom/south_asian.png"
     },
     {
       "id": "default-128",
@@ -1905,7 +1943,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": true,
-      "targetBoardId": "food_middleeast"
+      "targetBoardId": "food_middleeast",
+      "imageUrl": "/app/symbols/custom/middle_eastern.png"
     },
     {
       "id": "default-129",
@@ -1916,7 +1955,8 @@
       "color": "#F48FB1",
       "order": 6,
       "isCategory": true,
-      "targetBoardId": "food_african"
+      "targetBoardId": "food_african",
+      "imageUrl": "/app/symbols/custom/african.png"
     },
     {
       "id": "default-130",
@@ -1927,7 +1967,8 @@
       "color": "#FFCC80",
       "order": 7,
       "isCategory": true,
-      "targetBoardId": "food_caribbean"
+      "targetBoardId": "food_caribbean",
+      "imageUrl": "/app/symbols/custom/caribbean.png"
     },
     {
       "id": "default-131",
@@ -1938,7 +1979,8 @@
       "color": "#AED581",
       "order": 8,
       "isCategory": true,
-      "targetBoardId": "food_european"
+      "targetBoardId": "food_european",
+      "imageUrl": "/app/symbols/custom/european.png"
     },
     {
       "id": "default-132",
@@ -1949,7 +1991,8 @@
       "color": "#90CAF9",
       "order": 9,
       "isCategory": true,
-      "targetBoardId": "drinks"
+      "targetBoardId": "drinks",
+      "imageUrl": "/app/symbols/custom/drinks.png"
     },
     {
       "id": "default-133",
@@ -1960,7 +2003,8 @@
       "color": "#FF8A65",
       "order": 10,
       "isCategory": true,
-      "targetBoardId": "snacks"
+      "targetBoardId": "snacks",
+      "imageUrl": "/app/symbols/custom/snacks.png"
     },
     {
       "id": "default-134",
@@ -1971,7 +2015,8 @@
       "color": "#64B5F6",
       "order": 11,
       "isCategory": true,
-      "targetBoardId": "desserts"
+      "targetBoardId": "desserts",
+      "imageUrl": "/app/symbols/custom/desserts.png"
     },
     {
       "id": "default-135",
@@ -1982,7 +2027,8 @@
       "color": "#81C784",
       "order": 12,
       "isCategory": true,
-      "targetBoardId": "fruits"
+      "targetBoardId": "fruits",
+      "imageUrl": "/app/symbols/custom/fruits.png"
     },
     {
       "id": "default-136",
@@ -1993,7 +2039,8 @@
       "color": "#FFD54F",
       "order": 13,
       "isCategory": true,
-      "targetBoardId": "vegetables"
+      "targetBoardId": "vegetables",
+      "imageUrl": "/app/symbols/custom/vegetables.png"
     },
     {
       "id": "default-137",
@@ -2125,7 +2172,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/orange_juice.png"
     },
     {
       "id": "default-149",
@@ -2136,7 +2184,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/apple_juice.png"
     },
     {
       "id": "default-150",
@@ -2147,7 +2196,8 @@
       "color": "#81C784",
       "order": 2,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/grape_juice.png"
     },
     {
       "id": "default-151",
@@ -2158,7 +2208,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/pineapple_juice.png"
     },
     {
       "id": "default-152",
@@ -2169,7 +2220,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/mango_juice.png"
     },
     {
       "id": "default-153",
@@ -2180,7 +2232,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/cranberry_juice.png"
     },
     {
       "id": "default-154",
@@ -2191,7 +2244,8 @@
       "color": "#F48FB1",
       "order": 6,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/strawberry_juice.png"
     },
     {
       "id": "default-155",
@@ -2202,7 +2256,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/coke.png"
     },
     {
       "id": "default-156",
@@ -2213,7 +2268,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/sprite.png"
     },
     {
       "id": "default-157",
@@ -2224,7 +2280,8 @@
       "color": "#81C784",
       "order": 2,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/fanta.png"
     },
     {
       "id": "default-158",
@@ -2235,7 +2292,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/root_beer.png"
     },
     {
       "id": "default-159",
@@ -2246,7 +2304,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/ginger_ale.png"
     },
     {
       "id": "default-160",
@@ -2257,7 +2316,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/dr_pepper.png"
     },
     {
       "id": "default-161",
@@ -2268,7 +2328,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/hamburger.png"
     },
     {
       "id": "default-162",
@@ -2279,7 +2340,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/hot_dog.png"
     },
     {
       "id": "default-163",
@@ -2290,7 +2352,8 @@
       "color": "#81C784",
       "order": 2,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/pizza.png"
     },
     {
       "id": "default-164",
@@ -2301,7 +2364,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/fried_chicken.png"
     },
     {
       "id": "default-165",
@@ -2312,7 +2376,8 @@
       "color": "#CE93D8",
       "order": 4,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/sandwich.png"
     },
     {
       "id": "default-166",
@@ -2323,7 +2388,8 @@
       "color": "#80CBC4",
       "order": 5,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/grilled_cheese.png"
     },
     {
       "id": "default-167",
@@ -2334,7 +2400,8 @@
       "color": "#F48FB1",
       "order": 6,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/bacon.png"
     },
     {
       "id": "default-168",
@@ -2345,7 +2412,8 @@
       "color": "#FFCC80",
       "order": 7,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/pancakes.png"
     },
     {
       "id": "default-169",
@@ -2356,7 +2424,8 @@
       "color": "#AED581",
       "order": 8,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/waffles.png"
     },
     {
       "id": "default-170",
@@ -2367,7 +2436,8 @@
       "color": "#90CAF9",
       "order": 9,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/eggs.png"
     },
     {
       "id": "default-171",
@@ -2378,7 +2448,8 @@
       "color": "#FF8A65",
       "order": 10,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/cereal.png"
     },
     {
       "id": "default-172",
@@ -2389,7 +2460,8 @@
       "color": "#64B5F6",
       "order": 11,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/pbj.png"
     },
     {
       "id": "default-173",
@@ -2400,7 +2472,8 @@
       "color": "#81C784",
       "order": 12,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/corn_on_the_cob.png"
     },
     {
       "id": "default-174",
@@ -2411,7 +2484,8 @@
       "color": "#FFD54F",
       "order": 13,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/mashed_potatoes.png"
     },
     {
       "id": "default-175",
@@ -2422,7 +2496,8 @@
       "color": "#CE93D8",
       "order": 14,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/french_fries.png"
     },
     {
       "id": "default-176",
@@ -2433,7 +2508,8 @@
       "color": "#80CBC4",
       "order": 15,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/salad.png"
     },
     {
       "id": "default-177",
@@ -2444,7 +2520,8 @@
       "color": "#F48FB1",
       "order": 16,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/bbq_ribs.png"
     },
     {
       "id": "default-178",
@@ -2455,7 +2532,8 @@
       "color": "#FFCC80",
       "order": 17,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/steak.png"
     },
     {
       "id": "default-179",
@@ -2466,7 +2544,8 @@
       "color": "#AED581",
       "order": 18,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/mac_and_cheese.png"
     },
     {
       "id": "default-180",
@@ -2477,7 +2556,8 @@
       "color": "#90CAF9",
       "order": 19,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/chili.png"
     },
     {
       "id": "default-181",
@@ -2488,7 +2568,8 @@
       "color": "#FF8A65",
       "order": 20,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/pot_pie.png"
     },
     {
       "id": "default-182",
@@ -2499,7 +2580,8 @@
       "color": "#64B5F6",
       "order": 21,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/soup.png"
     },
     {
       "id": "default-183",
@@ -2510,7 +2592,8 @@
       "color": "#81C784",
       "order": 22,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/biscuits.png"
     },
     {
       "id": "default-184",
@@ -2521,7 +2604,8 @@
       "color": "#FFD54F",
       "order": 23,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/omelette.png"
     },
     {
       "id": "default-185",
@@ -2532,7 +2616,8 @@
       "color": "#CE93D8",
       "order": 24,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/meatloaf.png"
     },
     {
       "id": "default-186",
@@ -2906,7 +2991,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/fried_chicken.png"
     },
     {
       "id": "default-220",
@@ -2939,7 +3025,8 @@
       "color": "#FFD54F",
       "order": 3,
       "isCategory": false,
-      "wordType": "noun"
+      "wordType": "noun",
+      "imageUrl": "/app/symbols/custom/mac_and_cheese.png"
     },
     {
       "id": "default-223",
@@ -7307,7 +7394,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/hi.png"
     },
     {
       "id": "default-620",
@@ -7472,7 +7560,8 @@
       "color": "#FF8A65",
       "order": 0,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/please.png"
     },
     {
       "id": "default-635",
@@ -7483,7 +7572,8 @@
       "color": "#64B5F6",
       "order": 1,
       "isCategory": false,
-      "wordType": "social"
+      "wordType": "social",
+      "imageUrl": "/app/symbols/custom/thank_you.png"
     },
     {
       "id": "default-636",
@@ -8702,7 +8792,8 @@
       "order": 28,
       "isCategory": false,
       "wordType": "noun",
-      "arasaacId": -1
+      "arasaacId": -1,
+      "imageUrl": "/app/symbols/custom/bottom.png"
     },
     {
       "id": "default-746",
@@ -11784,7 +11875,8 @@
       "color": "#90CAF9",
       "order": 9,
       "isCategory": false,
-      "wordType": "descriptor"
+      "wordType": "descriptor",
+      "imageUrl": "/app/symbols/custom/wait.png"
     },
     {
       "id": "default-1026",

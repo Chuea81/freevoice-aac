@@ -91,6 +91,22 @@
   .toast.success { border-color:rgba(39,174,96,0.4); }
   .toast.error   { border-color:rgba(225,29,72,0.4); }
 
+  /* Progress Modal */
+  .progress-modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .progress-modal.show { opacity:1; pointer-events:all; }
+  .progress-content { background:var(--card); border-radius:16px; border:1px solid var(--border); padding:28px 32px; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+  .progress-title { font-size:18px; font-weight:900; color:var(--text); margin-bottom:20px; }
+  .progress-item { display:flex; align-items:center; gap:12px; padding:10px 0; font-size:14px; font-weight:700; color:var(--text); }
+  .progress-checkbox { width:20px; height:20px; border-radius:4px; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+  .progress-checkbox.pending { background:rgba(255,255,255,0.05); border-color:var(--muted); }
+  .progress-checkbox.loading { background:var(--sky); border-color:var(--sky); animation:pulse 1s infinite; }
+  .progress-checkbox.done { background:var(--green); border-color:var(--green); }
+  .progress-checkbox.error { background:#E11D48; border-color:#E11D48; }
+  .progress-checkbox span { font-size:10px; color:white; }
+  .progress-status { flex:1; color:var(--muted); font-size:13px; }
+  .progress-status.done { color:var(--green); }
+  .progress-status.error { color:#FCA5A5; }
+
   /* Tabs */
   .tab-row { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
   .tab-btn-admin { flex:1; padding:12px 16px; background:transparent; border:none; border-bottom:2px solid transparent; font-family:'Nunito',sans-serif; font-size:12px; font-weight:900; letter-spacing:1px; text-transform:uppercase; color:var(--muted); cursor:pointer; transition:all 0.15s; }
@@ -241,6 +257,13 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="progress-modal" id="progress-modal">
+  <div class="progress-content">
+    <div class="progress-title">Approving Symbol...</div>
+    <div id="progress-items"></div>
+  </div>
+</div>
+
 <script>
 const API = 'http://localhost:3333/api';
 let currentImageBase64 = null;
@@ -267,7 +290,10 @@ async function init() {
   ['input-label','input-category','input-extra'].forEach(id =>
     document.getElementById(id).addEventListener('input', updatePromptPreview));
   document.getElementById('input-label').addEventListener('input', autoFillPhrase);
+  document.getElementById('input-label').addEventListener('input', autoFillExtra);
   document.getElementById('input-label').addEventListener('input', autoFillGeminiPrompt);
+  document.getElementById('input-subcategory').addEventListener('change', autoFillExtra);
+  console.log('[Admin] Event listeners attached: autoFillExtra, autoFillPhrase, autoFillGeminiPrompt');
 }
 
 function buildCategorySelects(cats) {
@@ -279,6 +305,7 @@ function buildCategorySelects(cats) {
     const cat = cats.find(c => c.id === catSel.value);
     if (cat?.subcategories?.length) cat.subcategories.forEach(sub => { const o = document.createElement('option'); o.value = sub; o.textContent = sub; subSel.appendChild(o); });
     updatePromptPreview();
+    autoFillExtra();
   });
 }
 
@@ -314,6 +341,133 @@ function findGeminiPrompt(label) {
   return promptLookup[input] || promptLookup[label.toLowerCase().trim()] || null;
 }
 
+// Auto-hints for EVERY board/category to provide Gemini with context
+const autoHints = {
+  // Main categories
+  'academic': 'books, chalkboard, ABC letters, pencil',
+  'action words': 'person performing action or movement',
+  'animals': 'friendly cartoon animal, recognizable species',
+  'bedtime': 'moon, stars, sleeping figure, peaceful',
+  'body': 'simple cartoon body part diagram',
+  'chores': 'child doing chore, broom, trash can',
+  'clothing': 'clothing item, shirt, pants, shoes',
+  'community': 'people gathering or community scene',
+  'core words': 'common everyday word, simple concept',
+  'cultural events': 'celebration, holiday, festival, decorations',
+  'describing words': 'visual representation of adjective',
+  'drinks': 'beverage in cup or glass, drinkable liquid',
+  'evening': 'sunset, evening activities, dusk sky',
+  'faith': 'religious symbol appropriate for diverse backgrounds',
+  'family': 'family members together, diverse family',
+  'fast phrases': 'quick communication, simple gesture',
+  'feelings': 'face showing emotion, happy, sad, angry',
+  'food': 'food item, dish, meal, ingredient',
+  'fruits': 'apples, bananas, oranges, berries, colorful',
+  'music': 'musical instrument, notes, speaker, singing',
+  'my words': 'personalized word, custom symbol',
+  'nature': 'tree, flower, plant, outdoor nature scene',
+  'numbers': 'bold number, clearly legible',
+  'pets': 'pet animal, dog, cat, friendly',
+  'places': 'location, building, landmark, destination',
+  'questions': 'question mark, thinking, wondering gesture',
+  'repairs': 'tools, fixing, building, construction',
+  'technology': 'computer, phone, tablet, technology device',
+  'time words': 'clock, calendar, time concept, day/night',
+  'transportation': 'vehicle, car, bus, train, bicycle',
+  'weather': 'sun, rain, clouds, snow, weather condition',
+  'worship': 'place of worship, religious symbol, diverse',
+
+  // Food subcategories
+  'african': 'jollof rice, fufu, peanut stew, cassava',
+  'american': 'hamburger, hot dog, french fries, apple pie',
+  'caribbean': 'rice and beans, plantains, jerk chicken, coconut',
+  'desserts': 'cake, ice cream, pie, chocolate, candy',
+  'east asian': 'rice bowl, noodles, dumplings, spring rolls',
+  'european': 'croissant, pasta, schnitzel, cheese, bread',
+  'mexican & latin': 'tacos, burritos, enchiladas, guacamole',
+  'middle eastern': 'hummus, falafel, kebab, pita, flatbread',
+  'snacks': 'chips, popcorn, pretzels, nuts, snack food',
+  'soul food': 'fried chicken, cornbread, collard greens, mac and cheese',
+  'south asian': 'curry, rice, naan, chutney, dal',
+
+  // Activity subcategories
+  'sports': 'person playing sport, equipment, action',
+  'creative': 'person making art, paint, supplies',
+  'outdoor': 'outdoor activity, nature, camping, hiking',
+  'games': 'toys, board games, fun activity',
+
+  // School subcategories
+  'supplies': 'pencils, crayons, paper, markers, supplies',
+  'routines': 'daily routine, schedule, calendar, clock',
+
+  // Social subcategories
+  'greetings': 'wave, handshake, hello gesture, friendly',
+  'phrases': 'gesture or action representing phrase',
+  'manners': 'polite gesture, please, thank you, excuse me',
+
+  // Body subcategories
+  'parts': 'individual body part clearly labeled',
+  'health': 'doctor, medical symbol, wellness, stethoscope',
+  'hygiene': 'washing hands, brushing teeth, bathing',
+
+  // Family/People subcategories
+  'community': 'people gathering or community scene',
+
+  // Places subcategories
+  'home': 'house exterior, home rooms, indoor space',
+  'school places': 'classroom, cafeteria, gym, office',
+  'community places': 'community building, store, library',
+
+  // Additional variants
+  'body parts': 'individual body part clearly labeled',
+  'colors & shapes': 'bright solid color or geometric shape',
+  'home places': 'rooms of a house, kitchen, bedroom',
+  'juice': 'glass of juice, fruit juice, beverage',
+  'medical': 'medical equipment, bandage, medicine, hospital',
+  'morning': 'sunrise, morning activities, breakfast, sun',
+  'school': 'school building, ABC, education, books',
+  'social': 'social interaction, people together, community',
+  'social phrases': 'greeting, please, thank you, excuse me',
+  'soda': 'soda can or bottle, carbonated drink',
+  'vegetables': 'broccoli, carrots, lettuce, tomatoes, green',
+};
+
+function autoFillExtra() {
+  const label = document.getElementById('input-label').value.trim();
+  const subcategory = document.getElementById('input-subcategory').value.trim();
+  const category = document.getElementById('input-category').value.trim();
+  const extra = document.getElementById('input-extra');
+
+  // Only auto-fill if field is empty and user hasn't manually edited
+  if (extra.value || extra.dataset.manualEdit) {
+    console.log('[autoFillExtra] Skipping — field has value or manual edit:', { value: extra.value, manualEdit: extra.dataset.manualEdit });
+    return;
+  }
+
+  // Try to find hint by label first, then subcategory
+  const normalizeKey = (s) => s.toLowerCase().trim();
+  const normalizedLabel = normalizeKey(label);
+  const normalizedSub = normalizeKey(subcategory);
+  const normalizedCat = normalizeKey(category);
+
+  let hint = autoHints[normalizedLabel] || autoHints[normalizedSub] || autoHints[normalizedCat];
+  console.log('[autoFillExtra]', { label, normalizedLabel, subcategory: normalizedSub, category: normalizedCat, found: !!hint, hint });
+
+  if (hint) {
+    extra.value = hint;
+    extra.style.opacity = '0.65'; // Visual indicator it's auto-filled
+    extra.dataset.isAutoFilled = 'true';
+    console.log('[autoFillExtra] Filled with:', hint);
+    updatePromptPreview();
+  } else if (extra.dataset.isAutoFilled) {
+    // Clear if there was a previous auto-fill but no new hint
+    extra.value = '';
+    extra.style.opacity = '';
+    delete extra.dataset.isAutoFilled;
+    updatePromptPreview();
+  }
+}
+
 function autoFillGeminiPrompt() {
   const label = document.getElementById('input-label').value.trim();
   const extra = document.getElementById('input-extra');
@@ -327,12 +481,15 @@ function autoFillGeminiPrompt() {
   if (match && !extra.dataset.manualEdit) {
     extra.value = match;
     extra.dataset.lastAutoLabel = label;
+    delete extra.dataset.isAutoFilled; // Gemini prompt takes precedence
     extra.style.borderColor = 'rgba(39,174,96,0.6)';
+    extra.style.opacity = '';
     badge.style.display = 'inline';
     updatePromptPreview();
   } else {
     badge.style.display = 'none';
-    if (!extra.dataset.manualEdit) {
+    if (!extra.dataset.manualEdit && !extra.dataset.isAutoFilled) {
+      // Only clear if not manually edited AND not an auto-hint
       extra.value = '';
       extra.style.borderColor = '';
       updatePromptPreview();
@@ -343,6 +500,8 @@ document.getElementById('input-extra')?.addEventListener('input', function() {
   // Only flag as manual if user actually typed (not programmatic)
   if (document.activeElement === this) {
     this.dataset.manualEdit = this.value ? 'true' : '';
+    delete this.dataset.isAutoFilled; // Clear auto-fill flag when user types
+    this.style.opacity = ''; // Remove opacity indicator
   }
   if (!this.value) document.getElementById('prompt-badge').style.display = 'none';
 });
@@ -359,6 +518,7 @@ function updatePromptPreview() {
 async function generateSymbol(extraOverride = '') {
   const label = document.getElementById('input-label').value.trim();
   const category = document.getElementById('input-category').value;
+  const subcategory = document.getElementById('input-subcategory').value;
   const extra = extraOverride || document.getElementById('input-extra').value.trim();
   if (!label) { toast('Enter a label first', 'error'); return; }
   const btn = document.getElementById('btn-generate');
@@ -369,7 +529,7 @@ async function generateSymbol(extraOverride = '') {
   document.getElementById('regen-strip').style.display = 'none';
   document.getElementById('preview-card').innerHTML = `<div style="text-align:center;color:var(--muted)"><div class="spinner" style="margin:0 auto 16px;width:36px;height:36px;border-width:3px"></div><p style="font-size:13px;font-weight:700">Generating "${label}"...</p></div>`;
   try {
-    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,category,extraPrompt:extra}) });
+    const res = await fetch(`${API}/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,category,subcategory,extraPrompt:extra}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Generation failed');
     currentImageBase64 = data.imageBase64; currentLabel = label;
@@ -398,19 +558,90 @@ async function approveSymbol() {
   const arasaacId = document.getElementById('input-arasaac').value.trim();
   const btn = document.getElementById('btn-approve');
   btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Saving...';
+
+  // Show progress modal
+  const modal = document.getElementById('progress-modal');
+  const itemsContainer = document.getElementById('progress-items');
+  modal.classList.add('show');
+
+  const steps = [
+    { id: 'export', label: 'Save image to disk' },
+    { id: 'arasaac', label: 'Update ARASAAC_IDS lookup' },
+    { id: 'json', label: 'Generate symbols.json' },
+    { id: 'complete', label: 'Complete' }
+  ];
+
+  function updateProgress(stepId, status, message = '') {
+    const item = document.getElementById(`progress-${stepId}`);
+    if (!item) return;
+    item.querySelector('.progress-checkbox').className = `progress-checkbox ${status}`;
+    item.querySelector('.progress-checkbox').innerHTML = status === 'done' ? '✓' : status === 'error' ? '✕' : '⟳';
+    item.querySelector('.progress-status').textContent = message || steps.find(s => s.id === stepId).label;
+    item.querySelector('.progress-status').className = `progress-status ${status === 'done' ? 'done' : status === 'error' ? 'error' : ''}`;
+  }
+
+  itemsContainer.innerHTML = steps.map(step => `
+    <div class="progress-item" id="progress-${step.id}">
+      <div class="progress-checkbox pending"></div>
+      <div class="progress-status">${step.label}</div>
+    </div>
+  `).join('');
+
   try {
-    const res = await fetch(`${API}/approve`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,category,subcategory,phrase,imageBase64:currentImageBase64,arasaacFallbackId:arasaacId||null}) });
+    // Send approval request
+    updateProgress('export', 'loading');
+    const res = await fetch(`${API}/approve`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({label,category,subcategory,phrase,imageBase64:currentImageBase64,arasaacFallbackId:arasaacId||null})
+    });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Save failed');
-    toast(`✅ ${label} approved and saved!`, 'success');
+    updateProgress('export', 'done');
+
+    // Check ARASAAC update
+    updateProgress('arasaac', 'loading');
+    if (data.arasaacUpdated) {
+      updateProgress('arasaac', 'done', `Added ${label} to ARASAAC_IDS`);
+    } else if (data.arasaacMessage) {
+      updateProgress('arasaac', 'done', data.arasaacMessage);
+    } else {
+      updateProgress('arasaac', 'done');
+    }
+
+    // Check JSON regeneration
+    updateProgress('json', 'loading');
+    if (data.jsonRegenerated) {
+      updateProgress('json', 'done', 'symbols.json updated');
+    } else {
+      updateProgress('json', 'done');
+    }
+
+    updateProgress('complete', 'done', 'Ready to use!');
+
     // Mark as done in food/drink queue tracker
     const done = JSON.parse(localStorage.getItem('fv_food_done') || '{}');
     done[label] = true;
     localStorage.setItem('fv_food_done', JSON.stringify(done));
     refreshFoodQueue();
-    await loadApproved(); resetForm();
-  } catch (e) { toast('Save failed: ' + e.message, 'error'); }
-  finally { btn.disabled = false; btn.innerHTML = '✅ Approve'; }
+    await loadApproved();
+    resetForm();
+
+    setTimeout(() => {
+      modal.classList.remove('show');
+      toast(`✅ ${label} approved and exported!`, 'success');
+    }, 1500);
+  } catch (e) {
+    updateProgress('complete', 'error', e.message);
+    setTimeout(() => {
+      modal.classList.remove('show');
+      toast('Save failed: ' + e.message, 'error');
+    }, 2000);
+  }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Approve';
+  }
 }
 
 function rejectSymbol() {
@@ -894,10 +1125,12 @@ function showNavyPreview(base64, label) {
 }
 
 // ── FOOD & DRINK QUEUE ───────────────────────────────────────
-const FOOD_PROMPTS = {
-  // Drinks
+const SYMBOL_PROMPTS = {
+  // ── DRINKS ──────────────────────────────────────────────────
   'Water':'Clear glass of water with ice cubes, refreshing blue tones',
   'Milk':'Tall glass of white milk with slight foam on top',
+  'Juice':'Glass of fruit juice, bright colorful liquid with straw',
+  'Soda':'Can of soda with fizzy bubbles, colorful label',
   'Chocolate Milk':'Glass of chocolate milk, rich brown color',
   'Lemonade':'Tall glass of yellow lemonade with lemon slice on rim, ice cubes',
   'Smoothie':'Colorful fruit smoothie in tall glass with straw, berry purple-pink',
@@ -912,13 +1145,14 @@ const FOOD_PROMPTS = {
   'Mango Juice':'Glass of bright orange-yellow mango juice, mango slice',
   'Cranberry Juice':'Glass of deep red cranberry juice, cranberries beside',
   'Peach Juice':'Glass of soft peach-colored juice, peach slice garnish',
+  'Strawberry Juice':'Glass of bright pink-red strawberry juice, strawberry garnish',
   'Coke':'Glass of dark cola with ice and fizzy bubbles rising',
   'Sprite':'Glass of clear bubbly lemon-lime soda with ice',
   'Fanta':'Glass of bright orange soda with ice and fizzy bubbles',
   'Root Beer':'Frosty mug of dark brown root beer with foam head',
   'Ginger Ale':'Glass of pale golden ginger ale with bubbles',
   'Dr Pepper':'Glass of dark burgundy soda with ice and bubbles',
-  // American
+  // ── AMERICAN ────────────────────────────────────────────────
   'Hamburger':'Classic hamburger with sesame bun, beef patty, lettuce, tomato, cheese',
   'Hot Dog':'Hot dog in bun with mustard and ketchup zigzag',
   'Pizza':'Slice of pepperoni pizza with melted cheese stretching',
@@ -930,26 +1164,55 @@ const FOOD_PROMPTS = {
   'Waffles':'Golden waffle with grid pattern, butter and syrup',
   'Eggs':'Two sunny side up eggs with bright yellow yolks',
   'Cereal':'Bowl of colorful cereal with milk, spoon visible',
+  'PB&J':'Peanut butter and jelly sandwich cut in half, filling visible',
   'Corn on the Cob':'Ear of yellow corn with butter melting',
+  'Mashed Potatoes':'Bowl of creamy white mashed potatoes with butter and gravy',
   'French Fries':'Golden crispy french fries in red paper container',
   'Salad':'Fresh green salad in bowl with tomatoes, cucumber, croutons',
+  'BBQ Ribs':'Rack of BBQ ribs with dark smoky glaze, tender meat',
   'Steak':'Grilled steak with grill marks, medium rare pink center',
+  'Mac and Cheese':'Bowl of creamy yellow mac and cheese, elbow pasta',
+  'Chili':'Bowl of thick red chili with beans, cheese and sour cream on top',
   'Pot Pie':'Golden flaky pot pie with steam rising from broken crust',
   'Soup':'Bowl of steaming soup with vegetables, spoon in bowl',
-  // Latin (extras not in audit)
+  'Biscuits':'Golden fluffy biscuits, flaky layers visible, butter',
+  'Omelette':'Folded yellow omelette with vegetables and cheese, fluffy',
+  'Meatloaf':'Slice of meatloaf with tomato glaze, homestyle comfort food',
+  // ── MEXICAN & LATIN ─────────────────────────────────────────
   'Tacos':'Two corn shell tacos with seasoned meat, lettuce, tomato, cheese',
   'Burrito':'Large flour tortilla burrito wrapped, filling visible at end',
+  'Tamales':'Corn husk tamales opened showing masa filling inside',
+  'Quesadilla':'Golden grilled quesadilla cut in triangles, cheese stretching',
+  'Rice and Beans':'Plate of rice and beans side by side, cilantro garnish',
+  'Guacamole':'Bowl of chunky green guacamole with tortilla chips beside',
+  'Salsa':'Bowl of bright red chunky salsa with tomatoes and cilantro',
+  'Elote':'Mexican street corn on stick with mayo, cheese, chili powder',
+  'Arroz con Pollo':'Plate of yellow rice with chicken pieces, Latin style',
+  'Enchiladas':'Red sauce enchiladas in baking dish with melted cheese',
+  'Tortilla':'Stack of round flour tortillas, soft and warm',
   'Pozole':'Bowl of red pozole soup with hominy, radish, oregano garnish',
   'Empanadas':'Golden fried empanadas with crimped edges, flaky pastry',
+  'Carnitas':'Plate of shredded crispy pork carnitas, golden brown',
+  'Carne Asada':'Grilled carne asada steak sliced, charred edges, lime',
+  'Pupusas':'Round thick pupusas with melted cheese, curtido slaw beside',
   'Plantains':'Sliced fried sweet plantains, golden brown caramelized',
   'Black Beans':'Bowl of black beans in dark sauce, cilantro garnish',
   'Chile Relleno':'Stuffed poblano pepper with cheese, red sauce, golden batter',
+  'Menudo':'Bowl of red menudo soup with hominy and tripe, oregano',
+  'Gorditas':'Thick corn gorditas split open with filling visible',
+  'Mole':'Chicken with dark brown mole sauce, sesame seeds on top',
+  'Huevos Rancheros':'Fried eggs on tortillas with red salsa, beans on side',
+  'Horchata':'Tall glass of creamy white horchata with cinnamon sprinkle',
+  'Agua Fresca':'Glass of colorful agua fresca, fruit flavored, ice',
   'Flan':'Caramel flan with golden caramel sauce pooling, smooth custard',
   'Paleta':'Colorful Mexican popsicle with visible fruit pieces',
   'Tres Leches':'Slice of tres leches cake soaked in milk, whipped cream',
+  'Churros':'Golden fried churros with cinnamon sugar, chocolate dip',
+  'Sope':'Thick corn sope with pinched edges, topped with beans and meat',
   'Pollo Asado':'Grilled chicken pieces with char marks, lime wedge',
+  'Chilaquiles':'Plate of chilaquiles with red or green salsa, cheese, cream',
   'Tostada':'Flat crispy corn tostada topped with beans, lettuce, cheese',
-  // Soul Food
+  // ── SOUL FOOD ───────────────────────────────────────────────
   'Collard Greens':'Bowl of dark green cooked collard greens, glistening',
   'Cornbread':'Square of golden cornbread with butter melting on top',
   'Black-Eyed Peas':'Bowl of cooked black-eyed peas, Southern comfort food',
@@ -969,7 +1232,7 @@ const FOOD_PROMPTS = {
   'Chicken Wings':'Plate of glazed chicken wings, crispy skin, buffalo sauce',
   'Peach Cobbler':'Baked peach cobbler with golden biscuit topping',
   'Pound Cake':'Slice of dense golden pound cake, moist texture',
-  // East Asian
+  // ── EAST ASIAN ──────────────────────────────────────────────
   'Noodles':'Bowl of Asian noodles with chopsticks lifting, steam rising',
   'Sushi':'Colorful sushi rolls with salmon, rice, nori, wasabi',
   'Dumplings':'Steamed dumplings in bamboo steamer, dipping sauce',
@@ -1000,7 +1263,7 @@ const FOOD_PROMPTS = {
   'Korean BBQ':'Grilled Korean BBQ meat on grill plate, sizzling',
   'Wonton':'Bowl of wonton soup with thin dumplings in clear broth',
   'Miso Soup':'Bowl of miso soup with tofu cubes, wakame, green onion',
-  // South Asian
+  // ── SOUTH ASIAN ─────────────────────────────────────────────
   'Curry':'Bowl of rich golden curry sauce with meat or vegetables',
   'Naan':'Tear-drop shaped naan bread with charred spots, fluffy',
   'Biryani':'Plate of aromatic biryani rice with saffron color, meat',
@@ -1026,7 +1289,7 @@ const FOOD_PROMPTS = {
   'Vindaloo':'Rich red-brown vindaloo curry, spicy, potato and meat',
   'Rajma':'Bowl of red kidney bean rajma in thick tomato gravy',
   'Idli':'White steamed idli cakes, round and fluffy, with sambar',
-  // Middle Eastern
+  // ── MIDDLE EASTERN ──────────────────────────────────────────
   'Falafel':'Crispy green falafel balls cut open, on pita bread',
   'Hummus':'Bowl of smooth hummus with olive oil drizzle, paprika',
   'Pita':'Round pita bread, slightly puffed, warm and soft',
@@ -1044,7 +1307,7 @@ const FOOD_PROMPTS = {
   'Mint Tea':'Glass of Moroccan mint tea, fresh mint leaves, golden',
   'Halloumi':'Grilled halloumi cheese slices with grill marks',
   'Shakshuka':'Eggs poached in red tomato sauce in skillet',
-  // African
+  // ── AFRICAN ─────────────────────────────────────────────────
   'Jollof Rice':'Plate of vibrant orange-red jollof rice, West African',
   'Injera':'Large round spongy injera with colorful stews on top',
   'Stew':'Bowl of thick hearty stew with vegetables and meat',
@@ -1057,7 +1320,7 @@ const FOOD_PROMPTS = {
   'Ugali':'Round portion of white ugali cornmeal, dense and smooth',
   'Doro Wat':'Ethiopian doro wat chicken stew, dark red spicy sauce, egg',
   'Chapati':'Round layered chapati flatbread, golden, East African',
-  // Caribbean
+  // ── CARIBBEAN ───────────────────────────────────────────────
   'Jerk Chicken':'Spicy jerk chicken with dark spice coating, charred',
   'Rice and Peas':'Jamaican rice and peas, coconut milk rice with beans',
   'Curry Goat':'Bowl of Caribbean curry goat, rich sauce, tender meat',
@@ -1066,7 +1329,7 @@ const FOOD_PROMPTS = {
   'Callaloo':'Bowl of green callaloo leafy vegetable stew',
   'Patty':'Golden Jamaican beef patty, flaky yellow pastry, crescent',
   'Oxtail':'Plate of braised oxtail in rich dark gravy, Caribbean',
-  // European
+  // ── EUROPEAN ────────────────────────────────────────────────
   'Pasta':'Plate of spaghetti with red tomato sauce, parmesan, basil',
   'Margherita Pizza':'Whole margherita pizza with mozzarella, tomato, basil',
   'Croissant':'Golden flaky croissant with layered pastry visible',
@@ -1082,7 +1345,7 @@ const FOOD_PROMPTS = {
   'Greek Salad':'Greek salad with feta, olives, tomato, cucumber',
   'Fondue':'Cheese fondue pot with bread on fork dipping in',
   'Schnitzel':'Golden breaded schnitzel cutlet with lemon wedge',
-  // Snacks
+  // ── SNACKS ──────────────────────────────────────────────────
   'Peanut Butter':'Jar of peanut butter with knife spreading on bread',
   'Waffle':'Golden waffle with syrup and butter, grid pattern',
   'Popcorn':'Overflowing container of fluffy popcorn, movie snack',
@@ -1096,13 +1359,14 @@ const FOOD_PROMPTS = {
   'Rice Cake':'Round white puffed rice cake, light and airy',
   'Trail Mix':'Bowl of trail mix with nuts, raisins, chocolate chips',
   'Breadstick':'Long golden breadstick with sesame seeds',
-  // Fruits
+  // ── FRUITS ──────────────────────────────────────────────────
   'Apple':'Shiny red apple with green leaf, classic fruit',
   'Banana':'Yellow banana slightly curved, bright and cheerful',
   'Strawberry':'Bright red strawberry with green leaves, seeds visible',
   'Orange':'Round bright orange with dimpled skin, green leaf',
   'Grapes':'Cluster of purple grapes on vine with green leaf',
   'Watermelon':'Slice of red watermelon with green rind and black seeds',
+  'Apricot':'Round golden-orange apricot with rosy blush, velvety skin',
   'Peach':'Fuzzy peach with pink-orange blush, soft',
   'Cherry':'Pair of bright red cherries on stems, shiny',
   'Blueberry':'Handful of dark blue blueberries, small and round',
@@ -1110,7 +1374,7 @@ const FOOD_PROMPTS = {
   'Kiwi':'Kiwi cut in half showing green flesh with black seeds',
   'Pear':'Green pear fruit with classic pear shape',
   'Lemon':'Bright yellow lemon, one slice cut showing interior',
-  // Vegetables
+  // ── VEGETABLES ──────────────────────────────────────────────
   'Carrot':'Bright orange carrot with green leafy top',
   'Broccoli':'Head of green broccoli with thick stem and florets',
   'Corn':'Ear of yellow corn with husk partially peeled',
@@ -1123,7 +1387,7 @@ const FOOD_PROMPTS = {
   'Mushroom':'White button mushroom with rounded cap',
   'Peas':'Open green pea pod showing round green peas inside',
   'Hot Pepper':'Red chili pepper, long and pointed, spicy',
-  // Desserts
+  // ── DESSERTS ────────────────────────────────────────────────
   'Cake':'Layer cake slice with frosting, decorated',
   'Cookie':'Round chocolate chip cookie, golden brown, fresh baked',
   'Pie':'Slice of fruit pie with lattice crust, golden pastry',
@@ -1133,6 +1397,833 @@ const FOOD_PROMPTS = {
   'Popsicle':'Colorful fruit popsicle on stick, frozen, dripping',
   'Gummy Bears':'Pile of colorful gummy bears in various colors',
   'Birthday Cake':'Birthday cake with lit candles, colorful frosting',
+  // ── FEELINGS ────────────────────────────────────────────────
+  'Happy':'Smiling round face with big bright eyes, joyful expression',
+  'Sad':'Round face with downturned mouth, teardrop, blue tones',
+  'Angry':'Round face with furrowed brows, red cheeks, gritting teeth',
+  'Scared':'Round face with wide eyes, open mouth, trembling expression',
+  'Tired':'Round face with droopy half-closed eyes, yawning mouth',
+  'Sick':'Round face with green tinge, thermometer, queasy expression',
+  'Bored':'Round face with flat mouth, half-lidded eyes, chin on hand',
+  'Love':'Round face with heart eyes, blushing pink cheeks, big smile',
+  'Frustrated':'Round face with clenched jaw, squinting eyes, steam from ears',
+  'Good':'Round face with thumbs up, gentle smile, content expression',
+  'Worried':'Round face with raised eyebrows, biting lip, wavy mouth',
+  'Excited':'Round face with wide sparkling eyes, big open mouth smile',
+  'Nervous':'Round face with sweat drop, wobbly smile, fidgeting',
+  'Calm':'Round face with closed eyes, peaceful smile, serene expression',
+  'Confused':'Round face with tilted head, question mark, puzzled look',
+  'Surprised':'Round face with raised eyebrows, wide open mouth, O shape',
+  'Proud':'Round face with chin up, big confident smile, chest puffed',
+  'Lonely':'Round face sitting alone, small sad expression, empty space around',
+  'Embarrassed':'Round face with bright red cheeks, covering face with hands',
+  'Hurt Feelings':'Round face with cracked heart on chest, teary eyes',
+  'Shy':'Round face half-hiding behind hands, peeking out, blushing',
+  'Silly':'Round face with tongue sticking out, crossed eyes, goofy grin',
+  'Grateful':'Round face with hands together, warm smile, glowing heart',
+  'Disappointed':'Round face with drooping expression, slumped shoulders, sigh',
+  // ── ACTIVITIES / PLAY ───────────────────────────────────────
+  'Video Games':'Game controller with colorful buttons, screen with game',
+  'Playground':'Colorful playground with slide, swings, climbing frame',
+  'Puzzle':'Colorful jigsaw puzzle pieces being assembled',
+  'Pretend Play':'Child in costume playing pretend, cape or crown',
+  'Swim':'Person swimming in blue water, splashing',
+  'Bike':'Child riding colorful bicycle, helmet on',
+  'Board Game':'Colorful board game with dice and game pieces',
+  'TV':'Television screen showing colorful cartoon',
+  'Rest':'Person lying down peacefully, eyes closed, relaxed',
+  'Movie':'Movie screen with popcorn bucket, film reel',
+  'Build':'Child building with colorful blocks, tower structure',
+  'Toys':'Collection of colorful toys, teddy bear, ball, blocks',
+  // ── SPORTS ──────────────────────────────────────────────────
+  'Soccer':'Black and white soccer ball being kicked on green field',
+  'Basketball':'Orange basketball going through hoop with net',
+  'Football':'Brown football being thrown in spiral, laces visible',
+  'Baseball':'White baseball with red stitching, bat and glove',
+  'Tennis':'Yellow tennis ball and racket on green court',
+  'Swimming':'Person swimming in pool, blue water, splashing',
+  'Gymnastics':'Gymnast doing cartwheel or handstand, flexible pose',
+  'Running':'Person running fast, legs in stride, motion lines',
+  'Cycling':'Person on bicycle, pedaling fast, helmet on',
+  'Skating':'Person ice skating or roller skating, graceful pose',
+  'Martial Arts':'Person in white martial arts uniform, karate kick',
+  'Horse Riding':'Person on horseback, riding helmet, brown horse',
+  'Volleyball':'White volleyball being spiked over net',
+  'Badminton':'Badminton shuttlecock and racket, feathered birdie',
+  'Hockey':'Hockey stick and puck on ice rink',
+  'Table Tennis':'Small paddle and ping pong ball, green table',
+  'Boxing':'Red boxing gloves, punching pose',
+  'Wrestling':'Two wrestlers grappling, athletic pose',
+  'Rock Climbing':'Person climbing rock wall, colorful holds',
+  'Weightlifting':'Person lifting barbell overhead, strong pose',
+  'Handball':'Handball being thrown toward goal',
+  'Surfing':'Person surfing on blue wave, surfboard',
+  'Skiing':'Person skiing downhill, snow, ski poles',
+  'Skateboarding':'Person on skateboard doing trick, wheels visible',
+  'Archery':'Bow and arrow, target with bullseye',
+  'Golf':'Golf club hitting white ball, green course',
+  'Lacrosse':'Lacrosse stick with ball, net pocket',
+  'Field Hockey':'Field hockey stick and ball on grass',
+  'Dance':'Person dancing with arms raised, graceful movement',
+  'Fencing':'Person in white fencing outfit with foil sword',
+  'Cricket':'Cricket bat and red ball, wickets behind',
+  // ── MUSIC ───────────────────────────────────────────────────
+  'Listen':'Ear with sound waves coming in, music notes nearby',
+  'Sing':'Person with open mouth singing, music notes floating',
+  'Drums':'Drum set with drumsticks, colorful drums',
+  'Piano':'Black and white piano keys, musical instrument',
+  'Guitar':'Acoustic guitar with strings, wooden body',
+  'Trumpet':'Golden brass trumpet, shiny, musical instrument',
+  'Violin':'Brown wooden violin with bow, classical instrument',
+  'Quiet':'Finger over lips, shh gesture, quiet symbol',
+  'Louder':'Speaker with large sound waves, volume up arrow',
+  'Next Song':'Fast forward button with music note, skip icon',
+  'Stop Music':'Stop button square with music note crossed out',
+  'Play Music':'Play button triangle with music notes floating',
+  'Pause Music':'Pause button with two vertical bars, music note',
+  'Saxophone':'Golden saxophone, curved brass instrument',
+  'Banjo':'Round banjo with strings, folk instrument',
+  'Radio':'Retro radio with antenna, tuning dial, sound waves',
+  'Karaoke':'Microphone with colorful music notes, stage lights',
+  'Headphones On':'Over-ear headphones, cushioned pads, music notes',
+  'Sheet Music':'Sheet of paper with musical staff and notes',
+  'My Favorite Song':'Heart shape with music note inside, sparkles',
+  'Shuffle':'Crossed arrows shuffle icon with music notes',
+  'Repeat':'Circular repeat arrow icon with music note',
+  'Gospel':'Gospel choir hands raised, joyful music notes',
+  'Hip Hop':'Boombox or turntable with music notes, urban style',
+  'Classical':'Orchestra conductor baton with classical music notes',
+  // ── OUTDOOR ─────────────────────────────────────────────────
+  'Camping':'Tent in nature with campfire, trees, stars above',
+  'Hiking':'Person hiking with backpack on trail, mountains',
+  'Fishing':'Fishing rod with line in water, fish on hook',
+  'Mountain':'Tall mountain peak with snow cap, blue sky',
+  'Nature Walk':'Person walking on path through trees, peaceful',
+  'Climbing':'Person climbing up rock face, reaching for handhold',
+  'Garden':'Colorful garden with flowers, watering can, soil',
+  'Bike Ride':'Person riding bike on path through nature',
+  'Bird Watching':'Binoculars pointed at colorful bird on branch',
+  'Picnic':'Picnic blanket with basket, food spread out on grass',
+  'Stargazing':'Person looking up at night sky full of stars',
+  'Kayaking':'Person paddling kayak on calm blue water',
+  // ── CREATIVE ────────────────────────────────────────────────
+  'Painting':'Paintbrush on canvas with colorful paint strokes',
+  'Drawing':'Pencil drawing on paper, sketch visible',
+  'Coloring':'Crayons coloring in a coloring book page',
+  'Cutting':'Safety scissors cutting along dotted line on paper',
+  'Knitting':'Knitting needles with colorful yarn, knitted fabric',
+  'Sewing':'Needle and thread sewing fabric, thimble',
+  'Building Blocks':'Colorful building blocks stacked in tower',
+  'Puzzles':'Colorful jigsaw puzzle pieces being put together',
+  'Drama':'Theater masks, happy and sad face, stage curtain',
+  'Photography':'Camera with flash, taking a photo',
+  'Writing Stories':'Notebook with pencil, story text visible on page',
+  'Puppet Show':'Colorful hand puppet on stage, curtain backdrop',
+  'Clay':'Hands molding colorful clay, sculpting shape',
+  'Crafts':'Craft supplies, glue, scissors, paper, colorful materials',
+  // ── CULTURAL EVENTS ─────────────────────────────────────────
+  'Birthday Party':'Birthday cake with candles, balloons, party hat',
+  'Halloween':'Jack-o-lantern pumpkin with spooky face, bat',
+  'Christmas':'Christmas tree with ornaments, star on top, presents',
+  'Hanukkah':'Menorah with nine candles lit, blue and gold',
+  'Diwali':'Oil lamp diya with flame, colorful rangoli patterns',
+  'Eid':'Crescent moon and star, mosque silhouette, festive',
+  'Lunar New Year':'Red lantern, golden dragon, lucky red envelope',
+  'Thanksgiving':'Roasted turkey on platter, autumn leaves, cornucopia',
+  'Easter':'Decorated Easter eggs in basket, bunny ears',
+  'Fourth of July':'Fireworks bursting in red white and blue, sparklers',
+  'Kwanzaa':'Kinara with seven candles, red black and green',
+  'New Year':'Clock at midnight, confetti, fireworks, party horn',
+  'St. Patrick\'s Day':'Green shamrock, pot of gold, rainbow, leprechaun hat',
+  'Valentine\'s Day':'Red heart with arrow, roses, love letter',
+  'Festival':'Colorful festival bunting, music, dancing crowd',
+  'Concert':'Stage with spotlights, microphone, cheering crowd',
+  'Carnival':'Colorful carnival mask, ferris wheel, confetti',
+  'Ramadan':'Crescent moon, mosque, lantern, dates on plate',
+  'Passover':'Seder plate with symbolic foods, matzo bread',
+  'Día de los Muertos':'Colorful sugar skull with flowers, marigolds',
+  'Quinceañera':'Princess crown tiara, pink dress, ballroom decoration',
+  'Holi':'Colorful powder clouds, hands throwing bright colors',
+  'Graduation':'Graduation cap and diploma, tassel, celebration',
+  'Wedding':'Wedding rings, bouquet of flowers, cake topper',
+  'Baby Shower':'Baby bottle, rattle, stork with bundle, pastel colors',
+  // ── SOCIAL ──────────────────────────────────────────────────
+  'Friend':'Two children standing together smiling, arm around shoulder',
+  'Teacher':'Person at chalkboard with pointer, glasses, friendly',
+  'Talk':'Two speech bubbles overlapping, conversation',
+  'Leave Me Alone':'Person with hand up in stop gesture, turning away',
+  'Come Here':'Hand beckoning forward, welcoming wave gesture',
+  'Go Away':'Hand pointing away, shooing motion',
+  'Good Job':'Thumbs up with sparkles, gold star',
+  'Share':'Two hands exchanging an object between them',
+  'Take Turns':'Two arrows in circle, alternating turn symbol',
+  'High Five':'Two hands meeting in high five, impact lines',
+  'Fist Bump':'Two fists bumping together, friendly gesture',
+  'Sorry':'Person with apologetic expression, hands together',
+  'Excuse Me':'Person politely raising hand, gentle wave',
+  'You\'re Welcome':'Person with open welcoming gesture, warm smile',
+  'I Don\'t Know':'Person shrugging shoulders, palms up, question mark',
+  'Watch Me':'Pointing at eyes then outward, look at me gesture',
+  'Look At This':'Finger pointing at something interesting, exclamation',
+  'That\'s Funny':'Person laughing, ha ha text, happy tears',
+  'Not Fair':'Arms crossed, frowning face, unequal scale symbol',
+  'I Need Space':'Person with arms out creating space, personal bubble',
+  'Wait Your Turn':'Hand up in wait gesture, clock or number in queue',
+  // ── FAMILY ──────────────────────────────────────────────────
+  'Mom':'Woman figure with warm smile, mother symbol',
+  'Dad':'Man figure with warm smile, father symbol',
+  'Sister':'Girl figure with hair bow or ponytail, sibling',
+  'Brother':'Boy figure, sibling, standing beside',
+  'Grandma':'Elderly woman with glasses, warm grandma smile',
+  'Grandpa':'Elderly man with gentle smile, grandfather figure',
+  'Baby':'Small baby in onesie, round face, pacifier',
+  'Cousin':'Child figure with family tree connection line',
+  'Aunt':'Woman figure, family member, warm expression',
+  'Uncle':'Man figure, family member, friendly expression',
+  'Great Grandma':'Very elderly woman with white hair, loving smile',
+  'Great Grandpa':'Very elderly man with white hair, gentle expression',
+  'Stepmom':'Woman figure with heart, blended family symbol',
+  'Stepdad':'Man figure with heart, blended family symbol',
+  'Stepsister':'Girl figure with heart connection, blended family',
+  'Stepbrother':'Boy figure with heart connection, blended family',
+  'Godmother':'Woman figure with halo or star, special guardian',
+  'Godfather':'Man figure with halo or star, special guardian',
+  'Twin':'Two identical figures side by side, matching',
+  'Niece':'Young girl figure, family tree branch connection',
+  'Nephew':'Young boy figure, family tree branch connection',
+  'Babysitter':'Person watching over small child, caring gesture',
+  'Family':'Group of diverse people together, heart above, family unit',
+  'Grandma\'s House':'Cozy house with grandmother figure at door, warm',
+  'Abuela':'Elderly Latina woman, warm abuela smile, shawl',
+  'Abuelo':'Elderly Latino man, warm abuelo smile, mustache',
+  'Mami':'Latina mother figure, warm loving expression',
+  'Papi':'Latino father figure, warm loving expression',
+  'Foster Parent':'Adult figure with child, heart and home symbol',
+  'Caregiver':'Person helping another person, caring supportive gesture',
+  // ── COMMUNITY ───────────────────────────────────────────────
+  'Doctor':'Doctor in white coat with stethoscope, friendly',
+  'Police':'Police officer in uniform with badge, friendly',
+  'Firefighter':'Firefighter in red helmet and coat, fire truck',
+  'Chef':'Chef in white hat and apron, holding spatula',
+  'Mail Carrier':'Mail carrier in uniform with letters and mailbag',
+  'Mechanic':'Mechanic with wrench, overalls, fixing car',
+  'Farmer':'Farmer in overalls with pitchfork, barn behind',
+  'Nurse':'Nurse in scrubs with medical cross, caring expression',
+  'Pilot':'Pilot in uniform with captain hat, airplane behind',
+  'Builder':'Construction worker with hard hat, hammer, building',
+  'Artist':'Artist with paintbrush, palette, beret, canvas',
+  'Principal':'Person at school desk, professional, school behind',
+  'Boss':'Person in office attire, briefcase, confident pose',
+  'Scientist':'Scientist with lab coat, goggles, beaker with bubbles',
+  'Astronaut':'Astronaut in space suit, helmet, stars around',
+  'Judge':'Judge in black robe with gavel, courtroom',
+  'Singer':'Person singing into microphone, music notes floating',
+  'Coach':'Person with whistle and clipboard, athletic wear',
+  'Therapist':'Person in chair listening, calm supportive expression',
+  // ── QUESTIONS ───────────────────────────────────────────────
+  'What':'Large question mark with curious expression, wondering',
+  'Where':'Magnifying glass searching, map pin, location marker',
+  'When':'Clock face with question mark, time concept',
+  'Who':'Person silhouette with question mark above head',
+  'Why':'Child with tilted head, thinking bubble, question mark',
+  'How':'Gear or lightbulb with question mark, figuring out',
+  'How Many':'Numbers 1-2-3 with question mark, counting fingers',
+  'What Is It':'Finger pointing at mystery object with question mark',
+  'Where Is It':'Eyes searching around, magnifying glass, question mark',
+  'What Time':'Clock face with hands pointing, question mark',
+  'Can I':'Person with raised hand asking permission, hopeful face',
+  'Is It':'Two options with question mark between, comparing',
+  // ── GREETINGS ───────────────────────────────────────────────
+  'Hello':'Friendly waving hand, bright smile, greeting gesture',
+  'Hi':'Raised hand wave, casual friendly greeting',
+  'Good Morning':'Sun rising over horizon, bright rays, cheerful',
+  'Good Afternoon':'Sun high in sky, bright daylight, warm',
+  'Good Night':'Moon and stars, sleeping face, peaceful dark sky',
+  'Goodbye':'Hand waving farewell, person walking away',
+  'See You Later':'Person waving with clock nearby, until next time',
+  'Nice To Meet You':'Two people shaking hands, friendly smiles',
+  'How Are You':'Person with questioning gesture, caring expression',
+  'I Am Good':'Thumbs up with bright smile, positive expression',
+  'Bless You':'Person sneezing, another person saying bless you, kind',
+  'Hola':'Waving hand with Spanish flag colors, friendly greeting',
+  'Salaam':'Person with hand on heart, peaceful greeting gesture',
+  'Namaste':'Hands pressed together in prayer position, respectful bow',
+  'Shalom':'Star of David with peace dove, greeting',
+  'Welcome':'Open arms gesture, doorway, warm inviting expression',
+  // ── SOCIAL PHRASES ──────────────────────────────────────────
+  'Please':'Hands pressed together politely, pleading expression',
+  'Thank You':'Person bowing slightly, grateful hands, warm smile',
+  'OK':'Hand making OK sign, circle with fingers',
+  'Yes Please':'Nodding head with thumbs up, eager expression',
+  'No Thank You':'Gentle hand wave declining, polite head shake',
+  'Can I Play':'Child reaching toward playground or toys, hopeful',
+  'My Turn':'Person pointing to self, arrow pointing at them',
+  'Your Turn':'Person pointing to other, arrow pointing outward',
+  'Want To Share':'Two children with toy between them, offering gesture',
+  'I Like You':'Person pointing to self then heart then another person',
+  'What Happened':'Person with surprised face, hands up questioning',
+  'I Dont Know':'Shrugging shoulders, palms up, puzzled expression',
+  'I Have Idea':'Lightbulb above head, bright expression, finger raised',
+  'Thats Not Fair':'Arms crossed, frowning, unbalanced scale',
+  'Thats Funny':'Person laughing hard, tears of joy, ha ha',
+  'Im Embarrassed':'Person covering face with hands, red cheeks',
+  'Its A Secret':'Finger over lips, shh gesture, whisper',
+  'I Miss You':'Person looking at photo, heart, longing expression',
+  'I Love You':'Heart shape with hands, warm glowing expression',
+  'I Promise':'Pinky finger raised for pinky promise, earnest face',
+  'I Want':'Person reaching hand out toward desired object',
+  'I Need':'Person with urgent expression, hands out, essential',
+  'Can I Have':'Open hands reaching forward, hopeful asking expression',
+  'Tell Me':'Ear leaning in to listen, speech bubble incoming',
+  'Read To Me':'Open book with person listening, story time',
+  'Sing To Me':'Musical notes with person listening, warm',
+  'Help Me':'Person raising hand for help, calling out gesture',
+  'I Am Happy':'Big bright smile, sparkle eyes, joyful pose',
+  'I Am Sad':'Tearful face, drooping posture, blue tones',
+  'I Am Mad':'Red face, furrowed brows, clenched fists',
+  'I Am Scared':'Wide frightened eyes, trembling, hiding behind hands',
+  // ── BODY ────────────────────────────────────────────────────
+  'Bathroom':'Toilet symbol, bathroom door sign, universal',
+  'Hurt':'Person pointing to body part in pain, ouch expression',
+  'Sleepy':'Person yawning, droopy eyes, pillow, zzz bubbles',
+  'Hot':'Person fanning self, sun, sweat drops, red face',
+  'Cold':'Person shivering, blue tinge, arms hugging self',
+  'Wash Hands':'Hands under running water with soap bubbles',
+  'Brush Teeth':'Toothbrush with toothpaste brushing teeth, sparkle',
+  'Change Clothes':'Person changing shirt, fresh clothes nearby',
+  'Hungry':'Person rubbing tummy, empty plate, growling stomach',
+  'Thirsty':'Person reaching for glass of water, dry lips',
+  // ── HYGIENE ─────────────────────────────────────────────────
+  'Bath':'Bathtub with bubbles, rubber duck, warm water',
+  'Shower':'Showerhead with water streaming down, steam',
+  'Lotion':'Lotion bottle with drops, moisturizing hands',
+  'Wash Face':'Person washing face with water and soap, washcloth',
+  'Hair':'Hairbrush brushing through hair, clean and neat',
+  'Tissue':'Box of tissues with one pulled out, soft white',
+  'Band-Aid':'Adhesive bandage strip, beige with pad, first aid',
+  'Nails':'Fingernails being trimmed with nail clipper',
+  'Blow Nose':'Person blowing nose into tissue, gentle',
+  // ── MEDICAL ─────────────────────────────────────────────────
+  'Medicine':'Medicine bottle with pills, prescription label',
+  'Fever':'Thermometer showing high temperature, red, hot',
+  'Throw Up':'Person feeling nauseous, green face, stomach upset',
+  'Dizzy':'Person with spiral eyes, stars circling head',
+  'Bone Hurts':'Bone with crack and pain lines, X-ray style',
+  'Check Up':'Doctor with stethoscope checking patient, medical',
+  'Shot':'Syringe needle, medical injection, band-aid nearby',
+  'Hard To Breathe':'Person gasping, hands on chest, difficulty breathing',
+  'Allergic':'Person with hives or rash, sneezing, allergen nearby',
+  'Seizure':'Person lying down with alert symbol, medical emergency',
+  'Inhaler':'Asthma inhaler device, blue, medical breathing aid',
+  'Wheelchair':'Wheelchair symbol, mobility aid, blue',
+  'Glasses':'Pair of eyeglasses, clear lenses, frame',
+  'Hearing Aid':'Small hearing aid device behind ear, sound waves',
+  'Feeding Tube':'Medical feeding tube setup, nutrition bag',
+  'Oxygen':'Oxygen tank with nasal cannula, breathing aid',
+  // ── BODY PARTS ──────────────────────────────────────────────
+  'Head':'Round head outline, front view, simple clear',
+  'Eyes':'Pair of eyes with pupils, eyelashes, looking forward',
+  'Ears':'Single ear, outer ear shape, simple anatomical',
+  'Nose':'Simple nose front view, nostrils visible',
+  'Mouth':'Open mouth with lips and teeth visible',
+  'Teeth':'Row of white teeth, bright smile, dental',
+  'Tongue':'Tongue sticking out, pink, taste buds',
+  'Chest':'Torso front view, chest area highlighted',
+  'Tummy':'Round tummy, belly button visible, front view',
+  'Arm':'Single arm extended, hand at end, muscles',
+  'Hand':'Open hand with five fingers spread, palm view',
+  'Fingers':'Five fingers spread apart, counting pose',
+  'Leg':'Single leg from hip to foot, standing',
+  'Foot':'Single foot from side view, toes visible',
+  'Toes':'Five toes on foot, close up view',
+  'Back':'Person from behind, back highlighted',
+  'Heart':'Anatomical heart or red heart shape, pumping',
+  'Brain':'Pink brain with folds, thinking organ, smart',
+  'Lungs':'Pair of lungs, breathing, pink, anatomical',
+  'Bones':'Skeleton bone, white, X-ray style, strong',
+  'Blood':'Red blood drop, circular cells, medical',
+  'Chin':'Face profile with chin pointed out, jawline',
+  'Neck':'Neck and throat area, front view, simple',
+  'Elbow':'Bent arm showing elbow joint, pointing',
+  'Knee':'Bent leg showing knee joint, anatomical',
+  'Penis':'Simple anatomical diagram, clinical style, body part',
+  'Vagina':'Simple anatomical diagram, clinical style, body part',
+  'Bottom':'Simple rear view outline, clinical body part',
+  'Bottom Hurts':'Bottom area with pain lines, discomfort indicator',
+  'Private Parts':'Body outline with private areas indicated, clinical',
+  'My Private Parts Hurt':'Body outline with pain indicator on private area, clinical',
+  // ── HEALTH ──────────────────────────────────────────────────
+  'Headache':'Person holding head in pain, throbbing lines',
+  'Stomach Ache':'Person holding tummy, pain lines on stomach',
+  'Sneeze':'Person sneezing, droplets, tissue nearby',
+  'Cough':'Person coughing, hand over mouth, sound waves',
+  'Bleeding':'Cut on skin with red blood drops, band-aid nearby',
+  'Too Hot':'Person sweating, sun blazing, fanning self',
+  'Too Cold':'Person shivering, snowflakes, blue tinge',
+  'Toothache':'Person holding jaw, tooth with pain lines',
+  'Ear Ache':'Person holding ear, pain lines from ear',
+  'Eyes Hurt':'Person rubbing eyes, pain lines from eyes',
+  'Sore Throat':'Person holding throat, red inflammation visible',
+  'Runny Nose':'Person with tissue, dripping nose, sniffles',
+  'Earache':'Person holding ear in pain, red ear, throbbing',
+  'Rash':'Skin with red bumpy rash spots, itchy',
+  'Itch':'Person scratching arm, red irritated spot',
+  'Nauseous':'Person with green face, hand on stomach, queasy',
+  // ── SCHOOL ──────────────────────────────────────────────────
+  'Raise Hand':'Child at desk with hand raised high, eager',
+  'Lunch':'Lunch tray with food, cafeteria setting',
+  'Go Home':'School building with arrow pointing to house',
+  'Do Not Understand':'Person with confused expression, question marks',
+  'Sit Down':'Chair with downward arrow, sitting gesture',
+  'Put Away':'Hands placing object into storage bin or shelf',
+  'Partner':'Two children working together at desk, teamwork',
+  'Break':'Person resting, clock showing break time',
+  'Line Up':'Children standing in single file line, orderly',
+  'Be Quiet':'Finger over lips, shh symbol, quiet classroom',
+  'Clean Up':'Hands picking up toys and supplies, tidy',
+  'Circle Time':'Children sitting in circle on floor, teacher reading',
+  'Sensory Break':'Person in calm corner with fidget toy, peaceful',
+  'Calm Corner':'Cozy corner with cushion, calming poster, quiet space',
+  'First Then':'Two boxes with arrow, first task then reward',
+  'Token Board':'Board with token slots filling up, reward chart',
+  'Visual Schedule':'Picture schedule with daily tasks in order',
+  'Choice Board':'Board with multiple picture options to choose from',
+  // ── ACADEMIC ────────────────────────────────────────────────
+  'Reading':'Open book with child reading, text visible on pages',
+  'Math':'Numbers and plus sign, simple equation, calculator',
+  'Writing':'Pencil writing on lined paper, letters forming',
+  'Art':'Paint palette with colorful paints, paintbrush, easel',
+  'Music Class':'Music notes on staff, children singing, instruments',
+  'Gym':'Gymnasium with basketball hoop, children exercising',
+  'Science':'Beaker with bubbling liquid, magnifying glass, atoms',
+  'Social Studies':'Globe with diverse children around it, map',
+  'Numbers':'Bold colorful numbers 1-2-3, counting blocks',
+  'Calendar':'Monthly calendar with dates, circled date, schedule',
+  'Computer':'Desktop computer with screen, keyboard, mouse',
+  'Experiment':'Test tubes and beakers with colorful liquids, goggles',
+  'Speech':'Person talking with speech bubble, therapy session',
+  'Test':'Paper with checkmarks and pencil, quiz or exam',
+  'Homework':'Notebook and pencil at home desk, backpack nearby',
+  'Assembly':'Large group gathered in auditorium, microphone, stage',
+  // ── SUPPLIES ────────────────────────────────────────────────
+  'Pencil':'Yellow pencil with eraser, sharp point, writing',
+  'Pen':'Blue ballpoint pen, click top, writing instrument',
+  'Ruler':'Straight ruler with measurement marks, inches or cm',
+  'Scissors':'Pair of safety scissors, colorful handles, open blades',
+  'Notebook':'Spiral notebook with lined pages, cover visible',
+  'Backpack':'Colorful school backpack with zippers, shoulder straps',
+  'Book':'Closed hardcover book, colorful cover, pages visible',
+  'Crayons':'Box of crayons with rainbow colors showing, wax',
+  'Paint Brush':'Paintbrush with colorful paint on bristles',
+  'Paper Clip':'Silver paper clip, bent wire, office supply',
+  'Paper':'Blank white sheet of paper, lined or plain',
+  'Folder':'Colorful file folder, documents inside, organized',
+  'Glue':'Glue bottle or glue stick, white adhesive, craft',
+  'Eraser':'Pink rectangular eraser, pencil shavings, clean',
+  // ── BEDTIME ─────────────────────────────────────────────────
+  'Story':'Open storybook with pictures, bedtime reading',
+  'Goodnight':'Moon with sleeping face, stars twinkling, peaceful',
+  'Hug':'Two figures embracing warmly, comfort gesture',
+  'Light Off':'Light switch in off position, dark room',
+  'Night Light':'Small glowing night light plugged in, soft warm glow',
+  'Stuffed Animal':'Cuddly teddy bear, soft plush toy, huggable',
+  'Bed':'Cozy bed with pillow and blanket, ready for sleep',
+  'Pajamas':'Pajama set with stars or moon pattern, sleepwear',
+  'Blanket':'Soft folded blanket, warm and cozy, comforting',
+  'Door Open':'Door slightly open, light coming through crack',
+  // ── ANIMALS ─────────────────────────────────────────────────
+  'Dog':'Friendly golden dog sitting, wagging tail, happy face',
+  'Cat':'Cute cat sitting, whiskers, pointy ears, fluffy tail',
+  'Fish':'Colorful tropical fish swimming, fins and scales',
+  'Bird':'Small colorful songbird on branch, chirping',
+  'Bunny':'Fluffy white bunny with long ears, pink nose, hopping',
+  'Hamster':'Round fluffy hamster with stuffed cheeks, tiny paws',
+  'Horse':'Brown horse standing proud, mane flowing, strong',
+  'Cow':'Black and white spotted cow, bell, friendly face',
+  'Pig':'Pink pig with curly tail, snout, round body',
+  'Sheep':'Fluffy white sheep with wool coat, gentle face',
+  'Chicken':'Red-combed chicken, feathers, pecking, farm bird',
+  'Lion':'Majestic lion with golden mane, fierce but friendly',
+  'Elephant':'Large gray elephant with trunk raised, big ears',
+  'Giraffe':'Tall giraffe with spotted pattern, long neck',
+  'Bear':'Brown bear standing, round ears, fluffy, strong',
+  'Monkey':'Playful monkey swinging, long tail, funny face',
+  'Snake':'Colorful coiled snake, forked tongue, slithering',
+  'Turtle':'Green turtle with patterned shell, slow and steady',
+  'Butterfly':'Colorful butterfly with patterned wings, flying',
+  'Frog':'Green frog sitting on lily pad, big eyes, webbed feet',
+  'Dolphin':'Gray dolphin leaping from blue water, playful',
+  'Shark':'Blue-gray shark swimming, dorsal fin, teeth showing',
+  'Duck':'Yellow duck swimming, orange bill, water ripples',
+  'Parrot':'Colorful parrot with red green blue feathers, perched',
+  'Penguin':'Black and white penguin, orange feet, waddling',
+  'Fox':'Red fox with bushy tail, pointed ears, clever face',
+  'Panda':'Black and white panda eating bamboo, round face',
+  'Unicorn':'White unicorn with rainbow mane, golden horn, magical',
+  'Bee':'Yellow and black striped bee, wings buzzing, flower',
+  'Ladybug':'Red ladybug with black spots, tiny legs, on leaf',
+  'Tiger':'Orange tiger with black stripes, fierce but friendly',
+  'Camel':'Tan camel with humps, desert background, walking',
+  'Kangaroo':'Brown kangaroo with joey in pouch, hopping',
+  'Crocodile':'Green crocodile with big teeth, scaly, in water',
+  'Flamingo':'Pink flamingo standing on one leg, graceful',
+  'Peacock':'Peacock with colorful tail feathers spread, dazzling',
+  'Octopus':'Purple octopus with eight tentacles, underwater',
+  'Whale':'Large blue whale spouting water, ocean swimming',
+  'Deer':'Brown deer with antlers, gentle eyes, forest',
+  'Wolf':'Gray wolf howling at moon, fluffy, wild',
+  'Owl':'Round owl with big eyes, perched on branch, nocturnal',
+  // ── PETS ────────────────────────────────────────────────────
+  'Lizard':'Small green lizard with scaly skin, long tail',
+  'Service Dog':'Dog in service vest, well-trained, calm, working',
+  'Feed Pet':'Hand pouring food into pet bowl, feeding time',
+  'Water Pet':'Hand filling water bowl for pet, fresh water',
+  'Walk Dog':'Person walking dog on leash, outdoor path',
+  'Pet':'Hand gently petting animal on head, affectionate touch',
+  // ── PLACES ──────────────────────────────────────────────────
+  'Hospital':'White hospital building with red cross, ambulance',
+  'Store':'Storefront with awning, open sign, shopping bags',
+  'Park':'Green park with trees, bench, playground, sunny',
+  'Library':'Library building with books on shelves, quiet reading',
+  'Restaurant':'Restaurant table with plates, waiter, dining',
+  'Beach':'Sandy beach with blue waves, umbrella, seashells',
+  'Pool':'Swimming pool with blue water, diving board, lane lines',
+  'Amusement Park':'Ferris wheel, roller coaster, carnival lights',
+  'Zoo':'Zoo entrance with animal enclosures, giraffes, elephants',
+  'Grocery Store':'Grocery store with shopping cart, produce, aisles',
+  'Pizza Place':'Pizza restaurant with pizza oven, tables, menu',
+  // ── HOME PLACES ─────────────────────────────────────────────
+  'Bedroom':'Cozy bedroom with bed, nightstand, lamp, pillow',
+  'Living Room':'Living room with couch, TV, coffee table, rug',
+  'Kitchen':'Kitchen with stove, fridge, countertop, pots and pans',
+  'Front Door':'House front door with doorbell, welcome mat',
+  'Backyard':'Backyard with grass, fence, swing set, garden',
+  'Garage':'Garage with car inside, tools on wall, workbench',
+  'Basement':'Basement stairs going down, storage boxes, laundry',
+  'Dining Room':'Dining table set with plates, chairs, centerpiece',
+  'Laundry Room':'Washer and dryer with laundry basket, clothes',
+  // ── SCHOOL PLACES ───────────────────────────────────────────
+  'Classroom':'Classroom with desks, chalkboard, teacher desk',
+  'Cafeteria':'Cafeteria with lunch tables, food line, trays',
+  'Playground':'Outdoor playground with swings, slide, climbing bars',
+  'Office':'School office with desk, computer, principal chair',
+  'Music Room':'Room with musical instruments, piano, sheet music stands',
+  'Art Room':'Art room with easels, paint supplies, student artwork',
+  'Science Lab':'Science lab with beakers, microscope, safety goggles',
+  'Bus Stop':'School bus stop sign, children waiting, yellow bus',
+  'Nurse Office':'Nurse office with cot, first aid kit, thermometer',
+  'Track':'Running track oval, lanes marked, outdoor field',
+  // ── COMMUNITY PLACES ────────────────────────────────────────
+  'Bank':'Bank building with columns, ATM, money symbol',
+  'Barber':'Barber shop with striped pole, chair, scissors',
+  'Dentist':'Dental office with dentist chair, tooth symbol',
+  'Movie Theater':'Movie theater with big screen, seats, popcorn',
+  'Circus':'Circus tent with stripes, clown, performing animals',
+  'Stadium':'Large stadium with field, seats, scoreboard, lights',
+  'Fire Station':'Fire station with red fire truck, station doors',
+  'Police Station':'Police station building with badge symbol, patrol car',
+  'Post Office':'Post office with mailbox, stamps, packages',
+  'Gas Station':'Gas station with fuel pumps, car refueling',
+  // ── WORSHIP ─────────────────────────────────────────────────
+  'Church':'Church building with steeple, cross, stained glass',
+  'Mosque':'Mosque with dome and minaret, crescent moon',
+  'Synagogue':'Synagogue with Star of David, menorah symbol',
+  'Temple':'Temple with ornate roof, columns, prayer',
+  'Place of Worship':'Generic worship building with diverse symbols',
+  'Gurdwara':'Sikh gurdwara with Khanda symbol, golden dome',
+  // ── CLOTHING ────────────────────────────────────────────────
+  'Shirt':'Colorful t-shirt laid flat, casual top, simple',
+  'Pants':'Pair of blue jeans, denim pants, folded',
+  'Dress':'Pretty dress on hanger, colorful pattern, flowing',
+  'Jacket':'Zip-up jacket or coat, warm outerwear',
+  'Socks':'Pair of colorful socks, striped or patterned',
+  'Shoes':'Pair of sneakers, colorful, tied laces',
+  'Hat':'Baseball cap or sun hat, brim, colorful',
+  'Gloves':'Pair of warm gloves, winter hand covering',
+  'Shorts':'Pair of casual shorts, summer wear, comfortable',
+  'Swimsuit':'Colorful swimsuit, beach or pool wear',
+  'Scarf':'Knitted scarf wrapped, warm winter accessory',
+  'Sandals':'Open-toe sandals with straps, summer footwear',
+  'Boots':'Pair of boots, tall, sturdy, rain or winter',
+  'Underwear':'Simple underwear, undergarments, basic clothing',
+  'Tie':'Necktie in solid color, formal wear accessory',
+  'Tank Top':'Sleeveless tank top, casual summer shirt',
+  'Robe':'Soft bathrobe, terry cloth, morning wear',
+  'Flip Flops':'Pair of flip flop sandals, casual beach shoes',
+  'Coat':'Heavy winter coat, warm, buttoned, long',
+  'Vest':'Button-up vest over shirt, layered clothing',
+  'Sari':'Colorful draped sari fabric, South Asian garment',
+  'Hijab':'Head covering hijab, modest fashion, elegant',
+  'Crown':'Golden crown with jewels, royal headpiece',
+  'Watch':'Wristwatch on wrist, clock face, time accessory',
+  'Ring':'Golden ring on finger, band, simple jewelry',
+  'Necklace':'Necklace with pendant around neck, jewelry',
+  'Purse':'Handbag or purse with strap, fashion accessory',
+  // ── COLORS & SHAPES ─────────────────────────────────────────
+  'Red':'Bold red color swatch, bright vibrant red square',
+  'Yellow':'Bright yellow color swatch, sunny golden square',
+  'Green':'Fresh green color swatch, nature green square',
+  'Blue':'Clear blue color swatch, sky blue square',
+  'Purple':'Rich purple color swatch, royal violet square',
+  'Pink':'Soft pink color swatch, light rosy square',
+  'Brown':'Warm brown color swatch, earthy chocolate square',
+  'Black':'Deep black color swatch, dark solid square',
+  'White':'Clean white color swatch with thin border, bright',
+  'Diamond':'Diamond geometric shape, four-sided, tilted square',
+  'Square':'Perfect square shape, four equal sides, geometric',
+  'Triangle':'Triangle shape with three sides, geometric, pointed',
+  'Circle':'Perfect circle shape, round, geometric',
+  'Rectangle':'Rectangle shape, elongated, four sides, geometric',
+  'Star':'Five-pointed star shape, bright yellow, shining',
+  'Rainbow':'Colorful rainbow arc with all seven colors, bright',
+  // ── TIME WORDS ──────────────────────────────────────────────
+  'Today':'Calendar with today circled, sun shining on current day',
+  'Tomorrow':'Calendar with arrow pointing to next day, future',
+  'Yesterday':'Calendar with arrow pointing to previous day, past',
+  'Morning':'Sun rising over horizon, dawn, bright orange sky',
+  'Afternoon':'Sun high in sky, bright daylight, warm midday',
+  'Night':'Dark sky with moon and stars, nighttime scene',
+  'Now':'Bold clock showing current time, exclamation, present',
+  'Later':'Clock with forward arrow, postponing, future time',
+  'Soon':'Clock with short forward arrow, almost time, nearby',
+  'Wait':'Hand up in stop gesture, clock ticking, patience',
+  'Finished':'Checkmark in circle, completed task, done',
+  'Before':'Arrow pointing left or backward on timeline',
+  'After':'Arrow pointing right or forward on timeline',
+  'First':'Number 1 with gold medal, first in sequence',
+  'Then':'Arrow connecting two events, next step in sequence',
+  'Last':'Final position marker, finish line, end of sequence',
+  // ── DESCRIBING WORDS ────────────────────────────────────────
+  'Big':'Large elephant next to tiny mouse, size comparison',
+  'Small':'Tiny ladybug on big leaf, miniature, little',
+  'Fast':'Racing car with speed lines, blur, zooming',
+  'Slow':'Turtle moving slowly, taking time, gradual',
+  'Strong':'Person flexing muscles, powerful arm, mighty',
+  'Soft':'Fluffy cloud or cotton ball, gentle touch, tender',
+  'Hard':'Solid rock or brick, tough surface, rigid',
+  'Wet':'Water droplets splashing, puddle, dripping',
+  'Dry':'Cracked dry ground, desert, parched surface',
+  'New':'Shiny new object with sparkle, fresh, unwrapped',
+  'Old':'Worn vintage item, aged, patina, antique',
+  'Nice':'Smiling face with heart, kind gesture, pleasant',
+  'Mean':'Angry face with sharp features, unkind expression',
+  'Clean':'Sparkling clean surface, shine lines, spotless',
+  'Dirty':'Muddy splotches, messy stains, grimy',
+  'Loud':'Large speaker with big sound waves, booming',
+  'Funny':'Person laughing with ha ha text, comedic',
+  'Scary':'Spooky ghost or monster, frightening, dark shadows',
+  'Pretty':'Beautiful flower in bloom, attractive, lovely colors',
+  'Ugly':'Grumpy troll or monster face, unattractive, warty',
+  // ── ACTION WORDS ────────────────────────────────────────────
+  'Walk':'Person walking, one foot in front of other, casual stride',
+  'Run':'Person running fast, legs in full stride, motion lines',
+  'Jump':'Person jumping high in air, arms up, airborne',
+  'Climb':'Person climbing ladder or rock wall, reaching up',
+  'Hold':'Hands holding onto object firmly, gripping',
+  'Drop':'Hands releasing object falling down, letting go',
+  'Push':'Person pushing heavy object forward, effort',
+  'Pull':'Person pulling rope or handle toward self',
+  'Cook':'Person at stove stirring pot, chef hat, cooking',
+  'Cut':'Scissors or knife cutting, slicing action',
+  'Think':'Person with thought bubble, chin resting on hand',
+  'Smile':'Face with big bright smile, happy expression, teeth showing',
+  // ── WEATHER ─────────────────────────────────────────────────
+  'Sunny':'Bright yellow sun with rays, clear blue sky',
+  'Rainy':'Dark cloud with rain drops falling, puddles',
+  'Cloudy':'Fluffy gray clouds covering sky, overcast',
+  'Snowy':'Snowflakes falling from cloud, white ground, winter',
+  'Windy':'Trees bending in wind, leaves blowing, swirling air',
+  'Storm':'Dark cloud with lightning bolt, thunder, heavy rain',
+  'Hot Outside':'Blazing sun, thermometer showing high, heat waves',
+  'Cold Outside':'Snowflakes, thermometer showing low, icicles',
+  'Foggy':'Misty hazy scene, low visibility, soft gray',
+  // ── NUMBERS ─────────────────────────────────────────────────
+  'Zero':'Bold number 0, round, empty set concept',
+  'One':'Bold number 1, single item, first',
+  'Two':'Bold number 2, pair of items, second',
+  'Three':'Bold number 3, trio of items, third',
+  'Four':'Bold number 4, four items arranged, fourth',
+  'Five':'Bold number 5, hand showing five fingers',
+  'Six':'Bold number 6, six items arranged, sixth',
+  'Seven':'Bold number 7, seven items arranged, seventh',
+  'Eight':'Bold number 8, eight items arranged, eighth',
+  'Nine':'Bold number 9, nine items arranged, ninth',
+  'Ten':'Bold number 10, both hands showing ten fingers',
+  'Hundred':'Bold number 100, large quantity, many items',
+  // ── ROUTINES: MORNING ───────────────────────────────────────
+  'Wake Up':'Person sitting up in bed, stretching, alarm clock ringing',
+  'Wash Face':'Person splashing water on face at sink, towel nearby',
+  'Brush Hair':'Hairbrush going through hair, neat and tidy',
+  'Get Dressed':'Person putting on shirt, getting ready, clothes',
+  'Eat Breakfast':'Person eating at table, cereal or toast, morning meal',
+  'Take Medicine':'Hand holding pill or medicine spoon, taking dose',
+  'Pack Backpack':'Hands putting books into backpack, preparing for school',
+  'Put On Shoes':'Hands putting shoes on feet, tying laces',
+  'Put On Jacket':'Person putting arms through jacket sleeves, coat',
+  'Catch Bus':'Child running toward yellow school bus, bus stop',
+  'Get In Car':'Person opening car door, getting into vehicle seat',
+  'Say Goodbye':'Child waving goodbye at door, parent waving back',
+  'Use Bathroom':'Bathroom door with person entering, toilet symbol',
+  // ── ROUTINES: EVENING ───────────────────────────────────────
+  'Come Home':'Person walking through front door, house, arriving',
+  'Eat Dinner':'Family at dinner table, plates of food, evening meal',
+  'Do Homework':'Child at desk writing, books open, studying',
+  'Take Bath':'Child in bathtub with bubbles, rubber duck, warm',
+  'Take Shower':'Person in shower, water streaming, steam rising',
+  'Put On Pajamas':'Person putting on pajamas, bedtime clothes, cozy',
+  'Read Story':'Parent reading book to child in bed, story time',
+  'Hug Goodnight':'Parent and child hugging, bedtime, warm embrace',
+  'Lights Off':'Hand flipping light switch off, room going dark',
+  'Go To Bed':'Person climbing into bed, pulling up covers, sleepy',
+  'Listen To Music':'Person with headphones, music notes, relaxing',
+  'Get Stuffed Animal':'Child reaching for teddy bear, cuddly toy',
+  // ── ROUTINES: CHORES ────────────────────────────────────────
+  'Sweep':'Broom sweeping floor, dust pile, clean',
+  'Wipe Table':'Hand with cloth wiping table surface, cleaning',
+  'Laundry':'Washing machine with clothes, laundry basket, soap',
+  'Wash Dishes':'Hands washing dishes in sink with soap and sponge',
+  'Make Bed':'Person pulling up bedsheet, making bed neat and tidy',
+  'Take Out Trash':'Person carrying trash bag to garbage bin outside',
+  'Feed Pet':'Hand pouring pet food into bowl, feeding animal',
+  'Water Plants':'Watering can pouring water on potted plant, green',
+  'Pick Up Toys':'Child putting toys back in toy box, cleaning up',
+  'Fold Clothes':'Hands folding shirt neatly, stack of folded laundry',
+  'Vacuum':'Person pushing vacuum cleaner on carpet, cleaning',
+  'Mop':'Mop and bucket on floor, mopping up, wet clean',
+  // ── ROUTINES: FAITH ─────────────────────────────────────────
+  'Pray':'Hands folded together in prayer, peaceful expression',
+  'Read Scripture':'Open holy book, reading sacred text, reverent',
+  'Sing Hymn':'Person singing from hymnal, music notes, worship',
+  'Say Grace':'Family at table with heads bowed, giving thanks',
+  'Go To Church':'Church building with family walking toward entrance',
+  'Go To Mosque':'Mosque building with family walking toward entrance',
+  'Go To Synagogue':'Synagogue building with family walking toward entrance',
+  'Go To Temple':'Temple building with family walking toward entrance',
+  'Kneel':'Person kneeling in prayer, reverent pose',
+  'Give Thanks':'Hands raised upward, grateful expression, thankful',
+  'Rosary':'String of rosary beads with cross, Catholic prayer',
+  'Light Candle':'Hand lighting candle flame, warm glow, spiritual',
+  'Wudu':'Person performing wudu washing ritual, Islamic ablution',
+  'Salah':'Person in prayer position on prayer mat, Islamic prayer',
+  'Fasting':'Empty plate with clock, abstaining from food, spiritual',
+  'Iftar':'Table set with dates and water, breaking fast, evening',
+  'Shabbat':'Shabbat candles lit, challah bread, peaceful Friday',
+  'Puja':'Hindu puja tray with lamp, flowers, incense, prayer',
+  'Quran Reading':'Open Quran on stand, Arabic text, reverent reading',
+  'Bible Study':'Open Bible with study notes, highlighter, reading',
+  'Meditation':'Person sitting cross-legged, peaceful, zen, calm',
+  // ── TRANSPORTATION ──────────────────────────────────────────
+  'Car':'Sedan car in bright color, four wheels, driving',
+  'Bus':'Large bus with windows, passengers, city transit',
+  'Taxi':'Yellow taxi cab with taxi sign on top, city',
+  'Train':'Train on tracks, locomotive, carriages, station',
+  'Airplane':'White airplane flying through clouds, wings, sky',
+  'Boat':'Sailboat on blue water, white sails, ocean',
+  'Scooter':'Kick scooter with two wheels, handlebar, riding',
+  'Van':'Family van or minivan, sliding door, spacious',
+  'Ambulance':'White ambulance with red cross, lights flashing',
+  'Fire Truck':'Red fire truck with ladder, lights, fire station',
+  'Motorcycle':'Motorcycle with rider, helmet, two wheels, fast',
+  'Subway':'Underground subway train in tunnel, metro station',
+  'School Bus':'Yellow school bus with stop sign, children boarding',
+  'Helicopter':'Helicopter flying with spinning rotor blades',
+  'Ferry':'Ferry boat on water carrying cars and passengers',
+  // ── TECHNOLOGY ──────────────────────────────────────────────
+  'Phone':'Smartphone with touchscreen, app icons visible',
+  'Tablet':'Tablet device with colorful screen, touchscreen',
+  'Speaker':'Bluetooth speaker playing music, sound waves',
+  'Keyboard':'Computer keyboard with keys, typing device',
+  'Mouse':'Computer mouse with buttons, scroll wheel',
+  'Smart Light':'Smart light bulb glowing with color options',
+  'Video Call':'Screen showing video call with two people, camera',
+  'Text Message':'Phone screen with text message bubbles, typing',
+  'YouTube':'Play button on screen, video streaming, watching',
+  'Smart Speaker':'Voice-activated smart speaker, light ring glowing',
+  'Remote Control':'TV remote control with buttons, pointing at screen',
+  'Camera':'Digital camera with lens, flash, taking photo',
+  'Printer':'Desktop printer outputting paper, ink cartridge',
+  'Charger':'Phone charger cable plugged in, battery charging',
+  'WiFi':'WiFi signal icon with three curved lines, connected',
+  'Battery':'Battery icon showing charge level, energy indicator',
+  // ── NATURE ──────────────────────────────────────────────────
+  'Tree':'Tall green tree with trunk and leafy canopy, strong',
+  'Flower':'Colorful blooming flower with petals, stem, leaves',
+  'Grass':'Green grass blades, lawn, ground cover, fresh',
+  'Rock':'Gray boulder or rock, solid stone, natural',
+  'Ocean':'Blue ocean waves, vast water, horizon, seagulls',
+  'Desert':'Sandy desert with cactus, hot sun, dunes',
+  'Rain':'Rain drops falling from dark cloud, wet, puddles',
+  'Snow':'White snowflakes falling, snow-covered ground, winter',
+  'Sun':'Bright yellow sun with warm rays, clear sky',
+  'Moon':'Crescent moon in dark sky, glowing, nighttime',
+  'Stars':'Twinkling stars in night sky, sparkling points of light',
+  'Leaves':'Colorful autumn leaves falling, red orange yellow',
+  'Field':'Green grassy field stretching to horizon, open space',
+  'River':'Blue river flowing through landscape, winding water',
+  'Forest':'Dense forest with tall trees, green canopy, woodland',
+  // ── HOME / CORE / QUICK ─────────────────────────────────────
+  'Yes':'Green checkmark, thumbs up, affirmative nod',
+  'No':'Red X mark, head shake, negative gesture',
+  'More':'Two hands making more sign, plus symbol, additional',
+  'Stop':'Red stop sign, open hand palm out, halt gesture',
+  'Help':'Person raising hand for help, exclamation mark, SOS',
+  'Hurts':'Person pointing to body part in pain, ouch face, red spot',
+  'Hi':'Raised hand waving hello, friendly casual greeting',
+  'Look':'Eyes looking, pointing finger, pay attention gesture',
+  'Done':'Checkmark in green circle, task completed, finished',
+  'I':'Person pointing to self, me, first person',
+  'You':'Finger pointing at another person, second person',
+  'He':'Boy or man figure, male person, pointing',
+  'She':'Girl or woman figure, female person, pointing',
+  'We':'Group of people together, us, our team',
+  'They':'Group of people at distance, those people, others',
+  'My':'Hand on chest, possessive, belonging to me',
+  'That':'Finger pointing at distant object, over there',
+  'This':'Finger pointing at nearby object, right here',
+  'It':'Finger pointing at specific thing, that object',
+  'Want':'Hands reaching out for something, desire, longing',
+  'Go':'Green arrow pointing forward, moving, let us go',
+  'Get':'Hand grabbing or reaching for object, obtaining',
+  'Make':'Hands building or crafting something, creating',
+  'Put':'Hands placing object down on surface, positioning',
+  'See':'Eyes open wide, looking, hand shading eyes, watching',
+  'Like':'Thumbs up, heart, positive approval, enjoying',
+  'Eat':'Person putting food in mouth, eating gesture, utensils',
+  'Drink':'Person drinking from cup, sipping, glass tilted',
+  'Play':'Child playing with toys, joyful, having fun',
+  'Read':'Person holding open book, reading, eyes on pages',
+  'Say':'Mouth speaking with speech bubble, talking, words',
+  'Listen':'Ear with hand cupped behind it, hearing, attention',
+  'Share':'Two hands exchanging object, giving and receiving',
+  'Can':'Flexing arm showing ability, I can do it, capable',
+  'Know':'Lightbulb above head, finger pointing to temple, understanding',
+  'Need':'Person with urgent expression, essential item, must have',
+  'Feel':'Hand on heart, emotional awareness, sensing',
+  'Turn':'Circular arrow, rotating, taking turns',
+  'Open':'Hands opening box or door, revealing inside',
+  'Close':'Hands closing door or lid, shutting',
+  'Give':'Hand extending to offer something, generous gesture',
+  'Take':'Hand reaching to receive something, accepting',
+  'Up':'Arrow pointing upward, rising, above',
+  'Down':'Arrow pointing downward, descending, below',
+  'In':'Arrow going into box or container, inside',
+  'Out':'Arrow coming out of box or container, outside',
+  'On':'Switch in on position, light glowing, active',
+  'Off':'Switch in off position, dark, inactive',
+  'Again':'Circular arrow repeating, one more time, replay',
+  'Here':'Arrow pointing down to current spot, this place',
+  'There':'Arrow pointing away to distant spot, that place',
+  'Not':'Red circle with line through it, negation, prohibition',
+  // ── REPAIRS ─────────────────────────────────────────────────
+  'Say Again':'Circular arrow with speech bubble, repeat what you said',
+  'Don\'t Understand':'Person with question marks above head, confused face',
+  'Need Break':'Person sitting down, pause symbol, resting, time out',
+  'Thinking':'Person with thought bubble, chin on hand, processing',
+  'Slow Down':'Turtle with slow arrow, take it easy, reduce speed',
+  'Not Ready':'Person with hand up, not yet, waiting to be ready',
+  'Wrong':'Red X mark, incorrect, mistake, error symbol',
+  'Try Again':'Circular retry arrow, second attempt, redo',
+  'Upset':'Person with frustrated face, arms crossed, unhappy',
 };
 
 function loadFoodDrinkQueue() {
@@ -1141,7 +2232,7 @@ function loadFoodDrinkQueue() {
   const statusFilter = document.getElementById('food-status-filter');
   const cats = {};
   // Group by rough category from comment structure
-  const entries = Object.entries(FOOD_PROMPTS);
+  const entries = Object.entries(SYMBOL_PROMPTS).filter(([label]) => guessFoodCategory(label) !== null);
   entries.forEach(([label]) => {
     const cat = guessFoodCategory(label);
     if (!cats[cat]) cats[cat] = [];
@@ -1179,9 +2270,9 @@ function loadFoodDrinkQueue() {
 }
 
 function guessFoodCategory(label) {
-  const drinks = ['Water','Milk','Chocolate Milk','Lemonade','Smoothie','Hot Chocolate','Milkshake','Fruit Punch','Iced Tea','Orange Juice','Apple Juice','Grape Juice','Pineapple Juice','Mango Juice','Cranberry Juice','Peach Juice','Coke','Sprite','Fanta','Root Beer','Ginger Ale','Dr Pepper'];
-  const american = ['Hamburger','Hot Dog','Pizza','Fried Chicken','Sandwich','Grilled Cheese','Bacon','Pancakes','Waffles','Eggs','Cereal','Corn on the Cob','French Fries','Salad','Steak','Pot Pie','Soup'];
-  const latin = ['Tacos','Burrito','Pozole','Empanadas','Plantains','Black Beans','Chile Relleno','Flan','Paleta','Tres Leches','Pollo Asado','Tostada'];
+  const drinks = ['Water','Milk','Juice','Soda','Chocolate Milk','Lemonade','Smoothie','Hot Chocolate','Milkshake','Fruit Punch','Iced Tea','Orange Juice','Apple Juice','Grape Juice','Pineapple Juice','Mango Juice','Cranberry Juice','Peach Juice','Strawberry Juice','Coke','Sprite','Fanta','Root Beer','Ginger Ale','Dr Pepper'];
+  const american = ['Hamburger','Hot Dog','Pizza','Fried Chicken','Sandwich','Grilled Cheese','Bacon','Pancakes','Waffles','Eggs','Cereal','PB&J','Corn on the Cob','Mashed Potatoes','French Fries','Salad','BBQ Ribs','Steak','Mac and Cheese','Chili','Pot Pie','Soup','Biscuits','Omelette','Meatloaf'];
+  const latin = ['Tacos','Burrito','Tamales','Quesadilla','Rice and Beans','Guacamole','Salsa','Elote','Arroz con Pollo','Enchiladas','Tortilla','Pozole','Empanadas','Carnitas','Carne Asada','Pupusas','Plantains','Black Beans','Chile Relleno','Menudo','Gorditas','Mole','Huevos Rancheros','Horchata','Agua Fresca','Flan','Paleta','Tres Leches','Churros','Sope','Pollo Asado','Chilaquiles','Tostada'];
   const soul = ['Collard Greens','Cornbread','Black-Eyed Peas','Sweet Potato','Gumbo','BBQ','Rice','Sweet Potato Pie','Fried Fish','Jambalaya','Red Beans & Rice','Biscuits & Gravy','Cabbage','Hot Sauce','Grits','Peanut Soup','Chicken Wings','Peach Cobbler','Pound Cake'];
   const asian = ['Noodles','Sushi','Dumplings','Ramen','Stir Fry','Bento Box','Hot Pot','Chopsticks','Fried Rice','Curry Rice','Teriyaki','Tempura','Bok Choy','Garlic Noodles','Spring Rolls','Pho','Lo Mein','Orange Chicken','Mochi','Moon Cake','Rice Cracker','Edamame','Green Tea','Bubble Tea','Chow Mein','Bibimbap','Kimchi','Korean BBQ','Wonton','Miso Soup'];
   const southasian = ['Curry','Naan','Biryani','Dal','Roti','Samosa','Tandoori Chicken','Pakora','Paratha','Tikka Masala','Rice Pilaf','Saag','Chana Masala','Onion Bhaji','Raita','Mango Chutney','Kheer','Gulab Jamun','Chai Tea','Lassi','Dosa','Korma','Vindaloo','Rajma','Idli'];
@@ -1190,9 +2281,11 @@ function guessFoodCategory(label) {
   const caribbean = ['Jerk Chicken','Rice and Peas','Curry Goat','Coconut','Mango','Callaloo','Patty','Oxtail'];
   const euro = ['Pasta','Margherita Pizza','Croissant','Baguette','Cheese','Paella','Borscht','Pierogi','Bratwurst','Pretzel','Fish and Chips','Crepe','Greek Salad','Fondue','Schnitzel'];
   const snacks = ['Peanut Butter','Waffle','Popcorn','Crackers','Chocolate','Ice Cream','Donut','Cupcake','Nuts','Cheese Stick','Rice Cake','Trail Mix','Breadstick'];
-  const fruits = ['Apple','Banana','Strawberry','Orange','Grapes','Watermelon','Peach','Cherry','Blueberry','Pineapple','Kiwi','Pear','Lemon'];
+  const fruits = ['Apple','Banana','Strawberry','Orange','Grapes','Watermelon','Apricot','Peach','Cherry','Blueberry','Pineapple','Kiwi','Pear','Lemon'];
   const vegs = ['Carrot','Broccoli','Corn','Lettuce','Tomato','Cucumber','Pepper','Potato','Onion','Mushroom','Peas','Hot Pepper'];
   const desserts = ['Cake','Cookie','Pie','Pudding','Candy','Chocolate Bar','Popsicle','Gummy Bears','Birthday Cake'];
+  const allFood = [...drinks,...american,...latin,...soul,...asian,...southasian,...mideast,...african,...caribbean,...euro,...snacks,...fruits,...vegs,...desserts];
+  if (!allFood.includes(label)) return null;
   if (drinks.includes(label)) return 'Drinks';
   if (american.includes(label)) return 'American';
   if (latin.includes(label)) return 'Latin';
@@ -1207,13 +2300,13 @@ function guessFoodCategory(label) {
   if (fruits.includes(label)) return 'Fruits';
   if (vegs.includes(label)) return 'Vegetables';
   if (desserts.includes(label)) return 'Desserts';
-  return 'Other';
+  return null;
 }
 
 function loadFoodSymbol(label) {
   switchTab('create');
   document.getElementById('input-label').value = label;
-  document.getElementById('input-extra').value = FOOD_PROMPTS[label] || '';
+  document.getElementById('input-extra').value = SYMBOL_PROMPTS[label] || '';
   document.getElementById('input-extra').style.borderColor = 'rgba(39,174,96,0.6)';
   document.getElementById('prompt-badge').style.display = 'inline';
   delete document.getElementById('input-extra').dataset.manualEdit;

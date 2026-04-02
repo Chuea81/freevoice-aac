@@ -508,16 +508,12 @@ body {
   min-height: 0;
 }
 
-/* Custom admin-generated images — transparent bg, card shows through */
-.symbol-custom-img {
-  position: absolute;
-  inset: 3px 1px 0 1px;
-  width: calc(100% - 2px);
-  height: calc(100% - 3px);
+/* Custom symbol images — transparent bg, sized like emoji via inherited font-size */
+.symbol-custom-emoji {
+  width: 1.8em;
+  height: 1.8em;
   object-fit: contain;
-  object-position: center;
-  border-radius: 0 0 19px 19px;
-  z-index: 0;
+  border-radius: 6px;
 }
 
 /* Legacy .symbol-image for fallback */

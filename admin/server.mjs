@@ -289,9 +289,9 @@ app.get('/api/symbols-json', async (req, res) => {
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { label, category, style, phrase, extraPrompt } = req.body;
+    const { label, category, subcategory, style, phrase, extraPrompt } = req.body;
     if (!label) return res.status(400).json({ error: 'Label required' });
-    const result = await generateSymbol({ label, category, style, extraPrompt });
+    const result = await generateSymbol({ label, category, subcategory, style, extraPrompt });
     res.json({ imageBase64: result.imageBase64, prompt: result.prompt });
   } catch (e) {
     console.error('Generate error:', e);
@@ -304,27 +304,18 @@ app.post('/api/approve', async (req, res) => {
     const { label, category, subcategory, phrase, imageBase64, arasaacFallbackId } = req.body;
     const result = await approveSymbol({ label, category, subcategory, phrase, imageBase64, arasaacFallbackId });
 
-    // Regenerate public/api/symbols.json from updated defaultBoards.ts
-    try {
-      const { execSync } = await import('child_process');
-      execSync('npm run generate-symbols', { cwd: ROOT, stdio: 'inherit' });
-      console.log(`✅ Regenerated symbols.json after approving ${label}`);
-    } catch (e) {
-      console.warn(`⚠️ Could not regenerate symbols.json: ${e.message}`);
-    }
+    // Check if ARASAAC was updated
+    result.arasaacUpdated = result.arasaacMessage && (result.arasaacMessage.includes('✅') || result.arasaacMessage.includes('Added'));
 
-    // Git commit and push (optional — can be disabled if no git setup)
+    // Regenerate symbols.json from scratch to pick up all custom PNGs
+    result.jsonRegenerated = false;
     try {
       const { execSync } = await import('child_process');
-      execSync('git add -A', { cwd: ROOT, stdio: 'pipe' });
-      execSync(`git commit -m "Admin: Add custom symbol ${label}"`, { cwd: ROOT, stdio: 'pipe' });
-      execSync('git push origin feature/symbols-api', { cwd: ROOT, stdio: 'pipe' });
-      console.log(`✅ Committed and pushed to feature/symbols-api`);
-      result.committed = true;
+      const out = execSync('npm run generate-symbols', { cwd: ROOT, encoding: 'utf8', stdio: ['pipe','pipe','pipe'] });
+      console.log(`✅ Regenerated symbols.json:`, out.trim());
+      result.jsonRegenerated = true;
     } catch (e) {
-      // Non-fatal — git might not be configured or on wrong branch
-      console.warn(`⚠️ Could not auto-commit: ${e.message}`);
-      result.committed = false;
+      console.error(`⚠️ generate-symbols FAILED:`, e.stderr || e.message);
     }
 
     res.json(result);
