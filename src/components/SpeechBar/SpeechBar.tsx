@@ -5,9 +5,10 @@ import { useTTS } from '../../hooks/useTTS';
 
 interface Props {
   onOpenSettings?: () => void;
+  onOpenSearch?: () => void;
 }
 
-export function SpeechBar({ onOpenSettings }: Props) {
+export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
   const outputTokens = useBoardStore((s) => s.outputTokens);
   const removeLastToken = useBoardStore((s) => s.removeLastToken);
   const addToken = useBoardStore((s) => s.addToken);
@@ -81,38 +82,50 @@ export function SpeechBar({ onOpenSettings }: Props) {
 
   return (
     <div id="speech-bar" role="toolbar" aria-label="Speech output bar">
-      <div
-        ref={outputRef}
-        id="speech-output"
-        onClick={speakAll}
-        role="status"
-        aria-live="polite"
-        aria-label={outputTokens.length > 0 ? `Message: ${outputTokens.map(t => t.text).join(' ')}` : 'Empty message. Tap symbols to speak.'}
-      >
-        {outputTokens.length === 0 && !showKeyboard ? (
-          <span className="speech-placeholder">
-            {t('speech.placeholder')}
-          </span>
-        ) : (
-          outputTokens.map((token, i) => (
-            <div key={i} className="speech-token">
-              <span className="token-emoji">{token.emoji}</span>
-              {token.text}
-            </div>
-          ))
-        )}
-        {showKeyboard && (
-          <input
-            ref={inputRef}
-            className="speech-keyboard-input"
-            type="text"
-            value={keyboardInput}
-            onChange={(e) => setKeyboardInput(e.target.value)}
-            onKeyDown={handleKeyboardSubmit}
-            placeholder="Type..."
-            aria-label="Type words to add to message"
-            onClick={(e) => e.stopPropagation()}
-          />
+      <div className="speech-output-wrap">
+        <div
+          ref={outputRef}
+          id="speech-output"
+          onClick={speakAll}
+          role="status"
+          aria-live="polite"
+          aria-label={outputTokens.length > 0 ? `Message: ${outputTokens.map(t => t.text).join(' ')}` : 'Empty message. Tap symbols to speak.'}
+        >
+          {outputTokens.length === 0 && !showKeyboard ? (
+            <span className="speech-placeholder">
+              {t('speech.placeholder')}
+            </span>
+          ) : (
+            outputTokens.map((token, i) => (
+              <div key={i} className="speech-token">
+                <span className="token-emoji">{token.emoji}</span>
+                {token.text}
+              </div>
+            ))
+          )}
+          {showKeyboard && (
+            <input
+              ref={inputRef}
+              className="speech-keyboard-input"
+              type="text"
+              value={keyboardInput}
+              onChange={(e) => setKeyboardInput(e.target.value)}
+              onKeyDown={handleKeyboardSubmit}
+              placeholder="Type..."
+              aria-label="Type words to add to message"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+        </div>
+        {onOpenSearch && (
+          <button
+            type="button"
+            className="search-trigger-btn"
+            onClick={onOpenSearch}
+            aria-label="Search symbols"
+          >
+            🔍
+          </button>
         )}
       </div>
 

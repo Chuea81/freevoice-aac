@@ -109,11 +109,8 @@ export function Board({ onOpenParentMode }: Props) {
 
   return (
     <>
-      <SpeechBar onOpenSettings={onOpenParentMode} />
+      <SpeechBar onOpenSettings={onOpenParentMode} onOpenSearch={() => setSearchOpen(true)} />
       <div className="parent-tap-zone" onClick={handleTripleTap} aria-hidden="true" />
-      <button className="search-trigger-btn" onClick={() => setSearchOpen(true)} aria-label="Search symbols">
-        🔍
-      </button>
       <IosInstallPrompt />
       <AndroidInstallPrompt />
       <FastPhrasesStrip />

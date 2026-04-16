@@ -116,6 +116,11 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
+.speech-output-wrap {
+  position: relative;
+  width: 100%;
+}
+
 #speech-output {
   width: 100%;
   min-height: 48px;
@@ -123,7 +128,7 @@ body {
   background: var(--bg-surface);
   border: 2px solid var(--border-raised);
   border-radius: 16px;
-  padding: 10px 14px;
+  padding: 10px 58px 10px 14px;
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -944,17 +949,20 @@ body {
    13. SEARCH
    ═══════════════════════════════════════════════════ */
 .search-trigger-btn {
-  position: fixed;
-  top: 14px; right: 210px;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
   width: 36px; height: 36px;
   border-radius: 50%;
   border: none;
   background: rgba(0,0,0,0.05);
   font-size: 18px;
   cursor: pointer;
-  z-index: 40;
+  z-index: 2;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s;
+  padding: 0;
 }
 .search-trigger-btn:hover { background: rgba(0,0,0,0.08); }
 
