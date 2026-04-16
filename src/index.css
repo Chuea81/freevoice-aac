@@ -417,7 +417,7 @@ body {
   background: #FFFFFF;
   border-radius: 20px;
   border: 1px solid rgba(0,0,0,0.08);
-  border-top: 3px solid var(--card-color, rgba(0,0,0,0.08));
+  border-top: 8px solid var(--card-color, rgba(0,0,0,0.08));
   position: relative;
   overflow: hidden;
   display: flex;
@@ -443,6 +443,14 @@ body {
 /* Old highlight div — now just a spacer, invisible */
 .symbol-card-highlight {
   display: none;
+}
+
+/* Highlighted symbol — colored ring for quick visual find */
+.symbol-card.symbol-highlighted {
+  box-shadow:
+    0 0 0 5px var(--highlight-color, #FFD54F),
+    0 0 14px 2px color-mix(in srgb, var(--highlight-color, #FFD54F) 60%, transparent),
+    0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* Press state — scale only, NO translateY, NO box-shadow */
@@ -1571,3 +1579,107 @@ body {
 [dir="rtl"] .crumb-sep { transform: scaleX(-1); }
 [dir="rtl"] .settings-row { flex-direction: row-reverse; }
 [dir="rtl"] .modal-actions { flex-direction: row-reverse; }
+
+/* ════════════════════════════════════════════════════════════
+   HIGHLIGHT FAB + COLOR PALETTE
+   ═══════════════════════════════════════════════════════════ */
+.highlight-fab-container {
+  position: fixed;
+  right: 16px;
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.highlight-fab-container > * {
+  pointer-events: auto;
+}
+
+.highlight-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #43A047;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.highlight-fab:hover {
+  transform: scale(1.05);
+}
+
+.highlight-fab:active {
+  transform: scale(0.92);
+}
+
+.highlight-fab.active {
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px rgba(0, 0, 0, 0.15),
+    0 4px 14px rgba(0, 0, 0, 0.35);
+  animation: highlight-fab-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes highlight-fab-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.highlight-palette {
+  background: #fff;
+  border-radius: 28px;
+  padding: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: highlight-palette-in 0.18s ease-out;
+}
+
+@keyframes highlight-palette-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.palette-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.12s ease, border-color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.palette-swatch:hover {
+  transform: scale(1.08);
+}
+
+.palette-swatch.selected {
+  border-color: #1a1a1a;
+  transform: scale(1.1);
+}
+
+@media (max-width: 400px) {
+  .highlight-fab-container {
+    right: 12px;
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  }
+  .highlight-fab { width: 52px; height: 52px; font-size: 24px; }
+  .palette-swatch { width: 32px; height: 32px; }
+}

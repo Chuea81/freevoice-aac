@@ -2,6 +2,7 @@ import { useCallback, useState, useRef } from 'react';
 import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useHighlightStore } from '../../store/highlightStore';
 import { SymbolCard } from '../SymbolCard/SymbolCard';
 import { CustomWordModal } from '../modals/CustomWordModal';
 import { SymbolContextMenu } from '../modals/SymbolContextMenu';
@@ -18,11 +19,14 @@ export function SymbolGrid({ isParentMode }: Props) {
   const navigateToBoard = useBoardStore((s) => s.navigateToBoard);
   const addToken = useBoardStore((s) => s.addToken);
   const deleteCustomSymbol = useBoardStore((s) => s.deleteCustomSymbol);
+  const setSymbolHighlight = useBoardStore((s) => s.setSymbolHighlight);
   const moveSymbolToBoard = useBoardStore((s) => s.moveSymbolToBoard);
   const createBoard = useBoardStore((s) => s.createBoard);
   const autoSpeak = useSettingsStore((s) => s.autoSpeak);
   const gridColumns = useSettingsStore((s) => s.gridColumns);
   const symbolSize = useSettingsStore((s) => s.symbolSize);
+  const highlightMode = useHighlightStore((s) => s.mode);
+  const highlightColor = useHighlightStore((s) => s.selectedColor);
   const { speak } = useTTS();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,6 +55,11 @@ export function SymbolGrid({ isParentMode }: Props) {
         isScrolling.current = false;
         return;
       }
+      if (highlightMode) {
+        const nextColor = symbol.highlightColor ? null : highlightColor;
+        setSymbolHighlight(symbol.id, nextColor);
+        return;
+      }
       if (symbol.isCategory && symbol.targetBoardId) {
         navigateToBoard(symbol.targetBoardId, symbol.label, symbol.emoji);
       } else {
@@ -58,7 +67,7 @@ export function SymbolGrid({ isParentMode }: Props) {
         if (autoSpeak) speak(symbol.phrase);
       }
     },
-    [navigateToBoard, addToken, speak, autoSpeak],
+    [navigateToBoard, addToken, speak, autoSpeak, highlightMode, highlightColor, setSymbolHighlight],
   );
 
   const handleLongPressStart = useCallback((symbol: DbSymbol, e?: React.TouchEvent | React.MouseEvent) => {

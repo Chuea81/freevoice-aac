@@ -24,6 +24,7 @@ export interface Symbol {
   isCategory: boolean;
   targetBoardId?: string;
   hidden?: boolean;
+  highlightColor?: string;
   audioBlob?: ArrayBuffer;
   wordType?: string;
 }

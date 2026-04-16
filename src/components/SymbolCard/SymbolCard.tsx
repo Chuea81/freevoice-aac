@@ -206,11 +206,12 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
   const cardStyle: CSSProperties = {
     '--card-color': accentColor,
+    ...(symbol.highlightColor ? { '--highlight-color': symbol.highlightColor } : {}),
   } as CSSProperties;
 
   return (
     <button
-      className={`symbol-card${symbol.hidden ? ' symbol-hidden' : ''}${previewed ? ' symbol-previewed' : ''}`}
+      className={`symbol-card${symbol.hidden ? ' symbol-hidden' : ''}${previewed ? ' symbol-previewed' : ''}${symbol.highlightColor ? ' symbol-highlighted' : ''}`}
       style={cardStyle}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}

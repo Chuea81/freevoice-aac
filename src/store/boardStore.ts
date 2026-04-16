@@ -63,6 +63,9 @@ interface BoardState {
   // Vocab filter
   toggleSymbolHidden: (id: string) => Promise<void>;
 
+  // Favorite highlight
+  setSymbolHighlight: (id: string, color: string | null) => Promise<void>;
+
   // Sort
   sortBoardAlphabetically: (boardId: string) => Promise<void>;
 
@@ -232,6 +235,15 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const sym = await db.symbols.get(id);
     if (sym) {
       await db.symbols.update(id, { hidden: !sym.hidden });
+      get().loadSymbols(get().currentBoardId);
+    }
+  },
+
+  // Favorite highlight
+  setSymbolHighlight: async (id, color) => {
+    const sym = await db.symbols.get(id);
+    if (sym) {
+      await db.symbols.update(id, { highlightColor: color ?? undefined });
       get().loadSymbols(get().currentBoardId);
     }
   },

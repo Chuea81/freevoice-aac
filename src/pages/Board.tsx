@@ -13,6 +13,7 @@ import { AndroidInstallPrompt } from '../components/modals/AndroidInstallPrompt'
 import { SymbolSearch } from '../components/modals/SymbolSearch';
 import { OnboardingWizard } from '../components/modals/OnboardingWizard';
 import { UpdatePrompt } from '../components/UpdatePrompt/UpdatePrompt';
+import { HighlightFAB } from '../components/HighlightFAB/HighlightFAB';
 import { useArasaac } from '../hooks/useArasaac';
 import { importBoardFromUrl } from '../utils/backup';
 
@@ -120,6 +121,7 @@ export function Board({ onOpenParentMode }: Props) {
       <CoreWordsBar />
       <SymbolGrid />
       <TabBar isParentMode={currentBoardId === 'custom'} />
+      <HighlightFAB />
       <SymbolSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <UpdatePrompt />
     </>
