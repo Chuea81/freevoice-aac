@@ -118,7 +118,6 @@ export function Settings({ onBack }: { onBack: () => void }) {
       await db.symbols.clear();
       await db.settings.clear();
       await db.symbolCache.clear();
-      await db.symbolHidden.clear();
 
       // Reset all stores to defaults
       useSettingsStore.setState({
