@@ -19,19 +19,13 @@ const FITZGERALD_COLORS: Record<string, string> = {
 
 // Deterministic card accent color
 const CARD_COLORS = [
-  '#F59E0B', '#4FC3F7', '#81C784', '#CE93D8', '#80CBC4',
-  '#F48FB1', '#FFCC80', '#AED581', '#90CAF9', '#FF8A65',
+  '#43A047', '#66BB6A', '#81C784', '#2196F3', '#80CBC4',
+  '#F48FB1', '#A5D6A7', '#AED581', '#90CAF9', '#FF8A65',
 ] as const;
 
 function getCardColor(id: string): string {
   const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   return CARD_COLORS[hash % CARD_COLORS.length];
-}
-
-/** Check if imageUrl is a user-uploaded photo (not ARASAAC) */
-function isUserPhoto(url?: string): boolean {
-  if (!url) return false;
-  return url.startsWith('data:') || url.startsWith('blob:');
 }
 
 /** Map boardId to character system SymbolCategory */
@@ -63,35 +57,22 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const category = boardToCategory(symbol.boardId);
   const characterImageUrl = useCharacterImage(symbol.label, category || 'emotions');
   const hasCharacterImage = category !== null && !!characterImageUrl;
-  const isCustomSymbol = ARASAAC_IDS[symbol.label?.toUpperCase() || ''] === -1;
-
-  // DEBUG
-  if (symbol.label === 'bottom') {
-    console.log('[SymbolCard] bottom symbol', {
-      label: symbol.label,
-      upperLabel: symbol.label?.toUpperCase(),
-      arasaacId: symbol.arasaacId,
-      staticId: ARASAAC_IDS[symbol.label?.toUpperCase() || ''],
-      isCustomSymbol,
-      customImagePath: CUSTOM_SYMBOL_IMAGES[symbol.label?.toUpperCase() || ''],
-    });
-  }
+  const isCustomSymbol = ARASAAC_IDS[symbol.label?.toUpperCase() || ''] === -1 || !!symbol.imageUrl;
 
   // Resolve image URL at render time.
-  // Priority: character image > user photo > ARASAAC static ID > Dexie > cache > emoji
+  // Priority: symbol.imageUrl > character image > user photo > ARASAAC static ID > custom CUSTOM_SYMBOL_IMAGES > Dexie > cache > emoji
   useEffect(() => {
     setImgFailed(false);
 
-    // HARDCODE: Always use custom image for bottom (case-insensitive)
-    if (symbol.label?.toLowerCase() === 'bottom') {
-      console.log('[TEST] Setting bottom image URL');
-      (window as any).testBottomSymbol = { label: symbol.label, url: CUSTOM_SYMBOL_IMAGES['BOTTOM'] };
-      setResolvedUrl(CUSTOM_SYMBOL_IMAGES['BOTTOM']);
-      console.log('[TEST] After setResolvedUrl, resolvedUrl should be:', CUSTOM_SYMBOL_IMAGES['BOTTOM']);
+    // 0. Symbol imageUrl from symbols.json (generated custom images or direct assignment)
+    if (symbol.imageUrl) {
+      // Cache-bust custom images in dev so re-processed PNGs show immediately
+      const bust = import.meta.env.DEV && symbol.imageUrl.includes('/custom/') ? `?v=${Date.now()}` : '';
+      setResolvedUrl(symbol.imageUrl + bust);
       return;
     }
 
-    // 0. Custom character image — highest priority
+    // 1. Custom character image
     if (hasCharacterImage && characterImageUrl) {
       setResolvedUrl(characterImageUrl);
       return;
@@ -100,13 +81,13 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     const upperLabel = symbol.label?.toUpperCase() || '';
     const staticId = ARASAAC_IDS[upperLabel];
 
-    // 1. Static lookup says "force emoji" (ID=0) — skip all ARASAAC
+    // 2. Static lookup says "force emoji" (ID=0) — skip all ARASAAC
     if (staticId === 0) {
       setResolvedUrl(null);
       return;
     }
 
-    // 1b. Custom symbol image (ID=-1) — use custom path
+    // 3. Custom symbol image from CUSTOM_SYMBOL_IMAGES (ID=-1) — fallback for old entries
     if (staticId === -1) {
       const customUrl = CUSTOM_SYMBOL_IMAGES[upperLabel];
       if (customUrl) {
@@ -115,25 +96,19 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       }
     }
 
-    // 2. User-uploaded photo
-    if (isUserPhoto(symbol.imageUrl)) {
-      setResolvedUrl(symbol.imageUrl!);
-      return;
-    }
-
-    // 3. Static ARASAAC ID
+    // 4. Static ARASAAC ID
     if (staticId && staticId > 0) {
       setResolvedUrl(getArasaacImageUrl(staticId));
       return;
     }
 
-    // 4. Dexie arasaacId
+    // 5. Dexie arasaacId
     if (symbol.arasaacId) {
       setResolvedUrl(getArasaacImageUrl(symbol.arasaacId));
       return;
     }
 
-    // 5. symbolCache async lookup
+    // 6. symbolCache async lookup
     if (!symbol.isCategory) {
       let cancelled = false;
       resolveArasaacUrl(symbol).then((url) => {
@@ -201,17 +176,25 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       return; // Dwell mode — tap already fired or cancelled
     }
 
+    // Only fire tap on explicit pointer up, not on leave
+    if (e.type !== 'pointerup') {
+      pointerStartRef.current = null;
+      return;
+    }
+
     // Check if pointer moved more than 10px (scroll guard)
     const start = pointerStartRef.current;
     if (start) {
       const dx = Math.abs(e.clientX - start.x);
       const dy = Math.abs(e.clientY - start.y);
       if (dx > 10 || dy > 10) {
+        pointerStartRef.current = null;
         return; // Treat as scroll — don't fire the tap
       }
     }
 
     // True tap — fire the action
+    pointerStartRef.current = null;
     onTap(symbol);
   }, [symbol, onTap]);
 
@@ -242,9 +225,9 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       {labelPosition === 'above' && labelEl}
 
       {hasImage && isCustomSymbol ? (
-        /* Custom symbol images — full bleed on dark card background */
+        /* Custom symbol images — render like emoji, same sizing and spacing */
         <img
-          className="symbol-custom-img"
+          className="symbol-emoji symbol-custom-emoji"
           src={resolvedUrl!}
           alt={symbol.label}
           loading="lazy"

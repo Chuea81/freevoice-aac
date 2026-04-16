@@ -5,7 +5,7 @@ export function About() {
     <div style={{
       flex: 1,
       overflowY: 'auto',
-      background: '#111827',
+      background: '#F2F5F2',
       padding: '24px 20px 40px',
     }}>
 
@@ -14,14 +14,14 @@ export function About() {
         <p style={{
           fontFamily: "'Baloo 2', cursive",
           fontSize: '32px', fontWeight: 800,
-          color: '#F59E0B', margin: 0,
+          color: '#43A047', margin: 0,
         }}>
           FreeVoice AAC
         </p>
         <p style={{
           fontFamily: "'Nunito', sans-serif",
           fontSize: '13px', fontWeight: 700,
-          color: 'rgba(255,255,255,0.35)',
+          color: 'rgba(0,0,0,0.45)',
           marginTop: '4px',
         }}>
           Version {__APP_VERSION__} · Free Forever
@@ -101,18 +101,18 @@ export function About() {
       <Section title="Legal">
         {/* 🧑 MANUAL: Create a terms page at freevoice.app/terms */}
         <Link href="https://freevoice.app/terms">Terms of Use & Disclaimers</Link>
-        <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+        <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(0,0,0,0.35)' }}>
           FreeVoice is not affiliated with Tobii Dynavox, Mayer-Johnson,
           AssistiveWare, or any other AAC vendor.
         </p>
       </Section>
 
       <div style={{ textAlign: 'center', marginTop: '32px', paddingTop: '24px',
-        borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        borderTop: '1px solid rgba(0,0,0,0.06)' }}>
         <p style={{
           fontFamily: "'Nunito', sans-serif",
           fontSize: '13px', fontWeight: 700,
-          color: 'rgba(255,255,255,0.25)',
+          color: 'rgba(0,0,0,0.30)',
           fontStyle: 'italic',
         }}>
           Built with love by Shellcraft Labs LLC<br />
@@ -127,8 +127,8 @@ export function About() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div style={{
-      background: '#1B2845',
-      border: '1px solid rgba(255,255,255,0.07)',
+      background: '#FFFFFF',
+      border: '1px solid rgba(0,0,0,0.08)',
       borderRadius: '16px',
       padding: '18px 20px',
       marginBottom: '12px',
@@ -137,14 +137,14 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
         fontFamily: "'Nunito', sans-serif",
         fontSize: '10px', fontWeight: 900,
         letterSpacing: '2px', textTransform: 'uppercase',
-        color: '#F59E0B', marginBottom: '10px',
+        color: '#43A047', marginBottom: '10px',
       }}>
         {title}
       </p>
       <div style={{
         fontFamily: "'Nunito', sans-serif",
         fontSize: '14px', fontWeight: 700,
-        color: 'rgba(255,255,255,0.7)',
+        color: 'rgba(0,0,0,0.65)',
         lineHeight: 1.65,
       }}>
         {children}
@@ -155,8 +155,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function Pill({ color, label }: { color: 'green' | 'amber'; label: string }) {
   const colors = {
-    green: { bg: 'rgba(39,174,96,0.12)', border: 'rgba(39,174,96,0.3)', text: '#86EFAC' },
-    amber: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', text: '#FCD34D' },
+    green: { bg: 'rgba(67,160,71,0.10)', border: 'rgba(67,160,71,0.25)', text: '#2E7D32' },
+    amber: { bg: 'rgba(67,160,71,0.10)', border: 'rgba(67,160,71,0.25)', text: '#2E7D32' },
   };
   const c = colors[color];
   return (
@@ -176,7 +176,7 @@ function Link({ href, children, block }: {
 }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" style={{
-      color: '#4FC3F7', fontWeight: 800, textDecoration: 'none',
+      color: '#43A047', fontWeight: 800, textDecoration: 'none',
       display: block ? 'block' : 'inline',
       marginTop: block ? '8px' : 0,
       fontSize: block ? '13px' : 'inherit',

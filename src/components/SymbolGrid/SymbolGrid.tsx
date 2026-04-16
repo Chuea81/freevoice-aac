@@ -197,7 +197,7 @@ export function SymbolGrid({ isParentMode }: Props) {
               }}
               style={isParentMode ? {
                 borderStyle: 'dashed',
-                borderColor: '#F59E0B',
+                borderColor: '#43A047',
                 borderWidth: '2px',
               } : undefined}
             >
@@ -215,7 +215,7 @@ export function SymbolGrid({ isParentMode }: Props) {
               onClick={() => setShowCreateBoardModal(true)}
               style={{
                 borderStyle: 'dashed',
-                borderColor: '#F59E0B',
+                borderColor: '#43A047',
                 borderWidth: '2px',
               }}
             >

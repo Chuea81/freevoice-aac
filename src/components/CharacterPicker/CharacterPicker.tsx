@@ -46,7 +46,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
         <p style={{
           fontFamily: "var(--font-body)", fontSize: '11px', fontWeight: 900,
           letterSpacing: '2px', textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.35)', marginBottom: '10px',
+          color: 'rgba(0,0,0,0.38)', marginBottom: '10px',
         }}>Show</p>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {GENDER_OPTIONS.map(opt => (
@@ -54,13 +54,13 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
               key={opt.value}
               onClick={() => setGenderFilter(opt.value as Gender | 'all')}
               style={{
-                background: genderFilter === opt.value ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)',
-                border: `1px solid ${genderFilter === opt.value ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                background: genderFilter === opt.value ? 'rgba(67,160,71,0.10)' : 'rgba(0,0,0,0.03)',
+                border: `1px solid ${genderFilter === opt.value ? 'rgba(67,160,71,0.35)' : 'rgba(0,0,0,0.08)'}`,
                 borderRadius: '100px', padding: '8px 18px',
                 display: 'flex', alignItems: 'center', gap: '6px',
                 cursor: 'pointer', fontFamily: "var(--font-body)",
                 fontSize: '13px', fontWeight: 800,
-                color: genderFilter === opt.value ? '#F59E0B' : 'rgba(255,255,255,0.6)',
+                color: genderFilter === opt.value ? '#2E7D32' : 'rgba(0,0,0,0.55)',
               }}
             >
               <span>{opt.icon}</span>{opt.label}
@@ -74,7 +74,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
         <p style={{
           fontFamily: "var(--font-body)", fontSize: '11px', fontWeight: 900,
           letterSpacing: '2px', textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.35)', marginBottom: '10px',
+          color: 'rgba(0,0,0,0.38)', marginBottom: '10px',
         }}>Skin Tone</p>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {SKIN_TONE_OPTIONS.map(opt => (
@@ -85,7 +85,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
               style={{
                 width: '40px', height: '40px', borderRadius: '50%',
                 background: opt.swatch,
-                border: `3px solid ${skinFilter === opt.value ? '#F59E0B' : 'rgba(255,255,255,0.15)'}`,
+                border: `3px solid ${skinFilter === opt.value ? '#43A047' : 'rgba(0,0,0,0.12)'}`,
                 cursor: 'pointer',
                 transform: skinFilter === opt.value ? 'scale(1.15)' : 'scale(1)',
                 position: 'relative',
@@ -108,7 +108,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
         {filtered.length === 0 ? (
           <div style={{
             gridColumn: '1/-1', textAlign: 'center', padding: '40px',
-            color: 'rgba(255,255,255,0.3)', fontFamily: "var(--font-body)", fontWeight: 700,
+            color: 'rgba(0,0,0,0.35)', fontFamily: "var(--font-body)", fontWeight: 700,
           }}>
             No characters match these filters yet. More are being added!
           </div>
@@ -120,8 +120,8 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
                 key={char.id}
                 onClick={() => onSelect(char.id)}
                 style={{
-                  background: isSelected ? 'rgba(245,158,11,0.15)' : '#1B2845',
-                  border: `2px solid ${isSelected ? '#F59E0B' : 'rgba(255,255,255,0.08)'}`,
+                  background: isSelected ? 'rgba(67,160,71,0.10)' : '#FFFFFF',
+                  border: `2px solid ${isSelected ? '#43A047' : 'rgba(0,0,0,0.08)'}`,
                   borderRadius: '18px', padding: '12px 8px 10px',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
                   cursor: 'pointer', position: 'relative', overflow: 'hidden',
@@ -132,8 +132,8 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
                   <div style={{
                     position: 'absolute', top: '8px', right: '8px',
                     width: '20px', height: '20px', borderRadius: '50%',
-                    background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '11px', fontWeight: 900, color: '#1C1400',
+                    background: '#43A047', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '11px', fontWeight: 900, color: 'white',
                   }}>✓</div>
                 )}
                 <img
@@ -144,7 +144,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
                 />
                 <span style={{
                   fontFamily: "var(--font-body)", fontSize: '12px', fontWeight: 900,
-                  color: isSelected ? '#F59E0B' : 'rgba(255,255,255,0.75)', textAlign: 'center', lineHeight: 1.2,
+                  color: isSelected ? '#2E7D32' : 'rgba(0,0,0,0.70)', textAlign: 'center', lineHeight: 1.2,
                 }}>
                   {char.name}
                 </span>
@@ -159,7 +159,7 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
           onClick={() => onSelect('none')}
           style={{
             background: 'transparent', border: 'none',
-            color: 'rgba(255,255,255,0.3)', fontFamily: "var(--font-body)",
+            color: 'rgba(0,0,0,0.35)', fontFamily: "var(--font-body)",
             fontSize: '13px', fontWeight: 700, cursor: 'pointer', padding: '8px',
             textDecoration: 'underline', alignSelf: 'center',
           }}

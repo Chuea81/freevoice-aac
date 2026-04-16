@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/boardStore';
 import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
-import { db, seedIfNeeded } from '../db';
+import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
 
@@ -118,6 +118,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
       await db.symbols.clear();
       await db.settings.clear();
       await db.symbolCache.clear();
+      await db.symbolHidden.clear();
 
       // Reset all stores to defaults
       useSettingsStore.setState({
@@ -174,10 +175,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
         localStorage.setItem('fv_language', savedLanguage);
       }
 
-      // Re-seed fresh data before reload
-      await seedIfNeeded();
-
-      // Reload the app
+      // Reload the app (default data will load from symbols.json)
       window.location.reload();
     } catch (err) {
       console.error('Factory reset error:', err);
@@ -417,7 +415,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: 'var(--accent-color, #4FC3F7)',
+                color: 'var(--accent-color, #43A047)',
                 textDecoration: 'underline',
                 fontWeight: 600,
               }}
@@ -449,8 +447,8 @@ export function Settings({ onBack }: { onBack: () => void }) {
           <p className="settings-about"><strong>FreeVoice AAC</strong> — Free, open-source communication for every child.</p>
           <p className="settings-about">Shellcraft Labs LLC · MIT License · v1.2.1</p>
           <p className="settings-about" style={{ marginTop: 8 }}>Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón</p>
-          <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
-          <p className="settings-about" style={{ marginTop: 8, fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace' }}>Running from: {window.location.href}</p>
+          <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
+          <p className="settings-about" style={{ marginTop: 8, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Running from: {window.location.href}</p>
           <p style={{fontSize: '10px', opacity: 0.4, fontFamily: 'monospace'}}>
             Running from: {window.location.href}
           </p>

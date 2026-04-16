@@ -5,25 +5,25 @@ export default {
     extend: {
       colors: {
         bg: {
-          base:    '#060C1A',
-          app:     '#0C1428',
-          surface: '#111827',
-          card:    '#1B2845',
-          raised:  '#243356',
+          base:    '#F2F5F2',
+          app:     '#FAFBFA',
+          surface: '#F0F3F0',
+          card:    '#FFFFFF',
+          raised:  '#E4EBE4',
         },
         amber: {
-          DEFAULT: '#F59E0B',
-          dark:    '#D97706',
-          glow:    'rgba(245,158,11,0.15)',
+          DEFAULT: '#43A047',
+          dark:    '#2E7D32',
+          glow:    'rgba(67,160,71,0.10)',
         },
-        speak:  '#27AE60',
-        clear:  '#E11D48',
-        sky:    '#4FC3F7',
+        speak:  '#43A047',
+        clear:  '#E53935',
+        sky:    '#2196F3',
         fitz: {
-          pronoun: '#FCD34D',
-          verb:    '#86EFAC',
-          social:  '#A5B4FC',
-          noun:    '#FDBA74',
+          pronoun: '#F9A825',
+          verb:    '#2E7D32',
+          social:  '#5C6BC0',
+          noun:    '#E65100',
         },
       },
       fontFamily: {
@@ -43,7 +43,7 @@ export default {
           to:   { transform: 'scale(1)',    opacity: '1' },
         },
         speakPulse: {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(39,174,96,0.2)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(67,160,71,0.2)' },
           '50%':      { boxShadow: '0 0 0 10px transparent' },
         },
         sheetUp: {
