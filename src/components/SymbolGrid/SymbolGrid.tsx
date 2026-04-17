@@ -92,8 +92,11 @@ export function SymbolGrid({ isParentMode }: Props) {
       if (symbol.isCategory && symbol.targetBoardId) {
         navigateToBoard(symbol.targetBoardId, symbol.label, symbol.emoji);
       } else {
-        addToken(symbol.emoji, symbol.phrase);
+        // Fire speech FIRST so it kicks off before any state updates trigger
+        // re-renders. `speak` is async but its synchronous prelude (voice
+        // lookup, utterance creation, synth.speak) runs immediately.
         if (autoSpeak) speak(symbol.phrase);
+        addToken(symbol.emoji, symbol.phrase);
       }
     },
     [navigateToBoard, addToken, speak, autoSpeak, highlightMode, highlightColor, setSymbolHighlight, firstThenMode, fillFirstThen],

@@ -72,6 +72,47 @@ let audioCtxWarmed = false;
 // Interrupt mode: keep track of currently playing audio source so we can stop it
 let currentAudioSource: AudioBufferSourceNode | null = null;
 
+// Module-level Web Speech voice cache — populated once at load, refreshed on
+// `voiceschanged`. Avoids calling getVoices() + linear find() on every speak,
+// which can cost 10–30ms on Chrome the first time voices aren't ready yet.
+const voiceByURI = new Map<string, SpeechSynthesisVoice>();
+let voiceCacheInitialized = false;
+let webSpeechWarmed = false;
+
+function refreshVoiceCache(): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  voiceByURI.clear();
+  for (const v of window.speechSynthesis.getVoices()) voiceByURI.set(v.voiceURI, v);
+}
+
+function initVoiceCache(): void {
+  if (voiceCacheInitialized) return;
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  voiceCacheInitialized = true;
+  refreshVoiceCache();
+  try {
+    window.speechSynthesis.addEventListener('voiceschanged', refreshVoiceCache);
+  } catch {
+    // Older browsers — fall back to the legacy property
+    (window.speechSynthesis as unknown as { onvoiceschanged: () => void }).onvoiceschanged = refreshVoiceCache;
+  }
+}
+
+// Prime the voice cache as soon as the module loads so the first real speak
+// doesn't pay the getVoices() cost.
+initVoiceCache();
+
+function warmWebSpeech(): void {
+  if (webSpeechWarmed) return;
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  webSpeechWarmed = true;
+  // Silent utterance primes Chrome's speech engine. Without this, the first
+  // real utterance after app load can have noticeable lag.
+  const u = new SpeechSynthesisUtterance(' ');
+  u.volume = 0;
+  window.speechSynthesis.speak(u);
+}
+
 /** Check if device is Samsung/older Android that needs audio buffer */
 function isSamsungOldAndroid(): boolean {
   const ua = navigator.userAgent.toLowerCase();
@@ -178,8 +219,10 @@ function speakWithWebSpeech(
     utterance.volume = volume;
 
     if (voiceURI) {
-      const voices = window.speechSynthesis.getVoices();
-      const match = voices.find((v) => v.voiceURI === voiceURI);
+      // O(1) lookup from the module-level cache. If the cache is empty
+      // (first call before `voiceschanged` fires), refresh once.
+      if (voiceByURI.size === 0) refreshVoiceCache();
+      const match = voiceByURI.get(voiceURI);
       if (match) utterance.voice = match;
     }
 
@@ -202,6 +245,8 @@ export function useTTS() {
   // This prevents Web Audio API from blocking on first tap
   useEffect(() => {
     unlockIOSSpeech();
+    // Re-populate the voice cache in case voices arrived after module init.
+    refreshVoiceCache();
     const warmOnInteraction = async () => {
       const audioCtx = getAudioContext();
       // Immediately try to resume AudioContext without waiting for warmup
@@ -215,6 +260,10 @@ export function useTTS() {
       warmAudioContext(audioCtx).catch(() => {
         // Non-fatal if warming fails
       });
+      // Prime Web Speech so the first spoken utterance isn't delayed by
+      // engine cold-start (especially on Chrome desktop where `touchstart`
+      // never fires and `unlockIOSSpeech` doesn't cover the case).
+      warmWebSpeech();
       document.removeEventListener('pointerdown', warmOnInteraction);
     };
     document.addEventListener('pointerdown', warmOnInteraction, { once: true });
