@@ -131,14 +131,26 @@ export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
   const deleteProps = useTouchDelay(handleBackspace);
   const clearProps = useTouchDelay(handleClearAll);
   const highlightProps = useTouchDelay(toggleHighlightMode);
-  const firstThenProps = useTouchDelay(toggleFirstThen);
   const settingsProps = useTouchDelay(onOpenSettings);
   const speechOutputProps = useTouchDelay(speakAll);
   const searchProps = useTouchDelay(onOpenSearch);
 
   return (
     <div id="speech-bar" role="toolbar" aria-label="Speech output bar">
-      <div className="speech-output-wrap">
+      <div className={`speech-output-wrap${firstThenMode ? ' firstthen-mode' : ''}`}>
+        {firstThenMode && (
+          <button
+            type="button"
+            className="firstthen-indicator"
+            onClick={toggleFirstThen}
+            aria-label="First, Then mode active — tap to exit"
+            title="First, Then mode is on (tap to exit)"
+          >
+            <span className="firstthen-indicator-dot" aria-hidden="true"></span>
+            First, Then Mode
+            <span className="firstthen-indicator-close" aria-hidden="true">✕</span>
+          </button>
+        )}
         {firstThenMode ? (
           <FirstThenPanel />
         ) : (
@@ -262,17 +274,6 @@ export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
             </div>
           )}
         </div>
-
-        <button
-          className={`bar-btn${firstThenMode ? ' firstthen-active' : ''}`}
-          id="btn-firstthen"
-          {...firstThenProps}
-          aria-label={firstThenMode ? 'Exit First, Then mode' : 'Enter First, Then mode'}
-          aria-pressed={firstThenMode}
-          title="Build a First, Then sentence"
-        >
-          <span className="btn-icon" aria-hidden="true">1→2</span>First, Then
-        </button>
 
         {onOpenSettings && (
           <button className="bar-btn" id="btn-settings" {...settingsProps} aria-label="Settings">

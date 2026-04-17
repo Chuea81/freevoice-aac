@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSettingsStore, type LabelPosition, type ColorScheme, type SkinTone } from '../store/settingsStore';
 import { useParentStore } from '../store/parentStore';
 import { useBoardStore } from '../store/boardStore';
+import { useFirstThenStore } from '../store/firstThenStore';
 import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
@@ -25,6 +26,8 @@ export function Settings({ onBack }: { onBack: () => void }) {
   const settings = useSettingsStore();
   const parentStore = useParentStore();
   const boardStore = useBoardStore();
+  const firstThenMode = useFirstThenStore((s) => s.mode);
+  const setFirstThenMode = useFirstThenStore((s) => s.setMode);
 
   // Pronunciation editor state
   const [pronWord, setPronWord] = useState('');
@@ -222,6 +225,22 @@ export function Settings({ onBack }: { onBack: () => void }) {
               {settings.autoSpeak ? 'ON' : 'OFF'}
             </button>
           </div>
+        </section>
+
+        {/* ── COMMUNICATION MODE ── */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Communication Mode</h2>
+          <div className="settings-row">
+            <label>First, Then Mode</label>
+            <button
+              className={`settings-toggle${firstThenMode ? ' on' : ''}`}
+              onClick={() => setFirstThenMode(!firstThenMode)}
+              aria-pressed={firstThenMode}
+            >
+              {firstThenMode ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          <p className="settings-hint">Build sentences using a FIRST/THEN structure. A two-slot panel replaces the speech box and auto-speaks "First X, then Y".</p>
         </section>
 
         {/* ── PRONUNCIATION EXCEPTIONS ── */}
