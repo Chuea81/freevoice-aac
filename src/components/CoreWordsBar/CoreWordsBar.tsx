@@ -1,6 +1,7 @@
 import { useBoardStore } from '../../store/boardStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
+import { useTouchDelay } from '../../hooks/useTouchDelay';
 
 // Map wordType to Fitzgerald Key CSS class
 function getFitzClass(wordType?: string): string {
@@ -12,6 +13,27 @@ function getFitzClass(wordType?: string): string {
     case 'social':  return 'cw-social';
     default:        return '';
   }
+}
+
+interface CoreWordButtonProps {
+  label: string;
+  phrase: string;
+  emoji: string;
+  wordType?: string;
+  onActivate: () => void;
+}
+
+function CoreWordButton({ label, phrase, wordType, onActivate }: CoreWordButtonProps) {
+  const delayProps = useTouchDelay(onActivate);
+  return (
+    <button
+      className={`coreword-btn ${getFitzClass(wordType)}`}
+      {...delayProps}
+      aria-label={`Speak ${phrase}`}
+    >
+      {label}
+    </button>
+  );
 }
 
 export function CoreWordsBar() {
@@ -26,17 +48,17 @@ export function CoreWordsBar() {
   return (
     <div className="corewords-bar" role="toolbar" aria-label="Core words">
       {coreWordSymbols.map((s) => (
-        <button
+        <CoreWordButton
           key={s.id}
-          className={`coreword-btn ${getFitzClass(s.wordType)}`}
-          onClick={() => {
+          label={s.label}
+          phrase={s.phrase}
+          emoji={s.emoji}
+          wordType={s.wordType}
+          onActivate={() => {
             addToken(s.emoji, s.phrase);
             if (autoSpeak) speak(s.phrase);
           }}
-          aria-label={`Speak ${s.phrase}`}
-        >
-          {s.label}
-        </button>
+        />
       ))}
     </div>
   );

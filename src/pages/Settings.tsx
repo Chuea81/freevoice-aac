@@ -9,6 +9,7 @@ import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
+import { TOUCH_DELAY_STEPS, formatTouchDelay } from '../hooks/useTouchDelay';
 
 const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
   { value: 'default', label: 'Default', swatch: '👋' },
@@ -130,6 +131,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
         skinTone: 'default',
         auditoryTouch: false,
         dwellTime: 0,
+        touchDelay: 0,
         showFastPhrases: true,
         showCoreWords: true,
         onboardingDone: false,
@@ -335,6 +337,19 @@ export function Settings({ onBack }: { onBack: () => void }) {
             <input type="range" min="0" max="2000" step="100" value={settings.dwellTime} onChange={(e) => settings.setDwellTime(parseInt(e.target.value))} />
           </div>
           <p className="settings-hint">Hold to activate instead of tap. For users with motor tremors.</p>
+          <div className="settings-row">
+            <label>Touch Delay: {formatTouchDelay(settings.touchDelay)}</label>
+            <input
+              type="range"
+              min={TOUCH_DELAY_STEPS[0]}
+              max={TOUCH_DELAY_STEPS[TOUCH_DELAY_STEPS.length - 1]}
+              step={250}
+              value={settings.touchDelay}
+              onChange={(e) => settings.setTouchDelay(parseInt(e.target.value))}
+              aria-label="Touch delay duration"
+            />
+          </div>
+          <p className="settings-hint">Press and hold every button for the selected duration before it activates. Helps slow down rapid tapping.</p>
         </section>
 
         {/* ── BOARD MANAGEMENT ── */}

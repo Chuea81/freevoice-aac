@@ -1,6 +1,28 @@
 import { useBoardStore } from '../../store/boardStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
+import { useTouchDelay } from '../../hooks/useTouchDelay';
+
+interface QuickFireButtonProps {
+  emoji: string;
+  label: string;
+  phrase: string;
+  onActivate: () => void;
+}
+
+function QuickFireButton({ emoji, label, phrase, onActivate }: QuickFireButtonProps) {
+  const delayProps = useTouchDelay(onActivate);
+  return (
+    <button
+      className="quickfire-btn"
+      {...delayProps}
+      aria-label={`Speak ${phrase}`}
+    >
+      <span className="quickfire-emoji" aria-hidden="true">{emoji}</span>
+      <span className="quickfire-label">{label}</span>
+    </button>
+  );
+}
 
 export function FastPhrasesStrip() {
   const quickFireSymbols = useBoardStore((s) => s.quickFireSymbols);
@@ -14,18 +36,16 @@ export function FastPhrasesStrip() {
   return (
     <div className="quickfires-strip" role="toolbar" aria-label="Fast phrases">
       {quickFireSymbols.map((s) => (
-        <button
+        <QuickFireButton
           key={s.id}
-          className="quickfire-btn"
-          onClick={() => {
+          emoji={s.emoji}
+          label={s.label}
+          phrase={s.phrase}
+          onActivate={() => {
             addToken(s.emoji, s.phrase);
             if (autoSpeak) speak(s.phrase);
           }}
-          aria-label={`Speak ${s.phrase}`}
-        >
-          <span className="quickfire-emoji" aria-hidden="true">{s.emoji}</span>
-          <span className="quickfire-label">{s.label}</span>
-        </button>
+        />
       ))}
     </div>
   );

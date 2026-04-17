@@ -3,11 +3,22 @@ import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useHighlightStore } from '../../store/highlightStore';
+import { useFirstThenStore } from '../../store/firstThenStore';
 import { SymbolCard } from '../SymbolCard/SymbolCard';
 import { CustomWordModal } from '../modals/CustomWordModal';
 import { SymbolContextMenu } from '../modals/SymbolContextMenu';
 import { BoardPicker } from '../modals/BoardPicker';
+import { ARASAAC_IDS } from '../../data/arasaacIds';
+import { getArasaacImageUrl } from '../../services/arasaac';
 import type { Symbol as DbSymbol } from '../../db';
+
+function resolveSymbolImageUrl(symbol: DbSymbol): string | null {
+  if (symbol.imageUrl) return symbol.imageUrl;
+  const staticId = ARASAAC_IDS[symbol.label?.toUpperCase() || ''];
+  if (staticId && staticId > 0) return getArasaacImageUrl(staticId);
+  if (symbol.arasaacId) return getArasaacImageUrl(symbol.arasaacId);
+  return null;
+}
 
 interface Props {
   isParentMode?: boolean;
@@ -27,6 +38,8 @@ export function SymbolGrid({ isParentMode }: Props) {
   const symbolSize = useSettingsStore((s) => s.symbolSize);
   const highlightMode = useHighlightStore((s) => s.mode);
   const highlightColor = useHighlightStore((s) => s.selectedColor);
+  const firstThenMode = useFirstThenStore((s) => s.mode);
+  const fillFirstThen = useFirstThenStore((s) => s.fillActive);
   const { speak } = useTTS();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,6 +73,22 @@ export function SymbolGrid({ isParentMode }: Props) {
         setSymbolHighlight(symbol.id, nextColor);
         return;
       }
+      // First/Then mode — fill the active slot; navigation tiles still navigate
+      if (firstThenMode && !symbol.isCategory) {
+        const { bothFilled } = fillFirstThen({
+          emoji: symbol.emoji,
+          label: symbol.label,
+          phrase: symbol.phrase,
+          imageUrl: resolveSymbolImageUrl(symbol),
+        });
+        if (bothFilled && autoSpeak) {
+          const store = useFirstThenStore.getState();
+          const first = store.firstSlot;
+          const then = store.thenSlot;
+          if (first && then) speak(`First ${first.phrase}, then ${then.phrase}`);
+        }
+        return;
+      }
       if (symbol.isCategory && symbol.targetBoardId) {
         navigateToBoard(symbol.targetBoardId, symbol.label, symbol.emoji);
       } else {
@@ -67,7 +96,7 @@ export function SymbolGrid({ isParentMode }: Props) {
         if (autoSpeak) speak(symbol.phrase);
       }
     },
-    [navigateToBoard, addToken, speak, autoSpeak, highlightMode, highlightColor, setSymbolHighlight],
+    [navigateToBoard, addToken, speak, autoSpeak, highlightMode, highlightColor, setSymbolHighlight, firstThenMode, fillFirstThen],
   );
 
   const handleLongPressStart = useCallback((symbol: DbSymbol, e?: React.TouchEvent | React.MouseEvent) => {

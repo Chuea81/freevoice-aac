@@ -21,6 +21,7 @@ interface SettingsState {
   showCoreWords: boolean;
   onboardingDone: boolean;
   androidInstallDismissed: boolean;
+  touchDelay: number;
 
   setGridColumns: (cols: number) => void;
   setSymbolSize: (size: 'small' | 'medium' | 'large') => void;
@@ -35,6 +36,7 @@ interface SettingsState {
   setShowCoreWords: (on: boolean) => void;
   setOnboardingDone: (done: boolean) => void;
   setAndroidInstallDismissed: (dismissed: boolean) => void;
+  setTouchDelay: (ms: number) => void;
   loadFromDb: () => Promise<void>;
 }
 
@@ -57,6 +59,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   showCoreWords: true,
   onboardingDone: false,
   androidInstallDismissed: false,
+  touchDelay: 0,
 
   setGridColumns: (cols) => { set({ gridColumns: cols }); persist('gridColumns', String(cols)); },
   setSymbolSize: (size) => { set({ symbolSize: size }); persist('symbolSize', size); },
@@ -71,6 +74,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setShowCoreWords: (on) => { set({ showCoreWords: on }); persist('showCoreWords', String(on)); },
   setOnboardingDone: (done) => { set({ onboardingDone: done }); persist('onboardingDone', String(done)); },
   setAndroidInstallDismissed: (dismissed) => { set({ androidInstallDismissed: dismissed }); persist('androidInstallDismissed', String(dismissed)); },
+  setTouchDelay: (ms) => { set({ touchDelay: ms }); persist('touchDelay', String(ms)); },
 
   loadFromDb: async () => {
     const all = await db.settings.toArray();
@@ -93,6 +97,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       ...(map.has('showCoreWords') && { showCoreWords: map.get('showCoreWords') === 'true' }),
       ...(map.has('onboardingDone') && { onboardingDone: map.get('onboardingDone') === 'true' }),
       ...(map.has('androidInstallDismissed') && { androidInstallDismissed: map.get('androidInstallDismissed') === 'true' }),
+      ...(map.has('touchDelay') && { touchDelay: Number(map.get('touchDelay')) }),
     });
   },
 }));

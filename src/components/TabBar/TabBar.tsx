@@ -1,6 +1,33 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBoardStore } from '../../store/boardStore';
+import { useTouchDelay } from '../../hooks/useTouchDelay';
+
+interface TabButtonProps {
+  label: string;
+  emoji: string;
+  active?: boolean;
+  ariaSelected?: boolean;
+  ariaLabel?: string;
+  onActivate: () => void;
+}
+
+function TabButton({ label, emoji, active, ariaSelected, ariaLabel, onActivate }: TabButtonProps) {
+  const delayProps = useTouchDelay(onActivate);
+  return (
+    <button
+      role="tab"
+      aria-selected={ariaSelected}
+      aria-label={ariaLabel}
+      className={`tab-btn${active ? ' active' : ''}`}
+      {...delayProps}
+      style={{ minWidth: 'max-content' }}
+    >
+      <span className="tab-icon" aria-hidden="true">{emoji}</span>
+      {label}
+    </button>
+  );
+}
 
 const TABS = [
   { id: 'home', label: 'HOME', emoji: '🏠' },
@@ -48,31 +75,24 @@ export function TabBar({ isParentMode }: Props) {
     <>
       <nav id="tab-bar" role="tablist" aria-label="Board categories" style={{ overflowX: 'auto', scrollbarWidth: 'none' }}>
         {TABS.map((tab) => (
-          <button
+          <TabButton
             key={tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            className={`tab-btn${activeTab === tab.id ? ' active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-            style={{ minWidth: 'max-content' }}
-          >
-            <span className="tab-icon" aria-hidden="true">{tab.emoji}</span>
-            {t(`nav.${tab.id}`, tab.label)}
-          </button>
+            label={t(`nav.${tab.id}`, tab.label)}
+            emoji={tab.emoji}
+            active={activeTab === tab.id}
+            ariaSelected={activeTab === tab.id}
+            onActivate={() => setActiveTab(tab.id)}
+          />
         ))}
 
         {/* Create Board tab — Parent Mode only */}
         {isParentMode && (
-          <button
-            role="tab"
-            className="tab-btn"
-            onClick={() => setShowCreateDialog(true)}
-            style={{ minWidth: 'max-content' }}
-            aria-label="Create a new board"
-          >
-            <span className="tab-icon" aria-hidden="true">➕</span>
-            New Board
-          </button>
+          <TabButton
+            label="New Board"
+            emoji="➕"
+            ariaLabel="Create a new board"
+            onActivate={() => setShowCreateDialog(true)}
+          />
         )}
       </nav>
 

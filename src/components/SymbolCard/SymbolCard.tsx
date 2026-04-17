@@ -45,6 +45,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
   const dwellTime = useSettingsStore((s) => s.dwellTime);
+  const touchDelay = useSettingsStore((s) => s.touchDelay);
   const labelPosition = useSettingsStore((s) => s.labelPosition);
   const colorScheme = useSettingsStore((s) => s.colorScheme);
   const { speakPreview } = useTTS();
@@ -131,6 +132,24 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     (e: React.PointerEvent<HTMLButtonElement>) => {
       pointerStartRef.current = { x: e.clientX, y: e.clientY };
 
+      // Touch delay — press-and-hold required before firing onTap
+      if (touchDelay > 0) {
+        const btn = e.currentTarget;
+        btn.classList.add('touch-holding');
+        btn.style.setProperty('--touch-delay-ms', `${touchDelay}ms`);
+        dwellTimerRef.current = setTimeout(() => {
+          btn.classList.remove('touch-holding');
+          btn.classList.add('touch-complete-flash');
+          setTimeout(() => btn.classList.remove('touch-complete-flash'), 280);
+          if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+            try { navigator.vibrate(30); } catch { /* noop */ }
+          }
+          onTap(symbol);
+          dwellTimerRef.current = null;
+        }, touchDelay);
+        return;
+      }
+
       // If dwell time is enabled, just start the timer
       if (dwellTime > 0) {
         dwellTimerRef.current = setTimeout(() => {
@@ -166,10 +185,20 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         setTimeout(() => btn.classList.remove('speaking'), 300);
       }
     },
-    [symbol, auditoryTouch, previewed, speakPreview, dwellTime],
+    [symbol, auditoryTouch, previewed, speakPreview, dwellTime, touchDelay, onTap],
   );
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    // Touch delay — cancel if user released early
+    if (touchDelay > 0) {
+      if (dwellTimerRef.current) {
+        clearTimeout(dwellTimerRef.current);
+        dwellTimerRef.current = null;
+      }
+      (e.currentTarget as HTMLElement).classList.remove('touch-holding');
+      return;
+    }
+
     if (dwellTimerRef.current) {
       clearTimeout(dwellTimerRef.current);
       dwellTimerRef.current = null;
@@ -196,7 +225,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     // True tap — fire the action
     pointerStartRef.current = null;
     onTap(symbol);
-  }, [symbol, onTap]);
+  }, [symbol, onTap, touchDelay]);
 
   if (symbol.hidden && !isParentMode) return null;
 

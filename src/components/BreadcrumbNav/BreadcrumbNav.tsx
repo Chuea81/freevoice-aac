@@ -1,6 +1,27 @@
 import { useBoardStore } from '../../store/boardStore';
 import { db } from '../../db';
 import { useEffect, useState } from 'react';
+import { useTouchDelay } from '../../hooks/useTouchDelay';
+
+interface CrumbButtonProps {
+  label: string;
+  active?: boolean;
+  isCurrent?: boolean;
+  onActivate: () => void;
+}
+
+function CrumbButton({ label, active, isCurrent, onActivate }: CrumbButtonProps) {
+  const delayProps = useTouchDelay(onActivate);
+  return (
+    <button
+      className={`crumb${active ? ' active' : ''}`}
+      {...delayProps}
+      aria-current={isCurrent ? 'page' : undefined}
+    >
+      {label}
+    </button>
+  );
+}
 
 export function BreadcrumbNav() {
   const navStack = useBoardStore((s) => s.navStack);
@@ -16,24 +37,22 @@ export function BreadcrumbNav() {
 
   return (
     <nav id="breadcrumb" className="scroll-none" aria-label="Board navigation">
-      <button
-        className={`crumb${navStack.length === 0 ? ' active' : ''}`}
-        onClick={() => navigateToCrumb(-1)}
-        aria-current={navStack.length === 0 ? 'page' : undefined}
-      >
-        {rootLabel}
-      </button>
+      <CrumbButton
+        label={rootLabel}
+        active={navStack.length === 0}
+        isCurrent={navStack.length === 0}
+        onActivate={() => navigateToCrumb(-1)}
+      />
 
       {navStack.map((step, i) => (
         <span key={i} style={{ display: 'contents' }}>
           <span className="crumb-sep" aria-hidden="true">›</span>
-          <button
-            className={`crumb${i === navStack.length - 1 ? ' active' : ''}`}
-            onClick={() => navigateToCrumb(i)}
-            aria-current={i === navStack.length - 1 ? 'page' : undefined}
-          >
-            {step.label}
-          </button>
+          <CrumbButton
+            label={step.label}
+            active={i === navStack.length - 1}
+            isCurrent={i === navStack.length - 1}
+            onActivate={() => navigateToCrumb(i)}
+          />
         </span>
       ))}
     </nav>
