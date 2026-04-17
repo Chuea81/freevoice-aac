@@ -179,6 +179,14 @@ body {
   width: 100%;
   justify-content: stretch;
 }
+@media (max-width: 480px) {
+  #speech-bar { padding-left: 8px; padding-right: 8px; }
+  .speech-bar-buttons { gap: 4px; }
+}
+@media (max-width: 360px) {
+  #speech-bar { padding-left: 6px; padding-right: 6px; }
+  .speech-bar-buttons { gap: 3px; }
+}
 
 .bar-btn {
   flex: 1 1 0;
@@ -211,16 +219,17 @@ body {
 @media (max-width: 480px) {
   .bar-btn {
     font-size: 9px;
-    letter-spacing: 0.2px;
-    padding: 4px 1px;
+    letter-spacing: 0;
+    padding: 4px 0;
     gap: 3px;
+    min-width: 0;
   }
   .bar-btn .btn-icon { font-size: 20px; }
+  .highlight-btn-wrap { min-width: 0; }
 }
 @media (max-width: 360px) {
   .bar-btn {
     font-size: 8px;
-    letter-spacing: 0;
   }
   .bar-btn .btn-icon { font-size: 18px; }
 }
