@@ -53,6 +53,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointerStartRef = useRef<{x: number, y: number} | null>(null);
+  const tapFiredRef = useRef(false);
 
   // Check for custom character image (emotions only for now)
   const category = boardToCategory(symbol.boardId);
@@ -131,6 +132,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLButtonElement>) => {
       pointerStartRef.current = { x: e.clientX, y: e.clientY };
+      tapFiredRef.current = false;
 
       // Touch delay — press-and-hold required before firing onTap
       if (touchDelay > 0) {
@@ -158,7 +160,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         return;
       }
 
-      // Show instant feedback (ripple + auditory preview) but delay the tap
+      // Ripple + auditory preview feedback
       const btn = e.currentTarget;
       const rect = btn.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -175,7 +177,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
           speakPreview(symbol.label);
           setPreviewed(true);
           setTimeout(() => setPreviewed(false), 3000);
-          return;
+          return; // Preview only — real speak fires on pointerUp after confirm
         }
         setPreviewed(false);
       }
@@ -183,6 +185,12 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       if (!symbol.isCategory) {
         btn.classList.add('speaking');
         setTimeout(() => btn.classList.remove('speaking'), 300);
+        // Fire the tap on press-down for non-category symbols so speech starts
+        // immediately instead of waiting for the pointerUp event (~50-150ms
+        // later). Category/nav taps still fire on pointerUp so the scroll
+        // guard can prevent accidental navigation.
+        onTap(symbol);
+        tapFiredRef.current = true;
       }
     },
     [symbol, auditoryTouch, previewed, speakPreview, dwellTime, touchDelay, onTap],
@@ -205,6 +213,14 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       return; // Dwell mode — tap already fired or cancelled
     }
 
+    // Tap already fired on pointerDown (non-category instant path) — don't
+    // double-fire on release.
+    if (tapFiredRef.current) {
+      tapFiredRef.current = false;
+      pointerStartRef.current = null;
+      return;
+    }
+
     // Only fire tap on explicit pointer up, not on leave
     if (e.type !== 'pointerup') {
       pointerStartRef.current = null;
@@ -222,7 +238,7 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       }
     }
 
-    // True tap — fire the action
+    // Category nav tap (or auditoryTouch confirm) — fire the action
     pointerStartRef.current = null;
     onTap(symbol);
   }, [symbol, onTap, touchDelay]);
