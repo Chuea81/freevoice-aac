@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useTTSStore, type KokoroVoice } from '../../store/ttsStore';
 import { useTTS } from '../../hooks/useTTS';
 
@@ -26,12 +26,24 @@ export function VoiceSelector() {
   } = useTTSStore();
 
   const { speak, cancel } = useTTS();
+  const ratePreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Preview voice on selection — like picking an alarm sound
   const previewVoice = useCallback((delay = 100) => {
     cancel();
     setTimeout(() => speak(PREVIEW_PHRASE), delay);
   }, [speak, cancel]);
+
+  // Debounced preview triggered while the speed slider is dragged so the user
+  // hears the new rate in real time without a flood of overlapping utterances.
+  const handleRateChange = useCallback((value: number) => {
+    setSpeechRate(value);
+    if (ratePreviewTimerRef.current) clearTimeout(ratePreviewTimerRef.current);
+    ratePreviewTimerRef.current = setTimeout(() => {
+      cancel();
+      speak(PREVIEW_PHRASE);
+    }, 350);
+  }, [setSpeechRate, speak, cancel]);
 
   return (
     <div className="voice-selector">
@@ -80,7 +92,7 @@ export function VoiceSelector() {
         <h2 className="settings-section-title">Speech Settings</h2>
         <div className="settings-row">
           <label>Speed: {speechRate.toFixed(2)}×</label>
-          <input type="range" min="0.5" max="1.5" step="0.05" value={speechRate} onChange={(e) => setSpeechRate(parseFloat(e.target.value))} />
+          <input type="range" min="0.5" max="1.5" step="0.05" value={speechRate} onChange={(e) => handleRateChange(parseFloat(e.target.value))} />
         </div>
         <div className="settings-row">
           <label>Pitch: {speechPitch.toFixed(2)}</label>

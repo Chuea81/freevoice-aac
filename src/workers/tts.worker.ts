@@ -252,6 +252,12 @@ async function loadModel(dtypeHint = 'q8') {
 // ── Audio cache ──
 const audioCache = new Map<string, ArrayBuffer>();
 
+// Cache keys must include speed — otherwise changing the rate slider returns
+// stale audio at the old speed because the cache hits before re-synthesis.
+function cacheKey(voice: string, speed: number, text: string): string {
+  return `${voice}:${speed.toFixed(2)}:${text}`;
+}
+
 const PRECACHE_LIST = [
   // Core words (immediate recognition)
   'I', 'want', 'go', 'more', 'stop', 'help', 'no', 'yes', 'done',
@@ -286,7 +292,7 @@ async function preCacheCommonWords(voice: string, speed: number): Promise<void> 
   for (const word of PRECACHE_LIST) {
     // Pause precaching if a SPEAK request came in — don't block the user
     if (precachePaused) break;
-    const key = `${voice}:${word}`;
+    const key = cacheKey(voice, speed, word);
     if (audioCache.has(key)) continue;
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -377,18 +383,18 @@ ctx.onmessage = async (e: MessageEvent) => {
       }
       // Pause any background precaching so this request gets priority
       precachePaused = true;
-      const cacheKey = `${msg.voice}:${msg.text}`;
+      const ck = cacheKey(msg.voice, msg.speed, msg.text);
       try {
         let wav: ArrayBuffer;
-        if (audioCache.has(cacheKey)) {
-          wav = audioCache.get(cacheKey)!.slice(0);
+        if (audioCache.has(ck)) {
+          wav = audioCache.get(ck)!.slice(0);
         } else {
           const audio = await tts.generate(msg.text, {
             voice: msg.voice,
             speed: msg.speed,
           });
           wav = audio.toWav();
-          audioCache.set(cacheKey, wav.slice(0));
+          audioCache.set(ck, wav.slice(0));
         }
         post({ type: 'AUDIO_READY', id: msg.id, buffer: wav }, [wav]);
       } catch (err) {
@@ -399,7 +405,7 @@ ctx.onmessage = async (e: MessageEvent) => {
 
     case 'SPEAK_AND_CACHE': {
       if (!tts) return;
-      const ck = `${msg.voice}:${msg.text}`;
+      const ck = cacheKey(msg.voice, msg.speed, msg.text);
       if (audioCache.has(ck)) return;
       try {
         const audio = await tts.generate(msg.text, { voice: msg.voice, speed: msg.speed });
@@ -413,6 +419,15 @@ ctx.onmessage = async (e: MessageEvent) => {
 
     case 'CLEAR_CACHE': {
       audioCache.clear();
+      break;
+    }
+
+    case 'RECACHE': {
+      // Re-run the common-words precache for a new (voice, speed) pair so the
+      // first tap at the new rate doesn't pay the full ML inference cost.
+      // No-op if the model isn't loaded yet — LOAD handles its own precache.
+      if (!tts) break;
+      preCacheCommonWords(msg.voice, msg.speed).catch(() => {});
       break;
     }
 

@@ -113,6 +113,30 @@ function warmWebSpeech(): void {
   window.speechSynthesis.speak(u);
 }
 
+// When the user changes speech rate or voice, re-run the worker's common-word
+// precache for the new (voice, speed) pair. Debounced 1s so dragging the
+// slider doesn't fire dozens of precache jobs — only the settled value does.
+// Module-level so we have exactly one subscription per app, not one per
+// useTTS consumer.
+let recacheTimer: ReturnType<typeof setTimeout> | null = null;
+let lastRecacheSig = '';
+
+useTTSStore.subscribe((state) => {
+  if (state.kokoroStatus !== 'ready') return;
+  if (!worker) return; // Worker not initialized yet — LOAD will handle initial precache
+  const sig = `${state.kokoroVoice}:${state.speechRate.toFixed(2)}`;
+  if (sig === lastRecacheSig) return;
+  lastRecacheSig = sig;
+  if (recacheTimer) clearTimeout(recacheTimer);
+  recacheTimer = setTimeout(() => {
+    worker?.postMessage({
+      type: 'RECACHE',
+      voice: state.kokoroVoice,
+      speed: state.speechRate,
+    });
+  }, 1000);
+});
+
 /** Check if device is Samsung/older Android that needs audio buffer */
 function isSamsungOldAndroid(): boolean {
   const ua = navigator.userAgent.toLowerCase();
