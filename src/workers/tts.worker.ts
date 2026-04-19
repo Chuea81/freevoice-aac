@@ -286,6 +286,10 @@ const PRECACHE_LIST = [
 ];
 
 let precachePaused = false;
+// Tracks the latest SPEAK batch the main thread has sent. SPEAK_AND_CACHE
+// messages tagged with an older batch are skipped — rapid user taps would
+// otherwise wait behind a backlog of per-word cache jobs from prior taps.
+let latestSpeakBatch = 0;
 
 async function preCacheCommonWords(voice: string, speed: number): Promise<void> {
   precachePaused = false;
@@ -383,6 +387,9 @@ ctx.onmessage = async (e: MessageEvent) => {
       }
       // Pause any background precaching so this request gets priority
       precachePaused = true;
+      if (typeof msg.batch === 'number' && msg.batch > latestSpeakBatch) {
+        latestSpeakBatch = msg.batch;
+      }
       const ck = cacheKey(msg.voice, msg.speed, msg.text);
       try {
         let wav: ArrayBuffer;
@@ -405,6 +412,9 @@ ctx.onmessage = async (e: MessageEvent) => {
 
     case 'SPEAK_AND_CACHE': {
       if (!tts) return;
+      // Skip stale cache work from earlier taps so rapid user input doesn't
+      // queue behind a backlog of per-word synthesis jobs.
+      if (typeof msg.batch === 'number' && msg.batch < latestSpeakBatch) return;
       const ck = cacheKey(msg.voice, msg.speed, msg.text);
       if (audioCache.has(ck)) return;
       try {

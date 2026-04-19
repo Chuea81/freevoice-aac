@@ -214,10 +214,16 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     }
 
     // Tap already fired on pointerDown (non-category instant path) — don't
-    // double-fire on release.
+    // double-fire on release. Only CONSUME the flag on pointerup though:
+    // on some touch devices pointerleave fires before pointerup, and if we
+    // consumed the flag on leave, the following pointerup would see
+    // tapFired=false and fall through to the "fire onTap" branch — causing
+    // the phrase to speak twice from a single tap.
     if (tapFiredRef.current) {
-      tapFiredRef.current = false;
-      pointerStartRef.current = null;
+      if (e.type === 'pointerup') {
+        tapFiredRef.current = false;
+        pointerStartRef.current = null;
+      }
       return;
     }
 

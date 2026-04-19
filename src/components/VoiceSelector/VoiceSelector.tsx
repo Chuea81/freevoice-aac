@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTTSStore, type KokoroVoice } from '../../store/ttsStore';
 import { useTTS } from '../../hooks/useTTS';
 
@@ -25,13 +25,35 @@ export function VoiceSelector() {
     speechVolume, setSpeechVolume,
   } = useTTSStore();
 
-  const { speak, cancel } = useTTS();
+  const { speak, cancel, isSpeaking } = useTTS();
+
+  // Test Voice routes through the centralized speak() so it honors whichever
+  // tier the user has selected — Kokoro uses Kokoro only, Web Speech uses
+  // speechSynthesis only, and the two engines never overlap. cancel() is
+  // called first so any lingering audio from a previous voice-tile preview
+  // (which could still be mid-synthesis on the worker) is stopped before
+  // the test fires.
+  const handleTestVoice = useCallback(() => {
+    cancel();
+    speak('I want to go to the park please');
+  }, [cancel, speak]);
+  // Both preview paths (voice tile click, rate slider drag) defer the actual
+  // speak through setTimeout. If the user closes Settings before the timer
+  // fires, the deferred speak would play while they're back on the main board
+  // — perceived as "random unprompted speech". Track every timer in a ref so
+  // we can clear them on unmount.
   const ratePreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pitchPreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const voicePreviewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Preview voice on selection — like picking an alarm sound
   const previewVoice = useCallback((delay = 100) => {
     cancel();
-    setTimeout(() => speak(PREVIEW_PHRASE), delay);
+    if (voicePreviewTimerRef.current) clearTimeout(voicePreviewTimerRef.current);
+    voicePreviewTimerRef.current = setTimeout(() => {
+      voicePreviewTimerRef.current = null;
+      speak(PREVIEW_PHRASE);
+    }, delay);
   }, [speak, cancel]);
 
   // Debounced preview triggered while the speed slider is dragged so the user
@@ -40,10 +62,32 @@ export function VoiceSelector() {
     setSpeechRate(value);
     if (ratePreviewTimerRef.current) clearTimeout(ratePreviewTimerRef.current);
     ratePreviewTimerRef.current = setTimeout(() => {
+      ratePreviewTimerRef.current = null;
       cancel();
       speak(PREVIEW_PHRASE);
     }, 350);
   }, [setSpeechRate, speak, cancel]);
+
+  // Same debounced pattern for pitch so the user hears the selected pitch
+  // after they settle the slider.
+  const handlePitchChange = useCallback((value: number) => {
+    setSpeechPitch(value);
+    if (pitchPreviewTimerRef.current) clearTimeout(pitchPreviewTimerRef.current);
+    pitchPreviewTimerRef.current = setTimeout(() => {
+      pitchPreviewTimerRef.current = null;
+      cancel();
+      speak(PREVIEW_PHRASE);
+    }, 350);
+  }, [setSpeechPitch, speak, cancel]);
+
+  // Cancel any pending preview + in-flight speech when the Settings panel
+  // closes so nothing speaks after the user has navigated away.
+  useEffect(() => () => {
+    if (ratePreviewTimerRef.current) clearTimeout(ratePreviewTimerRef.current);
+    if (pitchPreviewTimerRef.current) clearTimeout(pitchPreviewTimerRef.current);
+    if (voicePreviewTimerRef.current) clearTimeout(voicePreviewTimerRef.current);
+    cancel();
+  }, [cancel]);
 
   return (
     <div className="voice-selector">
@@ -96,7 +140,7 @@ export function VoiceSelector() {
         </div>
         <div className="settings-row">
           <label>Pitch: {speechPitch.toFixed(2)}</label>
-          <input type="range" min="0.5" max="2.0" step="0.05" value={speechPitch} onChange={(e) => setSpeechPitch(parseFloat(e.target.value))} />
+          <input type="range" min="0.5" max="2.0" step="0.05" value={speechPitch} onChange={(e) => handlePitchChange(parseFloat(e.target.value))} />
         </div>
         <div className="settings-row">
           <label>Volume: {speechVolume.toFixed(2)}</label>
@@ -107,9 +151,11 @@ export function VoiceSelector() {
       {/* ── Test Button ── */}
       <button
         className="voice-test-btn"
-        onClick={() => speak('I want to go to the park please')}
+        onClick={handleTestVoice}
+        disabled={isSpeaking}
+        aria-busy={isSpeaking}
       >
-        🔊 Test Voice
+        {isSpeaking ? '🔊 Playing…' : '🔊 Test Voice'}
       </button>
     </div>
   );
