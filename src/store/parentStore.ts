@@ -49,7 +49,9 @@ export const useParentStore = create<ParentState>((set) => ({
     ]);
     set({
       pinSet: !!pinSetting,
-      pinEnabled: !!enabledSetting?.value,
+      // Setting.value is string, so we serialize the boolean as 'true'/'false'.
+      // An absent row means the lock has never been enabled.
+      pinEnabled: enabledSetting?.value === 'true',
     });
   },
 
@@ -59,7 +61,7 @@ export const useParentStore = create<ParentState>((set) => ({
   setPin: async (pin) => {
     const hashed = await hashPin(pin);
     await db.settings.put({ key: 'parentPin', value: hashed });
-    await db.settings.put({ key: 'parentPinEnabled', value: true });
+    await db.settings.put({ key: 'parentPinEnabled', value: 'true' });
     set({ pinSet: true, pinEnabled: true, isUnlocked: true, showPinModal: false });
   },
 
@@ -79,7 +81,7 @@ export const useParentStore = create<ParentState>((set) => ({
   // don't re-check here.
   clearPin: async () => {
     await db.settings.delete('parentPin');
-    await db.settings.put({ key: 'parentPinEnabled', value: false });
+    await db.settings.put({ key: 'parentPinEnabled', value: 'false' });
     set({ pinSet: false, pinEnabled: false, showPinModal: false });
   },
 

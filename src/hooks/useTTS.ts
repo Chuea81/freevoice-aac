@@ -367,12 +367,10 @@ function speakWithWebSpeech(
 }
 
 export function useTTS() {
-  const {
-    speechRate,
-    speechPitch,
-    speechVolume,
-  } = useTTSStore();
-
+  // Note: speak()/speakPreview() read speechRate/Pitch/Volume from the store
+  // at call time via getState(), so we don't subscribe to them here — that
+  // would cause spurious re-renders for every slider drag without changing
+  // any rendered output.
   const getPronunciation = useBoardStore((s) => s.getPronunciation);
 
   // Unlock iOS speech synthesis + eagerly resume AudioContext on first user interaction
