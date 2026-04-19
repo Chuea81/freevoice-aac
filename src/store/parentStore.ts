@@ -1,18 +1,22 @@
 import { create } from 'zustand';
 import { db } from '../db';
 
+export type PinMode = 'unlock' | 'set' | 'change' | 'remove';
+
 interface ParentState {
   isUnlocked: boolean;
   pinSet: boolean;
+  pinEnabled: boolean;
   showPinModal: boolean;
-  pinMode: 'unlock' | 'set' | 'change';
+  pinMode: PinMode;
 
   // Actions
-  openPinModal: (mode: 'unlock' | 'set' | 'change') => void;
+  openPinModal: (mode: PinMode) => void;
   closePinModal: () => void;
   checkPinSet: () => Promise<void>;
   setPin: (pin: string) => Promise<void>;
   verifyPin: (pin: string) => Promise<boolean>;
+  clearPin: () => Promise<void>;
   lock: () => void;
 }
 
@@ -26,6 +30,7 @@ async function hashPin(pin: string): Promise<string> {
 export const useParentStore = create<ParentState>((set) => ({
   isUnlocked: false,
   pinSet: false,
+  pinEnabled: false,
   showPinModal: false,
   pinMode: 'unlock',
 
@@ -38,14 +43,24 @@ export const useParentStore = create<ParentState>((set) => ({
   },
 
   checkPinSet: async () => {
-    const setting = await db.settings.get('parentPin');
-    set({ pinSet: !!setting });
+    const [pinSetting, enabledSetting] = await Promise.all([
+      db.settings.get('parentPin'),
+      db.settings.get('parentPinEnabled'),
+    ]);
+    set({
+      pinSet: !!pinSetting,
+      pinEnabled: !!enabledSetting?.value,
+    });
   },
 
+  // setPin both stores the hash and enables the lock. Used by 'set' (first-
+  // time enable) and 'change' (after verifying the old PIN). isUnlocked stays
+  // true so the user keeps access to Settings they are already inside.
   setPin: async (pin) => {
     const hashed = await hashPin(pin);
     await db.settings.put({ key: 'parentPin', value: hashed });
-    set({ pinSet: true, isUnlocked: true, showPinModal: false });
+    await db.settings.put({ key: 'parentPinEnabled', value: true });
+    set({ pinSet: true, pinEnabled: true, isUnlocked: true, showPinModal: false });
   },
 
   verifyPin: async (pin) => {
@@ -57,6 +72,15 @@ export const useParentStore = create<ParentState>((set) => ({
       set({ isUnlocked: true, showPinModal: false });
     }
     return match;
+  },
+
+  // Disable the lock AND remove the stored hash. The user is already
+  // authenticated at this point (verify step happened in the modal), so we
+  // don't re-check here.
+  clearPin: async () => {
+    await db.settings.delete('parentPin');
+    await db.settings.put({ key: 'parentPinEnabled', value: false });
+    set({ pinSet: false, pinEnabled: false, showPinModal: false });
   },
 
   lock: () => {

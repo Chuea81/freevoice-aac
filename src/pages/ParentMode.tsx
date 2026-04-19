@@ -10,35 +10,36 @@ interface Props {
 export function ParentMode({ onBack }: Props) {
   const isUnlocked = useParentStore((s) => s.isUnlocked);
   const pinSet = useParentStore((s) => s.pinSet);
+  const pinEnabled = useParentStore((s) => s.pinEnabled);
   const checkPinSet = useParentStore((s) => s.checkPinSet);
   const openPinModal = useParentStore((s) => s.openPinModal);
 
-  // Check if PIN is set on mount
+  // Load PIN state from Dexie on mount so we know whether the lock is enabled
+  // before we decide to render Settings or prompt for the PIN.
   useEffect(() => {
     checkPinSet();
   }, [checkPinSet]);
 
-  // If PIN not set, prompt to create one (default 1234 with prompt to change — PRD 3.6)
+  // Settings is open by default. Only prompt for a PIN when the user has
+  // explicitly enabled the lock AND actually stored a PIN hash.
   useEffect(() => {
-    if (pinSet === false) {
-      // No PIN set yet — open the set PIN modal
-      openPinModal('set');
-    } else if (pinSet && !isUnlocked) {
-      // PIN exists but not unlocked — open the unlock modal
+    if (pinEnabled && pinSet && !isUnlocked) {
       openPinModal('unlock');
     }
-  }, [pinSet, isUnlocked, openPinModal]);
+  }, [pinEnabled, pinSet, isUnlocked, openPinModal]);
+
+  const gated = pinEnabled && pinSet && !isUnlocked;
 
   return (
     <>
       <PinModal />
-      {isUnlocked ? (
+      {!gated ? (
         <Settings onBack={onBack} />
       ) : (
         <div className="settings-page">
           <div className="settings-header">
             <button className="settings-back-btn" onClick={onBack}>← Back</button>
-            <h1 className="settings-title">Parent Mode</h1>
+            <h1 className="settings-title">Settings</h1>
             <div />
           </div>
           <div className="empty-state" style={{ paddingTop: 80 }}>

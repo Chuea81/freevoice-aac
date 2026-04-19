@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore, type LabelPosition, type ColorScheme, type SkinTone } from '../store/settingsStore';
 import { useParentStore } from '../store/parentStore';
@@ -28,6 +28,24 @@ export function Settings({ onBack }: { onBack: () => void }) {
   const boardStore = useBoardStore();
   const firstThenMode = useFirstThenStore((s) => s.mode);
   const setFirstThenMode = useFirstThenStore((s) => s.setMode);
+
+  // Re-read PIN state whenever Settings mounts so the PIN Lock toggle always
+  // reflects what's actually stored (e.g. after a factory reset or an import).
+  useEffect(() => {
+    parentStore.checkPinSet();
+  }, [parentStore]);
+
+  // PIN Lock toggle: OFF → ON opens the 'set' flow (create + confirm); ON →
+  // OFF opens the 'remove' flow which requires the current PIN before
+  // clearing. The toggle is only considered "ON" when a PIN has been saved
+  // AND enabled, so the UI reflects the real gate state.
+  const handleTogglePinLock = useCallback(() => {
+    if (parentStore.pinEnabled) {
+      parentStore.openPinModal('remove');
+    } else {
+      parentStore.openPinModal('set');
+    }
+  }, [parentStore]);
 
   // Pronunciation editor state
   const [pronWord, setPronWord] = useState('');
@@ -192,7 +210,11 @@ export function Settings({ onBack }: { onBack: () => void }) {
       <div className="settings-header">
         <button className="settings-back-btn" onClick={onBack}>← Back</button>
         <h1 className="settings-title">Settings</h1>
-        <button className="settings-lock-btn" onClick={() => parentStore.lock()}>🔒 Lock</button>
+        {parentStore.pinEnabled ? (
+          <button className="settings-lock-btn" onClick={() => parentStore.lock()}>🔒 Lock</button>
+        ) : (
+          <div />
+        )}
       </div>
 
       <div className="settings-scroll">
@@ -458,13 +480,46 @@ export function Settings({ onBack }: { onBack: () => void }) {
           </p>
         </section>
 
+        {/* ── PIN LOCK ── */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">PIN Lock</h2>
+          <div className="settings-row">
+            <label>Require PIN to access Settings</label>
+            <button
+              className={`settings-toggle${parentStore.pinEnabled ? ' on' : ''}`}
+              onClick={handleTogglePinLock}
+              aria-pressed={parentStore.pinEnabled}
+            >
+              {parentStore.pinEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          <p className="settings-hint">
+            When on, tapping the Settings button will ask for a 4-digit PIN. Leave off to keep Settings open for everyone.
+          </p>
+          {parentStore.pinEnabled && (
+            <>
+              <div className="settings-row">
+                <label>Change PIN</label>
+                <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>
+                  Change PIN
+                </button>
+              </div>
+              <div className="settings-row">
+                <label>Remove PIN</label>
+                <button className="settings-action-btn" onClick={() => parentStore.openPinModal('remove')}>
+                  Remove PIN
+                </button>
+              </div>
+              <p className="settings-hint">
+                ⚠️ If you forget your PIN, you will need to clear the app data to reset it — there is no recovery.
+              </p>
+            </>
+          )}
+        </section>
+
         {/* ── SECURITY ── */}
         <section className="settings-section">
           <h2 className="settings-section-title">{t('settings.security')}</h2>
-          <div className="settings-row">
-            <label>{t('settings.changePin')}</label>
-            <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>{t('settings.changePin')}</button>
-          </div>
           <div className="settings-row">
             <label>Factory Reset</label>
             <button className="settings-action-btn" style={{ background: '#ef4444', color: 'white' }} onClick={handleFactoryReset}>
