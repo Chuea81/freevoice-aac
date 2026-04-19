@@ -36,6 +36,12 @@ if (existsSync(join(pub, 'guide.html'))) {
   console.log('✓ dist/guide.html');
 }
 
+// Copy avatar preview (internal review page)
+if (existsSync(join(pub, 'avatar-preview.html'))) {
+  copyFileSync(join(pub, 'avatar-preview.html'), join(dist, 'avatar-preview.html'));
+  console.log('✓ dist/avatar-preview.html');
+}
+
 // Copy CNAME
 if (existsSync(join(pub, 'CNAME'))) {
   copyFileSync(join(pub, 'CNAME'), join(dist, 'CNAME'));
