@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useCharacterStore } from '../../store/characterStore';
 import type { Gender, SkinTone } from '../../types/character';
-
-const BASE = import.meta.env.BASE_URL || '/';
+import { Avatar } from '../Avatar/Avatar';
 
 interface Props {
   onSelect: (characterId: string) => void;
@@ -136,11 +135,15 @@ export function CharacterPicker({ onSelect, showSkipOption }: Props) {
                     fontSize: '11px', fontWeight: 900, color: 'white',
                   }}>✓</div>
                 )}
-                <img
-                  src={`${BASE}${char.previewImage.replace(/^\//, '')}`}
-                  alt={char.description}
-                  style={{ width: '72px', height: '72px', objectFit: 'contain', borderRadius: '10px' }}
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                <Avatar
+                  characterId={char.id}
+                  size={80}
+                  aria-label={char.description}
+                  style={{
+                    borderRadius: '14px',
+                    background: '#F5F7F5',
+                    display: 'block',
+                  }}
                 />
                 <span style={{
                   fontFamily: "var(--font-body)", fontSize: '12px', fontWeight: 900,

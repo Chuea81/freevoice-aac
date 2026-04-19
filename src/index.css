@@ -594,12 +594,13 @@ body {
   object-fit: contain;
 }
 
-/* Character images — fill the card, no clipping */
+/* Character images — fill the card, cover + center for crisp framing */
 .symbol-character-img {
   width: 100%;
   height: auto;
   max-height: 85%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   z-index: 1;
   border-radius: 6px;
   flex-shrink: 1;
