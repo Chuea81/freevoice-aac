@@ -10,6 +10,15 @@ permissions:
   pages: write
   id-token: write
 
+# Pages allows exactly one deployment at a time. Without this, rapid
+# consecutive pushes queue multiple runs that race on the same github-pages
+# environment and produce "Multiple artifacts named 'github-pages'" errors
+# when deploy-pages fetches by artifact name. Cancelling in-progress runs
+# keeps the latest commit as the one that ships.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
