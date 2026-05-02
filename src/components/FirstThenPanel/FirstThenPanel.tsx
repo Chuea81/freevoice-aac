@@ -1,5 +1,8 @@
 import { useFirstThenStore, type FirstThenSlot, type FirstThenToken } from '../../store/firstThenStore';
+import { useCharacterStore } from '../../store/characterStore';
+import { useUserProfileStore } from '../../store/userProfileStore';
 import { useTouchDelay } from '../../hooks/useTouchDelay';
+import { Avatar } from '../Avatar/Avatar';
 
 interface SlotProps {
   label: 'FIRST' | 'THEN';
@@ -52,6 +55,14 @@ export function FirstThenPanel() {
   const activeSlot = useFirstThenStore((s) => s.activeSlot);
   const clearSlot = useFirstThenStore((s) => s.clearSlot);
   const setActiveSlot = useFirstThenStore((s) => s.setActiveSlot);
+  const selectedCharacterId = useCharacterStore((s) => s.selectedCharacterId);
+  const preferredName = useUserProfileStore((s) => s.profile.preferredName.trim());
+
+  const prompt = preferredName
+    ? activeSlot === 'then'
+      ? `${preferredName}, what comes next?`
+      : `${preferredName}, what do you want first?`
+    : null;
 
   const onFirstTap = () => {
     if (firstSlot) clearSlot('first');
@@ -63,10 +74,14 @@ export function FirstThenPanel() {
   };
 
   return (
+    <div className="first-then-wrap">
+      {prompt && (
+        <div className="ft-prompt" aria-hidden="true">{prompt}</div>
+      )}
     <div
       className="first-then-panel"
       role="group"
-      aria-label="First, then sentence builder"
+      aria-label={prompt ?? 'First, then sentence builder'}
     >
       <Slot
         label="FIRST"
@@ -76,6 +91,11 @@ export function FirstThenPanel() {
         onActivate={onFirstTap}
       />
       <div className="ft-connector" aria-hidden="true">
+        {selectedCharacterId && (
+          <div className="ft-connector-avatar">
+            <Avatar characterId={selectedCharacterId} size={48} />
+          </div>
+        )}
         <span className="ft-connector-word">then</span>
         <span className="ft-connector-arrow">→</span>
       </div>
@@ -86,6 +106,7 @@ export function FirstThenPanel() {
         active={activeSlot === 'then'}
         onActivate={onThenTap}
       />
+    </div>
     </div>
   );
 }

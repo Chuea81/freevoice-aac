@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Board } from './pages/Board';
 import { ParentMode } from './pages/ParentMode';
+import { Profile } from './pages/Profile';
 import { useSettingsStore } from './store/settingsStore';
+import { useUserProfileStore } from './store/userProfileStore';
 import { useCharacterManifest } from './hooks/useCharacterManifest';
+import { GreetingToast } from './components/GreetingToast/GreetingToast';
 import { RTL_LANGUAGES, CJK_LANGUAGES, type SupportedLanguage } from './i18n/index';
 
 function App() {
-  const [page, setPage] = useState<'board' | 'parent'>('board');
+  const [page, setPage] = useState<'board' | 'parent' | 'profile'>('board');
   const loadFromDb = useSettingsStore((s) => s.loadFromDb);
+  const loadProfile = useUserProfileStore((s) => s.loadFromDb);
   const cardStyle = useSettingsStore((s) => s.cardStyle);
   const { i18n } = useTranslation();
 
@@ -22,6 +26,7 @@ function App() {
   }, []);
 
   useEffect(() => { loadFromDb(); }, [loadFromDb]);
+  useEffect(() => { loadProfile(); }, [loadProfile]);
   useCharacterManifest();
 
   // Card style class
@@ -53,13 +58,20 @@ function App() {
   }, [i18n.language]);
 
   if (page === 'parent') {
-    return (
-      <ParentMode onBack={() => setPage('board')} />
-    );
+    return <ParentMode onBack={() => setPage('board')} />;
+  }
+  if (page === 'profile') {
+    return <Profile onBack={() => setPage('board')} />;
   }
 
   return (
-    <Board onOpenParentMode={() => setPage('parent')} />
+    <>
+      <Board
+        onOpenParentMode={() => setPage('parent')}
+        onOpenProfile={() => setPage('profile')}
+      />
+      <GreetingToast />
+    </>
   );
 }
 

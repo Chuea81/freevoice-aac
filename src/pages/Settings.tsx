@@ -7,6 +7,7 @@ import { useFirstThenStore } from '../store/firstThenStore';
 import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
+import { Avatar } from '../components/Avatar/Avatar';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
@@ -28,6 +29,11 @@ export function Settings({ onBack }: { onBack: () => void }) {
   const boardStore = useBoardStore();
   const firstThenMode = useFirstThenStore((s) => s.mode);
   const setFirstThenMode = useFirstThenStore((s) => s.setMode);
+  const selectedCharacterId = useCharacterStore((s) => s.selectedCharacterId);
+  const characters = useCharacterStore((s) => s.characters);
+  const setSelectedCharacter = useCharacterStore((s) => s.setSelectedCharacter);
+  const selectedCharacter = characters.find((c) => c.id === selectedCharacterId) ?? null;
+  const [showCharacterPicker, setShowCharacterPicker] = useState(false);
 
   // Re-read PIN state whenever Settings mounts so the PIN Lock toggle always
   // reflects what's actually stored (e.g. after a factory reset or an import).
@@ -225,17 +231,41 @@ export function Settings({ onBack }: { onBack: () => void }) {
         {/* ── YOUR CHARACTER ── */}
         <section className="settings-section">
           <h2 className="settings-section-title">Your Character</h2>
-          <p className="settings-hint">
-            {useCharacterStore.getState().selectedCharacterId
-              ? `Currently using: ${useCharacterStore.getState().characters.find(c => c.id === useCharacterStore.getState().selectedCharacterId)?.name || 'Custom'}`
-              : 'Using standard emoji symbols'}
-          </p>
-          <CharacterPicker
-            onSelect={(id) => {
-              useCharacterStore.getState().setSelectedCharacter(id === 'none' ? null : id);
-            }}
-            showSkipOption={true}
-          />
+          <div className="settings-avatar-display">
+            {selectedCharacterId ? (
+              <>
+                <div className="settings-avatar-frame">
+                  <Avatar
+                    characterId={selectedCharacterId}
+                    size={80}
+                    aria-label={selectedCharacter?.name ?? 'Selected avatar'}
+                  />
+                </div>
+                <div className="settings-avatar-name">{selectedCharacter?.name ?? 'Custom'}</div>
+              </>
+            ) : (
+              <p className="settings-hint" style={{ margin: 0 }}>Using standard emoji symbols</p>
+            )}
+            <button
+              type="button"
+              className="settings-avatar-change-btn"
+              onClick={() => setShowCharacterPicker((v) => !v)}
+              aria-expanded={showCharacterPicker}
+            >
+              {showCharacterPicker ? 'Done' : 'Change Avatar'}
+            </button>
+          </div>
+          {showCharacterPicker && (
+            <div className="settings-avatar-picker">
+              <CharacterPicker
+                onSelect={(id) => {
+                  setSelectedCharacter(id === 'none' ? null : id);
+                  setShowCharacterPicker(false);
+                }}
+                showSkipOption={true}
+              />
+            </div>
+          )}
         </section>
 
         {/* ── AUTO-SPEAK ── */}

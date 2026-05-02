@@ -4,15 +4,19 @@ import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 import { HIGHLIGHT_COLORS, useHighlightStore } from '../../store/highlightStore';
 import { useFirstThenStore } from '../../store/firstThenStore';
+import { useCharacterStore } from '../../store/characterStore';
+import { useUserProfileStore } from '../../store/userProfileStore';
 import { useTouchDelay } from '../../hooks/useTouchDelay';
 import { FirstThenPanel } from '../FirstThenPanel/FirstThenPanel';
+import { Avatar } from '../Avatar/Avatar';
 
 interface Props {
   onOpenSettings?: () => void;
   onOpenSearch?: () => void;
+  onOpenProfile?: () => void;
 }
 
-export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
+export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props) {
   const outputTokens = useBoardStore((s) => s.outputTokens);
   const removeLastToken = useBoardStore((s) => s.removeLastToken);
   const clearTokens = useBoardStore((s) => s.clearTokens);
@@ -25,6 +29,11 @@ export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
   const firstThenMode = useFirstThenStore((s) => s.mode);
   const firstSlot = useFirstThenStore((s) => s.firstSlot);
   const thenSlot = useFirstThenStore((s) => s.thenSlot);
+  const selectedCharacterId = useCharacterStore((s) => s.selectedCharacterId);
+  const selectedCharacter = useCharacterStore((s) =>
+    s.characters.find((c) => c.id === s.selectedCharacterId) ?? null
+  );
+  const preferredName = useUserProfileStore((s) => s.profile.preferredName.trim());
   const toggleFirstThen = useFirstThenStore((s) => s.toggleMode);
   const clearFirstThenBoth = useFirstThenStore((s) => s.clearBoth);
   const clearFirstThenActive = useFirstThenStore((s) => s.clearActive);
@@ -137,6 +146,27 @@ export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
 
   return (
     <div id="speech-bar" role="toolbar" aria-label="Speech output bar">
+      <div className="speech-bar-row">
+        {selectedCharacterId && (
+          <button
+            type="button"
+            className="speech-bar-identity"
+            onClick={onOpenProfile}
+            aria-label={preferredName ? `Open profile for ${preferredName}` : 'Open profile'}
+            disabled={!onOpenProfile}
+          >
+            <span className="speech-bar-avatar" aria-hidden="true">
+              <Avatar
+                characterId={selectedCharacterId}
+                size={40}
+                aria-label={selectedCharacter?.name ?? 'Your avatar'}
+              />
+            </span>
+            {preferredName && (
+              <span className="speech-bar-name">{preferredName}</span>
+            )}
+          </button>
+        )}
       <div className={`speech-output-wrap${firstThenMode ? ' firstthen-mode' : ''}`}>
         {firstThenMode && (
           <button
@@ -198,6 +228,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch }: Props) {
             🔍
           </button>
         )}
+      </div>
       </div>
 
       <div className="speech-bar-buttons">

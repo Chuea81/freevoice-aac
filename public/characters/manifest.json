@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "characters": [
     {
       "id": "char_001",
@@ -10,29 +10,29 @@
       "hairColor": "brown",
       "previewImage": "/characters/preview/char_001.png",
       "supportedCategories": ["emotions"],
-      "description": "Boy with light skin and brown hair"
+      "description": "Boy with light skin, brown hair, and brown eyes"
     },
     {
       "id": "char_002",
       "name": "Jordan",
       "gender": "girl",
       "skinTone": "dark",
-      "hairType": "curly",
+      "hairType": "coily",
       "hairColor": "black",
       "previewImage": "/characters/preview/char_002.png",
       "supportedCategories": ["emotions"],
-      "description": "African American girl with dark skin and black curly hair"
+      "description": "African American girl with dark skin, black braids, and brown eyes"
     },
     {
       "id": "char_003",
-      "name": "Sofia",
+      "name": "Sophia",
       "gender": "girl",
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "brown",
       "previewImage": "/characters/preview/char_003.png",
       "supportedCategories": ["emotions"],
-      "description": "Girl with light skin and brown hair"
+      "description": "Girl with light skin, long brown hair, and green eyes"
     },
     {
       "id": "char_004",
@@ -43,7 +43,7 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_004.png",
       "supportedCategories": ["emotions"],
-      "description": "Latino boy with medium skin and black curly hair"
+      "description": "Latino boy with medium skin, black curly hair, and brown eyes"
     },
     {
       "id": "char_005",
@@ -54,7 +54,7 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_005.png",
       "supportedCategories": ["emotions"],
-      "description": "Girl with dark skin and black curly hair"
+      "description": "African American girl with dark skin, black curly hair, and brown eyes"
     },
     {
       "id": "char_006",
@@ -65,7 +65,7 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_006.png",
       "supportedCategories": ["emotions"],
-      "description": "Asian boy with light skin and straight black hair"
+      "description": "East Asian boy with light skin, straight black hair with bangs, and brown eyes"
     },
     {
       "id": "char_007",
@@ -76,51 +76,51 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_007.png",
       "supportedCategories": ["emotions"],
-      "description": "Asian girl with light skin and straight black hair"
+      "description": "East Asian girl with light skin, black bob cut hair, and brown eyes"
     },
     {
       "id": "char_008",
       "name": "Isabella",
       "gender": "girl",
       "skinTone": "medium",
-      "hairType": "curly",
+      "hairType": "coily",
       "hairColor": "black",
       "previewImage": "/characters/preview/char_008.png",
       "supportedCategories": ["emotions"],
-      "description": "Latina girl with medium skin and black curly hair"
+      "description": "Latina girl with medium skin, black braided pigtails, and brown eyes"
     },
     {
       "id": "char_009",
       "name": "Kai",
       "gender": "neutral",
-      "skinTone": "medium",
+      "skinTone": "light",
       "hairType": "wavy",
       "hairColor": "brown",
       "previewImage": "/characters/preview/char_009.png",
       "supportedCategories": ["emotions"],
-      "description": "Gender-neutral child with medium skin and wavy brown hair"
+      "description": "Gender-neutral child with light skin, short wavy brown hair, and brown eyes"
     },
     {
       "id": "char_010",
       "name": "Leila",
       "gender": "girl",
-      "skinTone": "medium-dark",
-      "hairType": "curly",
+      "skinTone": "dark",
+      "hairType": "coily",
       "hairColor": "black",
       "previewImage": "/characters/preview/char_010.png",
       "supportedCategories": ["emotions"],
-      "description": "Girl with medium-dark skin and black curly hair"
+      "description": "African American girl with dark skin, black curly puff buns, and brown eyes"
     },
     {
       "id": "char_011",
-      "name": "Tariq",
+      "name": "Marcus",
       "gender": "boy",
-      "skinTone": "medium-dark",
-      "hairType": "straight",
+      "skinTone": "dark",
+      "hairType": "curly",
       "hairColor": "black",
       "previewImage": "/characters/preview/char_011.png",
       "supportedCategories": ["emotions"],
-      "description": "Boy with medium-dark skin and straight black hair"
+      "description": "African American boy with dark skin, short black curly hair, and brown eyes"
     },
     {
       "id": "char_012",
@@ -131,7 +131,7 @@
       "hairColor": "blonde",
       "previewImage": "/characters/preview/char_012.png",
       "supportedCategories": ["emotions"],
-      "description": "Eastern European girl with light skin and blonde hair"
+      "description": "Girl with light skin, long blonde hair, and blue eyes"
     },
     {
       "id": "char_013",
@@ -142,7 +142,7 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_013.png",
       "supportedCategories": ["emotions"],
-      "description": "African American boy with dark skin and black curly hair"
+      "description": "Boy with dark skin, black curly hair, and brown eyes"
     },
     {
       "id": "char_014",
@@ -153,7 +153,150 @@
       "hairColor": "black",
       "previewImage": "/characters/preview/char_014.png",
       "supportedCategories": ["emotions"],
-      "description": "Mediterranean boy with medium-light skin and black hair"
+      "description": "Mediterranean boy with medium-light skin, short black hair, and brown eyes"
+    },
+    {
+      "id": "char_015",
+      "name": "Brynn",
+      "gender": "girl",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "red",
+      "previewImage": "/characters/preview/char_015.png",
+      "supportedCategories": ["emotions"],
+      "description": "Girl with fair skin, long red hair, freckles, and blue eyes"
+    },
+    {
+      "id": "char_016",
+      "name": "Liam",
+      "gender": "boy",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "red",
+      "previewImage": "/characters/preview/char_016.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with fair skin, red hair, freckles, and brown eyes"
+    },
+    {
+      "id": "char_017",
+      "name": "Luke",
+      "gender": "boy",
+      "skinTone": "light",
+      "hairType": "straight",
+      "hairColor": "blonde",
+      "previewImage": "/characters/preview/char_017.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with fair skin, blonde hair, freckles, and blue eyes"
+    },
+    {
+      "id": "char_018",
+      "name": "Amina",
+      "gender": "girl",
+      "skinTone": "medium",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_018.png",
+      "supportedCategories": ["emotions"],
+      "description": "Muslim girl with medium skin, black hijab, and brown eyes"
+    },
+    {
+      "id": "char_019",
+      "name": "Omar",
+      "gender": "boy",
+      "skinTone": "medium",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_019.png",
+      "supportedCategories": ["emotions"],
+      "description": "Muslim boy with medium skin, kufi cap, black hair, and brown eyes"
+    },
+    {
+      "id": "char_020",
+      "name": "Dev",
+      "gender": "boy",
+      "skinTone": "medium-dark",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_020.png",
+      "supportedCategories": ["emotions"],
+      "description": "Indian boy with brown skin, short black hair, and brown eyes"
+    },
+    {
+      "id": "char_021",
+      "name": "Hannah",
+      "gender": "girl",
+      "skinTone": "light",
+      "hairType": "wavy",
+      "hairColor": "brown",
+      "previewImage": "/characters/preview/char_021.png",
+      "supportedCategories": ["emotions"],
+      "description": "Girl with light skin, long wavy brown hair, freckles, and brown eyes"
+    },
+    {
+      "id": "char_022",
+      "name": "Carmen",
+      "gender": "girl",
+      "skinTone": "medium",
+      "hairType": "wavy",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_022.png",
+      "supportedCategories": ["emotions"],
+      "description": "Latina girl with medium skin, long wavy black hair, and brown eyes"
+    },
+    {
+      "id": "char_023",
+      "name": "Wesley",
+      "gender": "boy",
+      "skinTone": "light",
+      "hairType": "wavy",
+      "hairColor": "brown",
+      "previewImage": "/characters/preview/char_023.png",
+      "supportedCategories": ["emotions"],
+      "description": "Boy with light skin, messy brown hair, freckles, and green eyes"
+    },
+    {
+      "id": "char_024",
+      "name": "Jaylen",
+      "gender": "neutral",
+      "skinTone": "dark",
+      "hairType": "curly",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_024.png",
+      "supportedCategories": ["emotions"],
+      "description": "African American gender-neutral child with dark skin, black curly hair, and brown eyes"
+    },
+    {
+      "id": "char_025",
+      "name": "Maya",
+      "gender": "girl",
+      "skinTone": "medium-dark",
+      "hairType": "straight",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_025.png",
+      "supportedCategories": ["emotions"],
+      "description": "Mixed race girl with brown skin, straight black hair with bangs, and brown eyes"
+    },
+    {
+      "id": "char_026",
+      "name": "Priya",
+      "gender": "girl",
+      "skinTone": "medium-dark",
+      "hairType": "coily",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_026.png",
+      "supportedCategories": ["emotions"],
+      "description": "Indian girl with brown skin, black hair in a side braid, and brown eyes"
+    },
+    {
+      "id": "char_027",
+      "name": "Jamal",
+      "gender": "boy",
+      "skinTone": "dark",
+      "hairType": "coily",
+      "hairColor": "black",
+      "previewImage": "/characters/preview/char_027.png",
+      "supportedCategories": ["emotions"],
+      "description": "African American boy with dark skin, black cornrow braids, and brown eyes"
     }
   ]
 }

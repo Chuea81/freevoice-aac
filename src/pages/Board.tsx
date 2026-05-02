@@ -18,9 +18,10 @@ import { importBoardFromUrl } from '../utils/backup';
 
 interface Props {
   onOpenParentMode: () => void;
+  onOpenProfile?: () => void;
 }
 
-export function Board({ onOpenParentMode }: Props) {
+export function Board({ onOpenParentMode, onOpenProfile }: Props) {
   const seedDatabase = useBoardStore((s) => s.seedDatabase);
   const isSeeded = useBoardStore((s) => s.isSeeded);
   const currentBoardId = useBoardStore((s) => s.currentBoardId);
@@ -108,7 +109,7 @@ export function Board({ onOpenParentMode }: Props) {
 
   return (
     <>
-      <SpeechBar onOpenSettings={onOpenParentMode} onOpenSearch={() => setSearchOpen(true)} />
+      <SpeechBar onOpenSettings={onOpenParentMode} onOpenSearch={() => setSearchOpen(true)} onOpenProfile={onOpenProfile} />
       <div className="parent-tap-zone" onClick={handleTripleTap} aria-hidden="true" />
       <IosInstallPrompt />
       <AndroidInstallPrompt />

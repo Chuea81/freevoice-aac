@@ -170,7 +170,7 @@ export const db = new FreeVoiceDB();
 
 // ── Seed on first launch (PRD 4.2) ──
 
-const CURRENT_DATA_VERSION = 99; // Update when defaultBoards.ts changes
+const CURRENT_DATA_VERSION = 100; // Update when defaultBoards.ts changes
 
 export async function seedIfNeeded(): Promise<void> {
   const count = await db.boards.count();

@@ -29,8 +29,9 @@ function getCardColor(id: string): string {
 }
 
 /** Map boardId to character system SymbolCategory */
-function boardToCategory(boardId: string): SymbolCategory | null {
-  if (boardId === 'feelings') return 'emotions';
+function boardToCategory(_boardId: string): SymbolCategory | null {
+  // Feelings now uses native emoji to match the rest of the app's emoji style
+  // instead of per-character emotion sprites.
   return null;
 }
 
