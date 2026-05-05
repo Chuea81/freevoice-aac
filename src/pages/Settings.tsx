@@ -5,6 +5,7 @@ import { useParentStore } from '../store/parentStore';
 import { useBoardStore } from '../store/boardStore';
 import { useFirstThenStore } from '../store/firstThenStore';
 import { useCharacterStore } from '../store/characterStore';
+import { useEditModeStore } from '../store/editModeStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { Avatar } from '../components/Avatar/Avatar';
@@ -30,6 +31,8 @@ export function Settings({ onBack }: { onBack: () => void }) {
   const boardStore = useBoardStore();
   const firstThenMode = useFirstThenStore((s) => s.mode);
   const setFirstThenMode = useFirstThenStore((s) => s.setMode);
+  const editModeActive = useEditModeStore((s) => s.active);
+  const setEditModeActive = useEditModeStore((s) => s.setActive);
   const selectedCharacterId = useCharacterStore((s) => s.selectedCharacterId);
   const characters = useCharacterStore((s) => s.characters);
   const setSelectedCharacter = useCharacterStore((s) => s.setSelectedCharacter);
@@ -267,6 +270,24 @@ export function Settings({ onBack }: { onBack: () => void }) {
               />
             </div>
           )}
+        </section>
+
+        {/* ── BOARD EDITING — toggle Edit Mode for tap-to-edit ── */}
+        <section className="settings-section">
+          <h2 className="settings-section-title">Board Editing</h2>
+          <div className="settings-row">
+            <label>Edit Mode</label>
+            <button
+              className={`settings-toggle${editModeActive ? ' on' : ''}`}
+              onClick={() => setEditModeActive(!editModeActive)}
+              aria-pressed={editModeActive}
+            >
+              {editModeActive ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          <p className="settings-hint">
+            When on, tapping any button (built-in or custom) opens its edit form instead of speaking. A banner stays at the top with a Done Editing button. Long-press (2.5 seconds) any button to edit it without turning Edit Mode on.
+          </p>
         </section>
 
         {/* ── MY CUSTOM CONTENT (Phase 3) ── */}

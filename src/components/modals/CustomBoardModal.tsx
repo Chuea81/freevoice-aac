@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useBoardStore } from '../../store/boardStore';
-import { db, type Board as DbBoard, type Symbol as DbSymbol } from '../../db';
-import { EMOJI_CATEGORIES, EMOJI_DATA, type EmojiCategory, type EmojiEntry } from '../../data/emojiPickerData';
-
-type ImageMode = 'emoji' | 'search' | 'none';
+import { type Board as DbBoard, type Symbol as DbSymbol } from '../../db';
+import { ImageSourcePicker, type PickerSelection } from './ImageSourcePicker';
 
 interface ColorPreset { name: string; value: string; }
 
@@ -16,6 +14,14 @@ const COLOR_PRESETS: ColorPreset[] = [
   { name: 'Purple', value: '#BA68C8' },
   { name: 'Pink',   value: '#F06292' },
 ];
+
+const DEFAULT_PICKER: PickerSelection = { mode: 'emoji', emoji: '📁' };
+
+function pickerSelectionFromCategorySymbol(s: DbSymbol): PickerSelection {
+  if (s.imageUrl) return { mode: 'symbols', emoji: s.emoji, imageUrl: s.imageUrl };
+  if (s.emoji)    return { mode: 'emoji',   emoji: s.emoji };
+  return { mode: 'none', emoji: '' };
+}
 
 interface Props {
   open: boolean;
@@ -31,89 +37,30 @@ export function CustomBoardModal({ open, onClose, editTarget }: Props) {
   const isEditing = !!editTarget;
 
   const [name, setName] = useState('');
-  const [imageMode, setImageMode] = useState<ImageMode>('emoji');
-  const [emoji, setEmoji] = useState('📁');
-  const [emojiCategory, setEmojiCategory] = useState<EmojiCategory>('objects');
-  const [emojiQuery, setEmojiQuery] = useState('');
-  const [imageQuery, setImageQuery] = useState('');
-  const [imageCandidates, setImageCandidates] = useState<DbSymbol[]>([]);
-  const [pickedImageEmoji, setPickedImageEmoji] = useState<string | null>(null);
-  const [pickedImageUrl, setPickedImageUrl] = useState<string | undefined>(undefined);
+  const [picker, setPicker] = useState<PickerSelection>(DEFAULT_PICKER);
   const [color, setColor] = useState<string>(COLOR_PRESETS[3].value);
   const [saving, setSaving] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Reset / prefill on open. When editing, fill from the existing board
-  // and its category-tile symbol.
   useEffect(() => {
     if (!open) return;
     if (editTarget) {
       const { board, categorySymbol } = editTarget;
       setName(board.name);
-      if (categorySymbol.imageUrl) {
-        setImageMode('search');
-        setPickedImageEmoji(categorySymbol.emoji);
-        setPickedImageUrl(categorySymbol.imageUrl);
-      } else if (categorySymbol.emoji) {
-        setImageMode('emoji');
-        setEmoji(categorySymbol.emoji);
-        setPickedImageEmoji(null);
-        setPickedImageUrl(undefined);
-      } else {
-        setImageMode('none');
-        setPickedImageEmoji(null);
-        setPickedImageUrl(undefined);
-      }
-      setEmojiCategory('objects');
-      setEmojiQuery('');
-      setImageQuery('');
+      setPicker(pickerSelectionFromCategorySymbol(categorySymbol));
       setColor(categorySymbol.color || COLOR_PRESETS[3].value);
     } else {
       setName('');
-      setImageMode('emoji');
-      setEmoji('📁');
-      setEmojiCategory('objects');
-      setEmojiQuery('');
-      setImageQuery('');
-      setPickedImageEmoji(null);
-      setPickedImageUrl(undefined);
+      setPicker(DEFAULT_PICKER);
       setColor(COLOR_PRESETS[3].value);
     }
     setTimeout(() => nameInputRef.current?.focus(), 80);
   }, [open, editTarget]);
 
-  // Image-search tab: query existing default symbols by label substring
-  useEffect(() => {
-    if (!open || imageMode !== 'search') return;
-    const q = imageQuery.trim().toLowerCase();
-    let cancelled = false;
-    (async () => {
-      const all = await db.symbols.toArray();
-      if (cancelled) return;
-      const matches = all
-        .filter((s) => !s.isCategory && s.id.startsWith('default-'))
-        .filter((s) => (q ? s.label.toLowerCase().includes(q) : true))
-        .slice(0, 80);
-      setImageCandidates(matches);
-    })();
-    return () => { cancelled = true; };
-  }, [open, imageMode, imageQuery]);
-
-  const visibleEmojis = useMemo(() => {
-    const q = emojiQuery.trim().toLowerCase();
-    if (q) {
-      const all = (Object.values(EMOJI_DATA) as EmojiEntry[][]).flat();
-      return all.filter((e) => e.keywords.includes(q));
-    }
-    return EMOJI_DATA[emojiCategory];
-  }, [emojiQuery, emojiCategory]);
-
-  const previewEmoji = imageMode === 'emoji'
-    ? emoji
-    : imageMode === 'search'
-      ? (pickedImageEmoji ?? '')
-      : '';
-  const previewImageUrl = imageMode === 'search' ? pickedImageUrl : undefined;
+  const previewEmoji = picker.mode === 'emoji'
+    ? picker.emoji
+    : (picker.mode === 'symbols' ? picker.emoji : '');
+  const previewImageUrl = picker.imageUrl;
   const previewLabel = name.trim() || 'Board name';
 
   const canSave = name.trim().length > 0 && !saving;
@@ -123,12 +70,8 @@ export function CustomBoardModal({ open, onClose, editTarget }: Props) {
     setSaving(true);
     try {
       const trimmedName = name.trim();
-      const finalEmoji = imageMode === 'emoji'
-        ? emoji
-        : imageMode === 'search'
-          ? (pickedImageEmoji ?? '')
-          : '';
-      const finalImageUrl = imageMode === 'search' ? pickedImageUrl : undefined;
+      const finalEmoji = picker.mode === 'none' ? '' : picker.emoji;
+      const finalImageUrl = picker.imageUrl;
       if (editTarget) {
         await updateCustomBoardMeta(editTarget.board.id, {
           name: trimmedName,
@@ -143,7 +86,7 @@ export function CustomBoardModal({ open, onClose, editTarget }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [canSave, name, emoji, imageMode, pickedImageEmoji, pickedImageUrl, color, createCustomBoard, updateCustomBoardMeta, editTarget, onClose]);
+  }, [canSave, name, picker, color, createCustomBoard, updateCustomBoardMeta, editTarget, onClose]);
 
   const handleEnter = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSave();
@@ -193,133 +136,11 @@ export function CustomBoardModal({ open, onClose, editTarget }: Props) {
           />
         </div>
 
-        {/* ── Icon mode tabs ── */}
+        {/* ── Image source picker (Emoji · Symbols · Web · Upload · None) ── */}
         <div className="modal-field">
           <label>Board Icon</label>
-          <div className="cbm-mode-tabs" role="tablist" aria-label="Icon source">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={imageMode === 'emoji'}
-              className={`cbm-mode-tab${imageMode === 'emoji' ? ' active' : ''}`}
-              onClick={() => setImageMode('emoji')}
-            >
-              😀 Emoji
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={imageMode === 'search'}
-              className={`cbm-mode-tab${imageMode === 'search' ? ' active' : ''}`}
-              onClick={() => setImageMode('search')}
-            >
-              🔍 Image search
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={imageMode === 'none'}
-              className={`cbm-mode-tab${imageMode === 'none' ? ' active' : ''}`}
-              onClick={() => setImageMode('none')}
-            >
-              Aa No image
-            </button>
-          </div>
+          <ImageSourcePicker value={picker} onChange={setPicker} defaultEmojiCategory="objects" />
         </div>
-
-        {/* ── Icon panel ── */}
-        {imageMode === 'emoji' && (
-          <div className="cbm-image-panel">
-            <input
-              type="search"
-              placeholder="Search emojis (e.g. family, school, sleep)"
-              className="cbm-search-input"
-              value={emojiQuery}
-              onChange={(e) => setEmojiQuery(e.target.value)}
-            />
-            {!emojiQuery.trim() && (
-              <div className="cbm-emoji-cats" role="tablist" aria-label="Emoji category">
-                {EMOJI_CATEGORIES.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={emojiCategory === c.id}
-                    aria-label={c.label}
-                    title={c.label}
-                    className={`cbm-emoji-cat${emojiCategory === c.id ? ' active' : ''}`}
-                    onClick={() => setEmojiCategory(c.id)}
-                  >
-                    {c.icon}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="cbm-emoji-grid">
-              {visibleEmojis.length === 0 ? (
-                <div className="cbm-empty">No emojis match "{emojiQuery}".</div>
-              ) : (
-                visibleEmojis.map((e, i) => (
-                  <button
-                    key={`${e.char}-${i}`}
-                    type="button"
-                    className={`cbm-emoji-cell${e.char === emoji ? ' selected' : ''}`}
-                    onClick={() => setEmoji(e.char)}
-                    aria-label={e.keywords.split(' ')[0]}
-                    title={e.keywords}
-                  >
-                    {e.char}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {imageMode === 'search' && (
-          <div className="cbm-image-panel">
-            <input
-              type="search"
-              placeholder="Search existing buttons (e.g. happy, water, school)"
-              className="cbm-search-input"
-              value={imageQuery}
-              onChange={(e) => setImageQuery(e.target.value)}
-            />
-            <div className="cbm-image-grid">
-              {imageCandidates.length === 0 ? (
-                <div className="cbm-empty">
-                  {imageQuery ? `No matches for "${imageQuery}".` : 'Type to search the existing button library.'}
-                </div>
-              ) : (
-                imageCandidates.map((s) => {
-                  const selected = pickedImageEmoji === s.emoji && pickedImageUrl === s.imageUrl;
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className={`cbm-image-cell${selected ? ' selected' : ''}`}
-                      onClick={() => { setPickedImageEmoji(s.emoji); setPickedImageUrl(s.imageUrl); }}
-                      title={s.label}
-                    >
-                      {s.imageUrl ? (
-                        <img src={s.imageUrl} alt={s.label} />
-                      ) : (
-                        <span className="cbm-image-cell-emoji">{s.emoji}</span>
-                      )}
-                      <span className="cbm-image-cell-label">{s.label}</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        )}
-
-        {imageMode === 'none' && (
-          <div className="cbm-image-panel cbm-image-panel-none">
-            <p>Text-only — the board tile will show its name with no image or emoji.</p>
-          </div>
-        )}
 
         {/* ── Color picker ── */}
         <div className="modal-field">

@@ -26,6 +26,7 @@ export interface Symbol {
   hidden?: boolean;
   highlightColor?: string;
   audioBlob?: ArrayBuffer;
+  audioMime?: string;
   wordType?: string;
 }
 
@@ -40,6 +41,20 @@ export interface SymbolCache {
   cachedAt: number;
 }
 
+// User edits to BUILT-IN symbols. Stored separately from db.symbols so the
+// original seeded data stays untouched and "Reset to Default" is a single
+// row delete. Keyed by the built-in symbol id (default-N). Custom (user-…)
+// symbols are edited in place via db.symbols and never use this table.
+export interface SymbolOverride {
+  id: string;
+  emoji?: string;
+  label?: string;
+  phrase?: string;
+  imageUrl?: string;
+  audioBlob?: ArrayBuffer;
+  audioMime?: string;
+}
+
 // ── Database ──
 
 const SCHEMA = {
@@ -49,11 +64,17 @@ const SCHEMA = {
   symbolCache: 'keyword, cachedAt',
 };
 
+const SCHEMA_V9 = {
+  ...SCHEMA,
+  symbolOverrides: 'id',
+};
+
 class FreeVoiceDB extends Dexie {
   boards!: Table<Board, string>;
   symbols!: Table<Symbol, string>;
   settings!: Table<Setting, string>;
   symbolCache!: Table<SymbolCache, string>;
+  symbolOverrides!: Table<SymbolOverride, string>;
 
   constructor() {
     super('FreeVoiceDB');
@@ -163,6 +184,10 @@ class FreeVoiceDB extends Dexie {
       await tx.table('symbols').bulkPut(freshSymbols);
       console.log('[Migration v8] Re-synced all symbols — fixed inappropriate emoji usage');
     });
+
+    // v9: Add symbolOverrides table so users can edit built-in buttons
+    // without touching the original seeded data.
+    this.version(9).stores(SCHEMA_V9);
   }
 }
 

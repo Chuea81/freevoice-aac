@@ -4,6 +4,7 @@ import { useTTS } from '../../hooks/useTTS';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useHighlightStore } from '../../store/highlightStore';
 import { useFirstThenStore } from '../../store/firstThenStore';
+import { useEditModeStore } from '../../store/editModeStore';
 import { SymbolCard } from '../SymbolCard/SymbolCard';
 import { CustomWordModal } from '../modals/CustomWordModal';
 import { CustomButtonModal } from '../modals/CustomButtonModal';
@@ -42,11 +43,16 @@ export function SymbolGrid({ isParentMode }: Props) {
   const highlightColor = useHighlightStore((s) => s.selectedColor);
   const firstThenMode = useFirstThenStore((s) => s.mode);
   const fillFirstThen = useFirstThenStore((s) => s.fillActive);
-  const { speak } = useTTS();
+  const editMode = useEditModeStore((s) => s.active);
+  const { speak, playRecording } = useTTS();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customButtonModalOpen, setCustomButtonModalOpen] = useState(false);
   const [customBoardModalOpen, setCustomBoardModalOpen] = useState(false);
+  // Edit-mode entry point — set when user taps a button while Edit Mode is on
+  // OR long-presses a button (2.5 s) OR right-clicks. Opens CustomButtonModal
+  // with editTarget so both built-in and custom symbols share one form.
+  const [customButtonEditTarget, setCustomButtonEditTarget] = useState<DbSymbol | null>(null);
   const [reorderMode, setReorderMode] = useState(false);
   const reorderSymbolsInBoard = useBoardStore((s) => s.reorderSymbolsInBoard);
   const reorderCustomBoardsOnHome = useBoardStore((s) => s.reorderCustomBoardsOnHome);
@@ -60,9 +66,21 @@ export function SymbolGrid({ isParentMode }: Props) {
   const [newBoardEmoji, setNewBoardEmoji] = useState('📁');
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Separate 2.5 s timer that opens the unified edit modal on any button.
+  // This is intentionally above the touch-delay max (2 s) so the two
+  // features can't trigger simultaneously.
+  const editLongPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
   const isScrolling = useRef(false);
   const touchStartY = useRef(0);
+  const [longPressingId, setLongPressingId] = useState<string | null>(null);
+
+  // Open the unified edit modal for any symbol — built-in or custom. Built-in
+  // symbols route their save through the override layer in CustomButtonModal.
+  const openButtonEditor = useCallback((symbol: DbSymbol) => {
+    if (symbol.isCategory) return; // Category navigation tiles aren't editable here
+    setCustomButtonEditTarget(symbol);
+  }, []);
 
   const isCustomBoard = currentBoardId === 'custom';
   const isHomeBoard = currentBoardId === 'home';
@@ -107,6 +125,13 @@ export function SymbolGrid({ isParentMode }: Props) {
         isScrolling.current = false;
         return;
       }
+      // Edit Mode wins before highlight, speech, and navigation. Tapping
+      // any button (built-in or custom) opens its edit form. Categories
+      // skip — they still navigate so users can enter sub-boards to edit.
+      if (editMode && !symbol.isCategory) {
+        openButtonEditor(symbol);
+        return;
+      }
       if (highlightMode) {
         const nextColor = symbol.highlightColor ? null : highlightColor;
         setSymbolHighlight(symbol.id, nextColor);
@@ -134,15 +159,21 @@ export function SymbolGrid({ isParentMode }: Props) {
         // Fire speech FIRST so it kicks off before any state updates trigger
         // re-renders. `speak` is async but its synchronous prelude (voice
         // lookup, utterance creation, synth.speak) runs immediately.
-        if (autoSpeak) speak(symbol.phrase);
+        // Custom user recording wins over TTS when present.
+        if (autoSpeak) {
+          if (symbol.audioBlob) {
+            playRecording(symbol.audioBlob, symbol.audioMime);
+          } else {
+            speak(symbol.phrase);
+          }
+        }
         addToken(symbol.emoji, symbol.phrase);
       }
     },
-    [navigateToBoard, addToken, speak, autoSpeak, highlightMode, highlightColor, setSymbolHighlight, firstThenMode, fillFirstThen],
+    [navigateToBoard, addToken, speak, playRecording, autoSpeak, highlightMode, highlightColor, setSymbolHighlight, firstThenMode, fillFirstThen, editMode, openButtonEditor],
   );
 
   const handleLongPressStart = useCallback((symbol: DbSymbol, e?: React.TouchEvent | React.MouseEvent) => {
-    if (!allowEdit) return;
     isScrolling.current = false;
     longPressTriggered.current = false;
 
@@ -151,18 +182,38 @@ export function SymbolGrid({ isParentMode }: Props) {
       touchStartY.current = e.touches[0]?.clientY || 0;
     }
 
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true;
-      setContextSymbol(symbol);
-      setContextOpen(true);
-    }, 500);
-  }, [allowEdit]);
+    // Legacy parent-mode / custom-board: 500 ms opens the context menu.
+    if (allowEdit) {
+      longPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
+        setContextSymbol(symbol);
+        setContextOpen(true);
+      }, 500);
+    }
+
+    // Universal: 2.5 s on any non-category button opens the edit form. The
+    // delay sits comfortably above the touch-delay max (2 s) so the two
+    // never compete. Categories stay tap-to-navigate.
+    if (!symbol.isCategory && !reorderMode && !editMode) {
+      setLongPressingId(symbol.id);
+      editLongPressTimer.current = setTimeout(() => {
+        longPressTriggered.current = true;
+        setLongPressingId(null);
+        openButtonEditor(symbol);
+      }, 2500);
+    }
+  }, [allowEdit, reorderMode, editMode, openButtonEditor]);
 
   const handleLongPressEnd = useCallback(() => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
+    if (editLongPressTimer.current) {
+      clearTimeout(editLongPressTimer.current);
+      editLongPressTimer.current = null;
+    }
+    setLongPressingId(null);
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -173,7 +224,15 @@ export function SymbolGrid({ isParentMode }: Props) {
       isScrolling.current = true;
       handleLongPressEnd();
     }
-  }, []);
+  }, [handleLongPressEnd]);
+
+  // Right-click on desktop is a quick alternative to long-press.
+  const handleContextMenu = useCallback((symbol: DbSymbol, e: React.MouseEvent) => {
+    if (symbol.isCategory || reorderMode) return;
+    e.preventDefault();
+    longPressTriggered.current = true; // suppress the synthetic click that follows
+    openButtonEditor(symbol);
+  }, [reorderMode, openButtonEditor]);
 
   const handleEdit = useCallback(() => {
     setContextOpen(false);
@@ -291,18 +350,25 @@ export function SymbolGrid({ isParentMode }: Props) {
             return (
               <div
                 key={symbol.id}
-                className={`grid-cell${reorderMode ? (isCustom ? ' reorder-target' : ' reorder-locked') : ''}`}
+                className={
+                  'grid-cell'
+                  + (reorderMode ? (isCustom ? ' reorder-target' : ' reorder-locked') : '')
+                  + (editMode && !symbol.isCategory ? ' edit-target' : '')
+                  + (longPressingId === symbol.id ? ' long-pressing' : '')
+                }
                 onMouseDown={(e) => !reorderMode && handleLongPressStart(symbol, e)}
                 onMouseUp={!reorderMode ? handleLongPressEnd : undefined}
                 onMouseLeave={!reorderMode ? handleLongPressEnd : undefined}
                 onTouchStart={(e) => !reorderMode && handleLongPressStart(symbol, e)}
                 onTouchEnd={!reorderMode ? handleLongPressEnd : undefined}
                 onTouchMove={!reorderMode ? handleTouchMove : undefined}
+                onContextMenu={(e) => !reorderMode && handleContextMenu(symbol, e)}
               >
                 <SymbolCard
                   symbol={symbol}
                   onTap={reorderMode ? () => {} : handleTap}
                   isParentMode={isParentMode}
+                  showEditOverlay={editMode && !symbol.isCategory}
                 />
                 {reorderMode && isCustom && (
                   <div className="reorder-controls" aria-label="Reorder controls">
@@ -422,8 +488,9 @@ export function SymbolGrid({ isParentMode }: Props) {
       />
 
       <CustomButtonModal
-        open={customButtonModalOpen}
-        onClose={() => setCustomButtonModalOpen(false)}
+        open={customButtonModalOpen || customButtonEditTarget !== null}
+        editTarget={customButtonEditTarget}
+        onClose={() => { setCustomButtonModalOpen(false); setCustomButtonEditTarget(null); }}
       />
 
       <CustomBoardModal

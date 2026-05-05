@@ -5,14 +5,17 @@ import { ParentMode } from './pages/ParentMode';
 import { Profile } from './pages/Profile';
 import { useSettingsStore } from './store/settingsStore';
 import { useUserProfileStore } from './store/userProfileStore';
+import { useSymbolOverridesStore } from './store/symbolOverridesStore';
 import { useCharacterManifest } from './hooks/useCharacterManifest';
 import { GreetingToast } from './components/GreetingToast/GreetingToast';
+import { EditModeBanner } from './components/EditModeBanner/EditModeBanner';
 import { RTL_LANGUAGES, CJK_LANGUAGES, type SupportedLanguage } from './i18n/index';
 
 function App() {
   const [page, setPage] = useState<'board' | 'parent' | 'profile'>('board');
   const loadFromDb = useSettingsStore((s) => s.loadFromDb);
   const loadProfile = useUserProfileStore((s) => s.loadFromDb);
+  const loadOverrides = useSymbolOverridesStore((s) => s.loadFromDb);
   const cardStyle = useSettingsStore((s) => s.cardStyle);
   const { i18n } = useTranslation();
 
@@ -27,6 +30,7 @@ function App() {
 
   useEffect(() => { loadFromDb(); }, [loadFromDb]);
   useEffect(() => { loadProfile(); }, [loadProfile]);
+  useEffect(() => { loadOverrides(); }, [loadOverrides]);
   useCharacterManifest();
 
   // Card style class
@@ -71,6 +75,7 @@ function App() {
         onOpenProfile={() => setPage('profile')}
       />
       <GreetingToast />
+      <EditModeBanner />
     </>
   );
 }

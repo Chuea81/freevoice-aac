@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { db, seedIfNeeded, type Symbol as DbSymbol, type Board as DbBoard } from '../db';
 import { cardColor } from '../data/defaultBoards';
 import { getBritishVoiceOverride } from '../data/britishVoiceOverrides';
+import { applyOverrides } from './symbolOverridesStore';
 
 interface NavStep {
   boardId: string;
@@ -44,7 +45,16 @@ interface BoardState {
   seedDatabase: () => Promise<void>;
 
   // Custom symbol CRUD — works on ANY board
-  addSymbolToBoard: (boardId: string, emoji: string, label: string, phrase: string, imageUrl?: string, wordType?: string) => Promise<void>;
+  addSymbolToBoard: (
+    boardId: string,
+    emoji: string,
+    label: string,
+    phrase: string,
+    imageUrl?: string,
+    wordType?: string,
+    audioBlob?: ArrayBuffer,
+    audioMime?: string,
+  ) => Promise<void>;
   updateCustomSymbol: (id: string, emoji: string, label: string, phrase: string, imageUrl?: string) => Promise<void>;
   deleteCustomSymbol: (id: string) => Promise<void>;
   // Legacy alias
@@ -76,7 +86,15 @@ interface BoardState {
   // board so it doesn't collide with existing positions).
   updateCustomButton: (
     id: string,
-    updates: Partial<{ emoji: string; label: string; phrase: string; imageUrl?: string; boardId: string }>,
+    updates: Partial<{
+      emoji: string;
+      label: string;
+      phrase: string;
+      imageUrl?: string;
+      boardId: string;
+      audioBlob?: ArrayBuffer;
+      audioMime?: string;
+    }>,
   ) => Promise<void>;
   // Update a custom board's metadata. Writes to both the Board record and
   // its category-tile Symbol on the parent so they stay in sync.
@@ -166,11 +184,11 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   loadSymbols: async (boardId: string) => {
-    const symbols = await db.symbols
+    const raw = await db.symbols
       .where('boardId')
       .equals(boardId)
       .sortBy('order');
-    set({ symbols });
+    set({ symbols: applyOverrides(raw) });
   },
 
   addToken: (emoji: string, text: string) => {
@@ -199,7 +217,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   // Add symbol to ANY board (TDSnap: not just My Words)
-  addSymbolToBoard: async (boardId, emoji, label, phrase, imageUrl, wordType) => {
+  addSymbolToBoard: async (boardId, emoji, label, phrase, imageUrl, wordType, audioBlob, audioMime) => {
     const count = await db.symbols.where('boardId').equals(boardId).count();
     const symbol: DbSymbol = {
       id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -211,6 +229,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       order: count,
       isCategory: false,
       imageUrl,
+      audioBlob,
+      audioMime,
       wordType,
     };
     await db.symbols.add(symbol);
@@ -462,8 +482,9 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       return;
     }
     const q = query.toLowerCase();
-    const all = await db.symbols.toArray();
-    const results = all.filter((s) =>
+    const raw = await db.symbols.toArray();
+    const merged = applyOverrides(raw);
+    const results = merged.filter((s) =>
       s.label.toLowerCase().includes(q) ||
       s.phrase.toLowerCase().includes(q)
     ).slice(0, 50);
@@ -513,18 +534,18 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   // Persistent strips
   loadQuickFires: async () => {
-    const symbols = await db.symbols
+    const raw = await db.symbols
       .where('boardId')
       .equals('quickfires')
       .sortBy('order');
-    set({ quickFireSymbols: symbols });
+    set({ quickFireSymbols: applyOverrides(raw) });
   },
 
   loadCoreWords: async () => {
-    const symbols = await db.symbols
+    const raw = await db.symbols
       .where('boardId')
       .equals('corewords')
       .sortBy('order');
-    set({ coreWordSymbols: symbols });
+    set({ coreWordSymbols: applyOverrides(raw) });
   },
 }));

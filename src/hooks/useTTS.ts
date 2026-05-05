@@ -102,6 +102,10 @@ let audioCtxWarmed = false;
 
 // Interrupt mode: keep track of currently playing audio source so we can stop it
 let currentAudioSource: AudioBufferSourceNode | null = null;
+// Custom user recordings play through a plain HTMLAudioElement (not Kokoro).
+// Tracked at module scope so cancel() / a fresh playRecording() can interrupt
+// an in-flight clip — single-clip-at-a-time, mirrors how TTS behaves.
+let currentRecording: HTMLAudioElement | null = null;
 
 // Web Speech voice resolution: do NOT cache voice objects across calls.
 // Browsers (esp. Chrome / Android) invalidate SpeechSynthesisVoice references
@@ -582,6 +586,12 @@ export function useTTS() {
         // Source may already be stopped, ignore
       }
     }
+    // Stop any custom recording playback so cancel() truly silences everything.
+    if (currentRecording) {
+      try { currentRecording.pause(); } catch { /* noop */ }
+      currentRecording.src = '';
+      currentRecording = null;
+    }
     // Invalidate every in-flight Kokoro request. Without this, audio that the
     // worker is still synthesizing will play *after* the user explicitly
     // stopped — the source of "random unprompted speech" when leaving the
@@ -594,6 +604,42 @@ export function useTTS() {
     setIsSpeaking(false);
   }, []);
 
+  // Play a custom user recording (per-button audio override). Honors the
+  // app's volume setting but skips pitch/rate/voice — the recording was
+  // produced by a person and should play exactly as captured.
+  const playRecording = useCallback((audioBlob: ArrayBuffer, audioMime?: string) => {
+    if (currentRecording) {
+      try { currentRecording.pause(); } catch { /* noop */ }
+      currentRecording.src = '';
+      currentRecording = null;
+    }
+    // Stop any TTS that might be playing too — recording always wins.
+    window.speechSynthesis?.cancel();
+    if (currentAudioSource) {
+      try { currentAudioSource.stop(0); } catch { /* noop */ }
+      currentAudioSource = null;
+    }
+    latestKokoroRequestId = null;
+    lastSpeakText = null;
+
+    const mime = audioMime || 'audio/webm';
+    const blob = new Blob([audioBlob], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    const volume = useTTSStore.getState().speechVolume;
+    audio.volume = Math.max(0, Math.min(1, volume));
+    const cleanup = () => {
+      URL.revokeObjectURL(url);
+      if (currentRecording === audio) currentRecording = null;
+      setIsSpeaking(false);
+    };
+    audio.onended = cleanup;
+    audio.onerror = cleanup;
+    currentRecording = audio;
+    setIsSpeaking(true);
+    audio.play().catch(() => cleanup());
+  }, []);
+
   // Subscribe to the module-level isSpeaking flag so components can disable
   // buttons (e.g. Test Voice) while speech is in flight. Mirrors the module
   // state into React so re-renders happen on change.
@@ -604,5 +650,5 @@ export function useTTS() {
     return () => { speakingListeners.delete(setIsSpeakingState); };
   }, []);
 
-  return { speak, speakPreview, cancel, isSpeaking: isSpeakingState };
+  return { speak, speakPreview, playRecording, cancel, isSpeaking: isSpeakingState };
 }

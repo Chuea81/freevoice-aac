@@ -1,5 +1,6 @@
 import { useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
+import { useSymbolOverridesStore } from '../../store/symbolOverridesStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
 import { ARASAAC_IDS, CUSTOM_SYMBOL_IMAGES } from '../../data/arasaacIds';
@@ -39,9 +40,11 @@ interface Props {
   symbol: DbSymbol;
   onTap: (symbol: DbSymbol) => void;
   isParentMode?: boolean;
+  // When Edit Mode is active, every editable button shows a pencil overlay.
+  showEditOverlay?: boolean;
 }
 
-export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
+export function SymbolCard({ symbol, onTap, isParentMode, showEditOverlay }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
@@ -50,6 +53,11 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const labelPosition = useSettingsStore((s) => s.labelPosition);
   const colorScheme = useSettingsStore((s) => s.colorScheme);
   const { speakPreview } = useTTS();
+  // Track whether this built-in symbol has been customized via the override
+  // layer so we can render the small pencil badge.
+  const hasOverride = useSymbolOverridesStore((s) =>
+    symbol.id.startsWith('default-') && s.overrides.has(symbol.id),
+  );
 
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -277,6 +285,20 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
 
       {symbol.id.startsWith('user-') && (
         <span className="symbol-card-custom-badge" aria-label="Custom button" title="Custom button">★</span>
+      )}
+
+      {symbol.audioBlob && (
+        <span className="symbol-card-audio-badge" aria-label="Custom recording" title="Plays a recorded voice clip">🎤</span>
+      )}
+
+      {hasOverride && (
+        <span className="symbol-card-edit-badge" aria-label="Edited built-in" title="Edited built-in button">✏️</span>
+      )}
+
+      {showEditOverlay && (
+        <span className="symbol-card-edit-overlay" aria-hidden="true">
+          <span className="symbol-card-edit-overlay-icon">✏️</span>
+        </span>
       )}
 
       {labelPosition === 'above' && labelEl}

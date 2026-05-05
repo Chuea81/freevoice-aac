@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useBoardStore } from '../../store/boardStore';
+import { useSymbolOverridesStore } from '../../store/symbolOverridesStore';
 import { db, type Board as DbBoard, type Symbol as DbSymbol } from '../../db';
 import { CustomButtonModal } from '../modals/CustomButtonModal';
 import { CustomBoardModal } from '../modals/CustomBoardModal';
 
-type Tab = 'buttons' | 'boards';
+type Tab = 'buttons' | 'boards' | 'edits';
 
 interface ButtonListItem {
   symbol: DbSymbol;
@@ -17,11 +18,20 @@ interface BoardListItem {
   buttonCount: number;
 }
 
+interface EditListItem {
+  // The original built-in symbol (un-overridden) so the user can see what
+  // the original was; the merged symbol drives the modal when they re-edit.
+  original: DbSymbol;
+  edited: DbSymbol;
+  boardName: string;
+}
+
 export function CustomContentManager() {
   const [tab, setTab] = useState<Tab>('buttons');
   const [refreshKey, setRefreshKey] = useState(0);
   const [buttons, setButtons] = useState<ButtonListItem[]>([]);
   const [boards, setBoards] = useState<BoardListItem[]>([]);
+  const [edits, setEdits] = useState<EditListItem[]>([]);
   const [allBoards, setAllBoards] = useState<DbBoard[]>([]);
 
   const [editButton, setEditButton] = useState<DbSymbol | null>(null);
@@ -38,6 +48,10 @@ export function CustomContentManager() {
   const deleteCustomBoardMoveContents = useBoardStore((s) => s.deleteCustomBoardMoveContents);
   const reorderSymbolsInBoard = useBoardStore((s) => s.reorderSymbolsInBoard);
   const reorderCustomBoardsOnHome = useBoardStore((s) => s.reorderCustomBoardsOnHome);
+  const overridesMap = useSymbolOverridesStore((s) => s.overrides);
+  const deleteOverride = useSymbolOverridesStore((s) => s.deleteOverride);
+  const loadSymbols = useBoardStore((s) => s.loadSymbols);
+  const currentBoardId = useBoardStore((s) => s.currentBoardId);
 
   const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
 
@@ -76,12 +90,36 @@ export function CustomContentManager() {
       // Display order matches the home grid order via the category symbol.
       boardItems.sort((a, b) => a.categorySymbol.order - b.categorySymbol.order);
 
+      // Edited built-ins — for each override, find the original seeded
+      // symbol in db.symbols and pair it with the merged (edited) version.
+      const editedItems: EditListItem[] = [];
+      for (const override of overridesMap.values()) {
+        const original = allSyms.find((s) => s.id === override.id);
+        if (!original) continue;
+        const edited: DbSymbol = {
+          ...original,
+          ...(override.emoji !== undefined     ? { emoji: override.emoji } : {}),
+          ...(override.label !== undefined     ? { label: override.label } : {}),
+          ...(override.phrase !== undefined    ? { phrase: override.phrase } : {}),
+          ...(override.imageUrl !== undefined  ? { imageUrl: override.imageUrl } : {}),
+          ...(override.audioBlob !== undefined ? { audioBlob: override.audioBlob } : {}),
+          ...(override.audioMime !== undefined ? { audioMime: override.audioMime } : {}),
+        };
+        editedItems.push({
+          original,
+          edited,
+          boardName: boardById.get(original.boardId)?.name ?? original.boardId,
+        });
+      }
+      editedItems.sort((a, b) => a.boardName.localeCompare(b.boardName) || a.edited.label.localeCompare(b.edited.label));
+
       setButtons(buttonItems);
       setBoards(boardItems);
+      setEdits(editedItems);
       setAllBoards(allBrds);
     })();
     return () => { cancelled = true; };
-  }, [refreshKey]);
+  }, [refreshKey, overridesMap]);
 
   // Move a custom button up/down within its board (only swaps with other
   // custom items on the same board so built-in positions stay fixed).
@@ -122,6 +160,13 @@ export function CustomContentManager() {
     await duplicateCustomButton(sym.id);
     refresh();
   }, [duplicateCustomButton, refresh]);
+
+  const handleResetEdit = useCallback(async (item: EditListItem) => {
+    if (!confirm(`Reset "${item.edited.label}" back to its built-in defaults? Any image, name, phrase, and recording you set will be removed.`)) return;
+    await deleteOverride(item.original.id);
+    await loadSymbols(currentBoardId);
+    refresh();
+  }, [deleteOverride, loadSymbols, currentBoardId, refresh]);
 
   const handleDeleteBoard = useCallback(async () => {
     if (!deleteBoardTarget) return;
@@ -169,6 +214,16 @@ export function CustomContentManager() {
         >
           My Boards
           <span className="ccm-tab-count">{boards.length}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'edits'}
+          className={`ccm-tab${tab === 'edits' ? ' active' : ''}`}
+          onClick={() => setTab('edits')}
+        >
+          My Edits
+          <span className="ccm-tab-count">{edits.length}</span>
         </button>
       </div>
 
@@ -259,6 +314,52 @@ export function CustomContentManager() {
                       }}
                     >
                       🗑️
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {tab === 'edits' && (
+        <div className="ccm-list" role="list">
+          {edits.length === 0 ? (
+            <div className="ccm-empty">
+              No edited built-in buttons yet. Long-press any button (or turn on Edit Mode) to customize it.
+            </div>
+          ) : (
+            edits.map((item) => {
+              const nameChanged = item.original.label !== item.edited.label;
+              return (
+                <div key={item.original.id} className="ccm-row" role="listitem">
+                  <div className="ccm-row-thumb">
+                    {item.edited.imageUrl ? (
+                      <img src={item.edited.imageUrl} alt="" />
+                    ) : item.edited.emoji ? (
+                      <span className="ccm-row-emoji">{item.edited.emoji}</span>
+                    ) : (
+                      <span className="ccm-row-text-only">Aa</span>
+                    )}
+                  </div>
+                  <div className="ccm-row-info">
+                    <div className="ccm-row-name">{item.edited.label}</div>
+                    {nameChanged && (
+                      <div className="ccm-row-phrase">was: "{item.original.label}"</div>
+                    )}
+                    <div className="ccm-row-meta">in {item.boardName}</div>
+                  </div>
+                  <div className="ccm-row-actions">
+                    <button type="button" className="ccm-action" aria-label="Edit" title="Edit" onClick={() => setEditButton(item.edited)}>✏️</button>
+                    <button
+                      type="button"
+                      className="ccm-action ccm-action-delete"
+                      aria-label="Reset to default"
+                      title="Reset to default"
+                      onClick={() => handleResetEdit(item)}
+                    >
+                      ↺
                     </button>
                   </div>
                 </div>
