@@ -8,6 +8,7 @@ import { useCharacterStore } from '../store/characterStore';
 import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { Avatar } from '../components/Avatar/Avatar';
+import { CustomContentManager } from '../components/settings/CustomContentManager';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
@@ -267,6 +268,9 @@ export function Settings({ onBack }: { onBack: () => void }) {
             </div>
           )}
         </section>
+
+        {/* ── MY CUSTOM CONTENT (Phase 3) ── */}
+        <CustomContentManager />
 
         {/* ── AUTO-SPEAK ── */}
         <section className="settings-section">

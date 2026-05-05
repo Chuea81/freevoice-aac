@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useCallback, useState } from 'react';
-import { useTTSStore } from '../store/ttsStore';
+import { useTTSStore, type KokoroVoice } from '../store/ttsStore';
 import { useBoardStore } from '../store/boardStore';
 import { unlockIOSSpeech } from '../utils/voiceDetection';
 
@@ -431,9 +431,18 @@ export function useTTS() {
   // old cache entries don't conflict. Model handles all voices.
   // Precaching happens naturally as the user speaks.
 
-  // speak() — reads current state from store at call time (not stale closure)
-  const speak = useCallback(async (text: string): Promise<void> => {
+  // speak() — reads current state from store at call time (not stale closure).
+  // The optional `overrides` argument lets the voice picker preview a
+  // candidate voice/pitch/rate without committing it to the store. When any
+  // override is passed, dedup is skipped — preview taps should always play
+  // even when the same phrase was just heard with different parameters.
+  const speak = useCallback(async (
+    text: string,
+    overrides?: { voice?: KokoroVoice; pitch?: number; rate?: number },
+  ): Promise<void> => {
     if (!text.trim()) return;
+
+    const isPreview = overrides !== undefined;
 
     // Dedup: drop same-text requests fired within SPEAK_DEDUP_MS of the last
     // one, OR while the same text is still audibly playing (covers long
@@ -443,6 +452,7 @@ export function useTTS() {
     // rapid-switch AAC use still works.
     const now = Date.now();
     if (
+      !isPreview &&
       text === lastSpeakText &&
       (isSpeaking || now - lastSpeakAt < SPEAK_DEDUP_MS)
     ) {
@@ -459,10 +469,10 @@ export function useTTS() {
     const s = useTTSStore.getState();
     const tier = s.activeTier;
     const status = s.kokoroStatus;
-    const voice = s.kokoroVoice;
+    const voice = overrides?.voice ?? s.kokoroVoice;
     const wsVoiceURI = s.webSpeechVoiceURI;
-    const rate = s.speechRate;
-    const pitch = s.speechPitch;
+    const rate = overrides?.rate ?? s.speechRate;
+    const pitch = overrides?.pitch ?? s.speechPitch;
     const volume = s.speechVolume;
 
     // Pass voice to getPronunciation so British voice overrides apply

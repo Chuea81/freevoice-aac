@@ -275,6 +275,10 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         <span className="symbol-card-nav-indicator" aria-hidden="true">▶</span>
       )}
 
+      {symbol.id.startsWith('user-') && (
+        <span className="symbol-card-custom-badge" aria-label="Custom button" title="Custom button">★</span>
+      )}
+
       {labelPosition === 'above' && labelEl}
 
       {hasImage && isCustomSymbol ? (

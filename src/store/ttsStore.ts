@@ -4,16 +4,39 @@ import { persist } from 'zustand/middleware';
 export type VoiceTier = 'kokoro' | 'personal' | 'webspeech';
 
 export type KokoroVoice =
-  | 'af_heart'    // Warm, gentle American female — DEFAULT for AAC
-  | 'af_bella'    // Bright, clear American female
-  | 'af_sky'      // Soft, airy American female
-  | 'af_sarah'    // Natural American female
-  | 'af_nicole'   // Calm American female
-  | 'af_nova'     // Energetic American female
-  | 'am_adam'     // Warm American male
-  | 'am_michael'  // Deep American male
-  | 'bf_emma'     // Clear British female
-  | 'bm_george';  // Warm British male
+  // American Female
+  | 'af_heart' | 'af_bella' | 'af_nicole' | 'af_aoede' | 'af_kore'
+  | 'af_sarah' | 'af_alloy' | 'af_nova'   | 'af_sky'   | 'af_jessica' | 'af_river'
+  // American Male
+  | 'am_michael' | 'am_adam' | 'am_fenrir' | 'am_puck'
+  | 'am_echo'    | 'am_eric' | 'am_liam'   | 'am_onyx'
+  // British Female
+  | 'bf_emma' | 'bf_isabella' | 'bf_alice' | 'bf_lily'
+  // British Male
+  | 'bm_george' | 'bm_fable' | 'bm_daniel' | 'bm_lewis';
+
+// Children's voice presets — bundle (base voice + pitch + rate) so caregivers
+// can pick a "young" voice without manually tuning the sliders. Selecting a
+// preset writes all three values into the store; manual fine-tuning of pitch
+// or rate afterward is preserved (the preset stays "active" for highlighting),
+// but switching to any non-preset voice clears the preset marker.
+export interface ChildVoicePreset {
+  id: string;
+  label: string;
+  description: string;
+  voice: KokoroVoice;
+  pitch: number;
+  rate: number;
+}
+
+export const CHILD_VOICE_PRESETS: ChildVoicePreset[] = [
+  { id: 'child_lily',  label: 'Lily (Child)',  description: 'Bright young girl · American', voice: 'af_alloy', pitch: 1.30, rate: 0.85 },
+  { id: 'child_nova',  label: 'Nova (Child)',  description: 'Energetic young girl · American', voice: 'af_nova',  pitch: 1.30, rate: 0.85 },
+  { id: 'child_sky',   label: 'Sky (Child)',   description: 'Soft young girl · American',   voice: 'af_sky',   pitch: 1.30, rate: 0.85 },
+  { id: 'child_rosie', label: 'Rosie (Child)', description: 'Light young girl · British',   voice: 'bf_lily',  pitch: 1.30, rate: 0.85 },
+  { id: 'child_puck',  label: 'Puck (Child)',  description: 'Lively young boy · American',  voice: 'am_puck',  pitch: 1.25, rate: 0.85 },
+  { id: 'child_fable', label: 'Fable (Child)', description: 'Storyteller boy · British',    voice: 'bm_fable', pitch: 1.25, rate: 0.85 },
+];
 
 export interface TTSState {
   // Kokoro model state
@@ -30,6 +53,7 @@ export interface TTSState {
   kokoroVoice: KokoroVoice;
   webSpeechVoiceURI: string | null; // null = use best available
   personalVoiceAvailable: boolean;
+  activeChildPreset: string | null; // null when no child preset is selected
 
   // Settings
   speechRate: number;   // 0.5-1.5, default 0.9
@@ -49,6 +73,7 @@ export interface TTSState {
   setKokoroLoadingFromCache: (v: boolean) => void;
   setActiveTier: (tier: VoiceTier) => void;
   setKokoroVoice: (voice: KokoroVoice) => void;
+  setChildPreset: (presetId: string) => void;
   setWebSpeechVoiceURI: (uri: string | null) => void;
   setPersonalVoiceAvailable: (v: boolean) => void;
   setSpeechRate: (r: number) => void;
@@ -71,6 +96,7 @@ export const useTTSStore = create<TTSState>()(
       kokoroVoice: 'af_heart', // Warmest, most natural — best default for a child's AAC
       webSpeechVoiceURI: null,
       personalVoiceAvailable: false,
+      activeChildPreset: null,
       speechRate: 0.9,
       speechPitch: 1.1,
       speechVolume: 1.0,
@@ -84,7 +110,19 @@ export const useTTSStore = create<TTSState>()(
       setKokoroDevice: (d) => set({ kokoroDevice: d }),
       setKokoroLoadingFromCache: (v) => set({ kokoroLoadingFromCache: v }),
       setActiveTier: (tier) => set({ activeTier: tier }),
-      setKokoroVoice: (voice) => set({ kokoroVoice: voice }),
+      // Direct voice selection clears any active child-preset marker because
+      // the user is intentionally leaving the preset's bundled pitch/rate.
+      setKokoroVoice: (voice) => set({ kokoroVoice: voice, activeChildPreset: null }),
+      setChildPreset: (presetId) => {
+        const preset = CHILD_VOICE_PRESETS.find((p) => p.id === presetId);
+        if (!preset) return;
+        set({
+          kokoroVoice: preset.voice,
+          speechPitch: preset.pitch,
+          speechRate: preset.rate,
+          activeChildPreset: preset.id,
+        });
+      },
       setWebSpeechVoiceURI: (uri) => set({ webSpeechVoiceURI: uri }),
       setPersonalVoiceAvailable: (v) => set({ personalVoiceAvailable: v }),
       setSpeechRate: (r) => set({ speechRate: r }),
@@ -98,6 +136,7 @@ export const useTTSStore = create<TTSState>()(
       partialize: (s) => ({
         activeTier: s.activeTier,
         kokoroVoice: s.kokoroVoice,
+        activeChildPreset: s.activeChildPreset,
         webSpeechVoiceURI: s.webSpeechVoiceURI,
         kokoroDeclined: s.kokoroDeclined,
         kokoroDownloaded: s.kokoroDownloaded,

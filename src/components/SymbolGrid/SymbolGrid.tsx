@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useMemo } from 'react';
 import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -6,6 +6,8 @@ import { useHighlightStore } from '../../store/highlightStore';
 import { useFirstThenStore } from '../../store/firstThenStore';
 import { SymbolCard } from '../SymbolCard/SymbolCard';
 import { CustomWordModal } from '../modals/CustomWordModal';
+import { CustomButtonModal } from '../modals/CustomButtonModal';
+import { CustomBoardModal } from '../modals/CustomBoardModal';
 import { SymbolContextMenu } from '../modals/SymbolContextMenu';
 import { BoardPicker } from '../modals/BoardPicker';
 import { ARASAAC_IDS } from '../../data/arasaacIds';
@@ -43,6 +45,11 @@ export function SymbolGrid({ isParentMode }: Props) {
   const { speak } = useTTS();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [customButtonModalOpen, setCustomButtonModalOpen] = useState(false);
+  const [customBoardModalOpen, setCustomBoardModalOpen] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
+  const reorderSymbolsInBoard = useBoardStore((s) => s.reorderSymbolsInBoard);
+  const reorderCustomBoardsOnHome = useBoardStore((s) => s.reorderCustomBoardsOnHome);
   const [editingSymbol, setEditingSymbol] = useState<DbSymbol | null>(null);
   const [contextSymbol, setContextSymbol] = useState<DbSymbol | null>(null);
   const [contextOpen, setContextOpen] = useState(false);
@@ -58,8 +65,40 @@ export function SymbolGrid({ isParentMode }: Props) {
   const touchStartY = useRef(0);
 
   const isCustomBoard = currentBoardId === 'custom';
+  const isHomeBoard = currentBoardId === 'home';
   const allowEdit = isCustomBoard || isParentMode;
+
+  // List of custom-symbol ids on the current board, in display order. Built-in
+  // symbols are excluded so reorder controls can only swap user items among
+  // themselves (the spec keeps built-in positions fixed).
+  const customSymbolIdsInOrder = useMemo(
+    () => symbols.filter((s) => s.id.startsWith('user-')).map((s) => s.id),
+    [symbols],
+  );
+  const hasCustomToReorder = customSymbolIdsInOrder.length >= 2;
+
+  const moveCustomItem = useCallback(async (id: string, direction: -1 | 1) => {
+    const idx = customSymbolIdsInOrder.indexOf(id);
+    if (idx < 0) return;
+    const target = idx + direction;
+    if (target < 0 || target >= customSymbolIdsInOrder.length) return;
+    const next = [...customSymbolIdsInOrder];
+    [next[idx], next[target]] = [next[target], next[idx]];
+    if (isHomeBoard) {
+      await reorderCustomBoardsOnHome(next);
+    } else {
+      await reorderSymbolsInBoard(currentBoardId, next);
+    }
+  }, [customSymbolIdsInOrder, isHomeBoard, currentBoardId, reorderSymbolsInBoard, reorderCustomBoardsOnHome]);
+  // The legacy + card (parent-mode UI, dashed border, "ADD SYMBOL" copy) still
+  // gates by parent mode so the parent flow is untouched. The new always-on
+  // user-facing "+ Add" tile shows on every regular board so caregivers and
+  // end users can create custom buttons without entering parent mode.
   const showAddButton = isCustomBoard || isParentMode;
+  const showQuickAddCard = !isParentMode;
+  // Phase 2: "+ Create Board" tile only appears on the Home grid where all
+  // category tiles live. Other boards keep the single Add Button card.
+  const showCreateBoardCard = isHomeBoard && !isParentMode;
 
   const handleTap = useCallback(
     (symbol: DbSymbol) => {
@@ -196,7 +235,7 @@ export function SymbolGrid({ isParentMode }: Props) {
     }
   }, [newBoardName, newBoardEmoji, currentBoardId, createBoard]);
 
-  if (symbols.length === 0 && !showAddButton) {
+  if (symbols.length === 0 && !showAddButton && !showQuickAddCard) {
     return (
       <div id="grid-area" className="scroll-thin">
         <div className="empty-state">
@@ -211,21 +250,85 @@ export function SymbolGrid({ isParentMode }: Props) {
 
   return (
     <>
-      <div id="grid-area" className={`scroll-thin${sizeClass}`}>
+      <div id="grid-area" className={`scroll-thin${sizeClass}${reorderMode ? ' reorder-mode' : ''}`}>
+        {/* Reorder toolbar — only available when there is something to reorder
+            and the grid is not in parent mode (which has its own tools). */}
+        {!isParentMode && hasCustomToReorder && (
+          <div className="reorder-toolbar">
+            {reorderMode ? (
+              <>
+                <span className="reorder-toolbar-hint">
+                  {isHomeBoard
+                    ? 'Tap ↑ ↓ on a custom board tile to move it'
+                    : 'Tap ↑ ↓ on a custom button to move it'}
+                </span>
+                <button
+                  type="button"
+                  className="reorder-toolbar-btn done"
+                  onClick={() => setReorderMode(false)}
+                >
+                  Done
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="reorder-toolbar-btn"
+                onClick={() => setReorderMode(true)}
+                aria-label="Reorder custom items"
+              >
+                <span aria-hidden="true">⇅</span> Reorder
+              </button>
+            )}
+          </div>
+        )}
         <div id="symbol-grid" className={gridColumns > 0 ? `cols-${gridColumns}` : undefined}>
-          {symbols.map((symbol) => (
-            <div
-              key={symbol.id}
-              onMouseDown={(e) => handleLongPressStart(symbol, e)}
-              onMouseUp={handleLongPressEnd}
-              onMouseLeave={handleLongPressEnd}
-              onTouchStart={(e) => handleLongPressStart(symbol, e)}
-              onTouchEnd={handleLongPressEnd}
-              onTouchMove={handleTouchMove}
-            >
-              <SymbolCard symbol={symbol} onTap={handleTap} isParentMode={isParentMode} />
-            </div>
-          ))}
+          {symbols.map((symbol) => {
+            const isCustom = symbol.id.startsWith('user-');
+            const customIdx = isCustom ? customSymbolIdsInOrder.indexOf(symbol.id) : -1;
+            const canMoveUp = reorderMode && isCustom && customIdx > 0;
+            const canMoveDown = reorderMode && isCustom && customIdx >= 0 && customIdx < customSymbolIdsInOrder.length - 1;
+            return (
+              <div
+                key={symbol.id}
+                className={`grid-cell${reorderMode ? (isCustom ? ' reorder-target' : ' reorder-locked') : ''}`}
+                onMouseDown={(e) => !reorderMode && handleLongPressStart(symbol, e)}
+                onMouseUp={!reorderMode ? handleLongPressEnd : undefined}
+                onMouseLeave={!reorderMode ? handleLongPressEnd : undefined}
+                onTouchStart={(e) => !reorderMode && handleLongPressStart(symbol, e)}
+                onTouchEnd={!reorderMode ? handleLongPressEnd : undefined}
+                onTouchMove={!reorderMode ? handleTouchMove : undefined}
+              >
+                <SymbolCard
+                  symbol={symbol}
+                  onTap={reorderMode ? () => {} : handleTap}
+                  isParentMode={isParentMode}
+                />
+                {reorderMode && isCustom && (
+                  <div className="reorder-controls" aria-label="Reorder controls">
+                    <button
+                      type="button"
+                      className="reorder-arrow"
+                      disabled={!canMoveUp}
+                      aria-label="Move up"
+                      onClick={(e) => { e.stopPropagation(); moveCustomItem(symbol.id, -1); }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      className="reorder-arrow"
+                      disabled={!canMoveDown}
+                      aria-label="Move down"
+                      onClick={(e) => { e.stopPropagation(); moveCustomItem(symbol.id, 1); }}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {/* Add Symbol card — always visible in edit mode, styled in Parent Mode */}
           {showAddButton && (
@@ -246,6 +349,36 @@ export function SymbolGrid({ isParentMode }: Props) {
               <span className="symbol-label">
                 {isParentMode ? 'ADD SYMBOL' : 'Add Symbol'}
               </span>
+            </button>
+          )}
+
+          {/* User-facing "+ Add" card — every regular board outside Parent Mode.
+              Opens the dedicated CustomButtonModal with emoji search, image
+              search, no-image mode, board placement, and live preview. */}
+          {showQuickAddCard && (
+            <button
+              type="button"
+              className="symbol-card add-button-card"
+              onClick={() => setCustomButtonModalOpen(true)}
+              aria-label="Add custom button"
+            >
+              <span className="add-button-card-plus" aria-hidden="true">+</span>
+              <span className="symbol-label add-button-card-label">Add</span>
+            </button>
+          )}
+
+          {/* "+ Create Board" tile — Home only. Opens CustomBoardModal which
+              creates a new sub-board AND its category tile on Home in one
+              transaction. */}
+          {showCreateBoardCard && (
+            <button
+              type="button"
+              className="symbol-card add-board-card"
+              onClick={() => setCustomBoardModalOpen(true)}
+              aria-label="Create new board"
+            >
+              <span className="add-button-card-plus" aria-hidden="true">+</span>
+              <span className="symbol-label add-button-card-label">Create Board</span>
             </button>
           )}
 
@@ -270,6 +403,14 @@ export function SymbolGrid({ isParentMode }: Props) {
               <p>Tap ➕ to add symbols to this board!</p>
             </div>
           )}
+
+          {/* Phase 2 — friendly empty state on a freshly-created custom board */}
+          {!showAddButton && showQuickAddCard && symbols.length === 0 && currentBoardId.startsWith('board-') && (
+            <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
+              <div className="empty-state-icon">✨</div>
+              <p>No buttons yet! Tap + to add your first button.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -278,6 +419,16 @@ export function SymbolGrid({ isParentMode }: Props) {
         onClose={handleCloseModal}
         editSymbol={editingSymbol}
         boardId={addToBoardId || currentBoardId}
+      />
+
+      <CustomButtonModal
+        open={customButtonModalOpen}
+        onClose={() => setCustomButtonModalOpen(false)}
+      />
+
+      <CustomBoardModal
+        open={customBoardModalOpen}
+        onClose={() => setCustomBoardModalOpen(false)}
       />
 
       <SymbolContextMenu
