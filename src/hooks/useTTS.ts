@@ -26,7 +26,11 @@ function speechLangFor(uiLang: string): string {
 
 // Singleton worker — one instance for the app lifetime
 let worker: Worker | null = null;
-const pendingCallbacks = new Map<string, (buffer: ArrayBuffer) => void>();
+// TTS-03 (definitive): the worker now sends RAW Float32 PCM + its native sample
+// rate, not a WAV. This lets us build the AudioBuffer pinned at 24kHz and skip
+// decodeAudioData entirely — which is what was resampling 24->48kHz on desktop
+// and muffling the voice.
+const pendingCallbacks = new Map<string, (pcm: ArrayBuffer, sampleRate: number) => void>();
 let callbackIdCounter = 0;
 
 function getWorker(): Worker {
@@ -39,7 +43,7 @@ function getWorker(): Worker {
       if (msg.type === 'AUDIO_READY') {
         const cb = pendingCallbacks.get(msg.id);
         if (cb) {
-          cb(msg.buffer);
+          cb(msg.pcm, msg.sampleRate);
           pendingCallbacks.delete(msg.id);
         }
       }
@@ -135,7 +139,7 @@ async function warmAudioContext(ctx: AudioContext): Promise<void> {
   audioCtxWarmed = true;
 }
 
-async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<void> {
+async function playPcm(pcm: ArrayBuffer, sampleRate: number, volume: number): Promise<void> {
   const audioCtx = getAudioContext();
   // Verify context is running, resume if suspended
   if (audioCtx.state === 'suspended') {
@@ -152,7 +156,16 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
     }
   }
 
-  const audioBuffer = await audioCtx.decodeAudioData(buffer.slice(0));
+  // TTS-03 (definitive fix): build the buffer at Kokoro's NATIVE rate and copy
+  // the raw samples in. decodeAudioData is never called, so the 24->48kHz
+  // decode-time resample that muffled desktop audio can't happen. createBuffer
+  // pins the source rate to 24kHz even if the AudioContext fell back to 48kHz;
+  // Web Audio then does a single output-stage resample (same as phones).
+  const rate = sampleRate || 24000;
+  const samples = new Float32Array(pcm);
+  const audioBuffer = audioCtx.createBuffer(1, samples.length, rate);
+  audioBuffer.copyToChannel(samples, 0);
+
   const source = audioCtx.createBufferSource();
   const gainNode = audioCtx.createGain();
   gainNode.gain.value = volume;
@@ -162,6 +175,15 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
 
   // Store reference for interrupt mode
   currentAudioSource = source;
+
+  // Verification hook: confirms no decode-time resample occurred. A correct
+  // render reports sampleRate=24000 (NOT 48000) regardless of the context rate.
+  (window as unknown as { __ttsDebug?: unknown }).__ttsDebug = {
+    sampleRate: audioBuffer.sampleRate,
+    length: audioBuffer.length,
+    duration: audioBuffer.duration,
+    ctxSampleRate: audioCtx.sampleRate,
+  };
 
   source.start(0);
   return new Promise((resolve) => {
@@ -310,9 +332,9 @@ export function useTTS() {
         const id = String(++callbackIdCounter);
 
         // Register Kokoro callback — wait for it, no bridge fallback
-        pendingCallbacks.set(id, async (buffer: ArrayBuffer) => {
+        pendingCallbacks.set(id, async (pcm: ArrayBuffer, sampleRate: number) => {
           try {
-            await playArrayBuffer(buffer, volume);
+            await playPcm(pcm, sampleRate, volume);
           } catch {
             await speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume, speechLang);
           }
