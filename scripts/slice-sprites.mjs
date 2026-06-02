@@ -79,17 +79,17 @@ async function main() {
       const left = col * cellW + INSET;
       const top = row * cellH + INSET;
 
-      const outPath = join(outDir, `${label}.png`);
+      const outPath = join(outDir, `${label}.webp`);
 
       await sharp(sheetPath)
         .extract({ left, top, width: extractW, height: extractH })
         .resize(500, 500, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .png()
+        .webp({ quality: 80 }) // PAY-02: WebP is ~98% smaller than RGBA PNG here
         .toFile(outPath);
 
       const outSize = statSync(outPath).size;
       if (outSize < 1024) {
-        console.log(`  ⚠ ${label}.png — ${(outSize/1024).toFixed(1)}KB (possibly blank!)`);
+        console.log(`  ⚠ ${label}.webp — ${(outSize/1024).toFixed(1)}KB (possibly blank!)`);
         warnings++;
       }
       totalSliced++;
@@ -99,12 +99,12 @@ async function main() {
     // Preview from happy cell
     const previewDir = join(PUBLIC, 'preview');
     await mkdir(previewDir, { recursive: true });
-    const previewPath = join(previewDir, `${char.id}.png`);
+    const previewPath = join(previewDir, `${char.id}.webp`);
 
     await sharp(sheetPath)
       .extract({ left: INSET, top: INSET, width: extractW, height: extractH })
       .resize(200, 200, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .png()
+      .webp({ quality: 80 })
       .toFile(previewPath);
 
     console.log(`  ✓ preview\n`);

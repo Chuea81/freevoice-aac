@@ -8,7 +8,7 @@
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "brown",
-      "previewImage": "/characters/preview/char_001.png",
+      "previewImage": "/characters/preview/char_001.webp",
       "supportedCategories": ["emotions"],
       "description": "Boy with light skin and brown hair"
     },
@@ -19,7 +19,7 @@
       "skinTone": "dark",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_002.png",
+      "previewImage": "/characters/preview/char_002.webp",
       "supportedCategories": ["emotions"],
       "description": "African American girl with dark skin and black curly hair"
     },
@@ -30,7 +30,7 @@
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "brown",
-      "previewImage": "/characters/preview/char_003.png",
+      "previewImage": "/characters/preview/char_003.webp",
       "supportedCategories": ["emotions"],
       "description": "Girl with light skin and brown hair"
     },
@@ -41,7 +41,7 @@
       "skinTone": "medium",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_004.png",
+      "previewImage": "/characters/preview/char_004.webp",
       "supportedCategories": ["emotions"],
       "description": "Latino boy with medium skin and black curly hair"
     },
@@ -52,7 +52,7 @@
       "skinTone": "dark",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_005.png",
+      "previewImage": "/characters/preview/char_005.webp",
       "supportedCategories": ["emotions"],
       "description": "Girl with dark skin and black curly hair"
     },
@@ -63,7 +63,7 @@
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_006.png",
+      "previewImage": "/characters/preview/char_006.webp",
       "supportedCategories": ["emotions"],
       "description": "Asian boy with light skin and straight black hair"
     },
@@ -74,7 +74,7 @@
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_007.png",
+      "previewImage": "/characters/preview/char_007.webp",
       "supportedCategories": ["emotions"],
       "description": "Asian girl with light skin and straight black hair"
     },
@@ -85,7 +85,7 @@
       "skinTone": "medium",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_008.png",
+      "previewImage": "/characters/preview/char_008.webp",
       "supportedCategories": ["emotions"],
       "description": "Latina girl with medium skin and black curly hair"
     },
@@ -96,7 +96,7 @@
       "skinTone": "medium",
       "hairType": "wavy",
       "hairColor": "brown",
-      "previewImage": "/characters/preview/char_009.png",
+      "previewImage": "/characters/preview/char_009.webp",
       "supportedCategories": ["emotions"],
       "description": "Gender-neutral child with medium skin and wavy brown hair"
     },
@@ -107,7 +107,7 @@
       "skinTone": "medium-dark",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_010.png",
+      "previewImage": "/characters/preview/char_010.webp",
       "supportedCategories": ["emotions"],
       "description": "Girl with medium-dark skin and black curly hair"
     },
@@ -118,7 +118,7 @@
       "skinTone": "medium-dark",
       "hairType": "straight",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_011.png",
+      "previewImage": "/characters/preview/char_011.webp",
       "supportedCategories": ["emotions"],
       "description": "Boy with medium-dark skin and straight black hair"
     },
@@ -129,7 +129,7 @@
       "skinTone": "light",
       "hairType": "straight",
       "hairColor": "blonde",
-      "previewImage": "/characters/preview/char_012.png",
+      "previewImage": "/characters/preview/char_012.webp",
       "supportedCategories": ["emotions"],
       "description": "Eastern European girl with light skin and blonde hair"
     },
@@ -140,7 +140,7 @@
       "skinTone": "dark",
       "hairType": "curly",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_013.png",
+      "previewImage": "/characters/preview/char_013.webp",
       "supportedCategories": ["emotions"],
       "description": "African American boy with dark skin and black curly hair"
     },
@@ -151,7 +151,7 @@
       "skinTone": "medium-light",
       "hairType": "straight",
       "hairColor": "black",
-      "previewImage": "/characters/preview/char_014.png",
+      "previewImage": "/characters/preview/char_014.webp",
       "supportedCategories": ["emotions"],
       "description": "Mediterranean boy with medium-light skin and black hair"
     }

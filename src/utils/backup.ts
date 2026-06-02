@@ -16,7 +16,14 @@ interface BackupData {
     boards: Board[];
     symbols: Omit<Symbol, 'imageUrl'>[];
     settings: Setting[];
+    // OFF-04: which built-in symbols the caregiver hid. Since v9 this is the
+    // ONLY persistent record of that curation — omitting it means every hidden
+    // default symbol reappears for the child on a new device.
+    symbolHidden?: { id: string; hidden: boolean }[];
   };
+  // OFF-04: chosen UI language (fv_language) + selected character
+  // (freevoice-character), stored verbatim so restore is exact.
+  meta?: { language?: string | null; character?: string | null };
 }
 
 interface BoardShareData {
@@ -43,11 +50,17 @@ export async function exportProfile(): Promise<void> {
     return cleaned;
   });
 
+  const symbolHidden = await db.symbolHidden.toArray();
+
   const data: BackupData = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
     appVersion: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0',
-    profile: { boards, symbols, settings },
+    profile: { boards, symbols, settings, symbolHidden },
+    meta: {
+      language: typeof localStorage !== 'undefined' ? localStorage.getItem('fv_language') : null,
+      character: typeof localStorage !== 'undefined' ? localStorage.getItem('freevoice-character') : null,
+    },
   };
 
   downloadJson(data, `freevoice-backup-${new Date().toISOString().slice(0, 10)}.json`);
@@ -77,17 +90,30 @@ export async function importProfile(file: File): Promise<{ success: boolean; err
     boards = boards.filter((b: Board) => !b.id.startsWith('default-'));
     symbols = symbols.filter((s: Symbol) => !s.id.startsWith('default-'));
 
+    // OFF-04: hidden-default curation (absent in legacy backups → skipped).
+    const symbolHidden = data.profile?.symbolHidden;
+
     // Auto-backup before replacing
     await exportProfile();
 
-    await db.transaction('rw', db.boards, db.symbols, db.settings, async () => {
+    await db.transaction('rw', db.boards, db.symbols, db.settings, db.symbolHidden, async () => {
       await db.boards.clear();
       await db.symbols.clear();
       await db.settings.clear();
       await db.boards.bulkPut(boards);
       await db.symbols.bulkPut(symbols);
       if (settings) await db.settings.bulkPut(settings);
+      if (Array.isArray(symbolHidden)) {
+        await db.symbolHidden.clear();
+        await db.symbolHidden.bulkPut(symbolHidden);
+      }
     });
+
+    // OFF-04: restore language + selected character (verbatim).
+    if (data.meta && typeof localStorage !== 'undefined') {
+      if (data.meta.language) localStorage.setItem('fv_language', data.meta.language);
+      if (data.meta.character) localStorage.setItem('freevoice-character', data.meta.character);
+    }
 
     return { success: true };
   } catch {
@@ -163,7 +189,14 @@ export async function shareBoardAsUrl(boardId: string): Promise<string | null> {
 
   const json = JSON.stringify(shareData);
   const compressed = pako.deflate(new TextEncoder().encode(json));
-  const base64 = btoa(String.fromCharCode(...compressed))
+  // OFF-10: chunk the byte→string conversion. `String.fromCharCode(...bytes)`
+  // spreads every byte as an argument and overflows the call stack on large
+  // boards. Build the binary string in 0x8000-byte windows instead.
+  let binary = '';
+  for (let i = 0; i < compressed.length; i += 0x8000) {
+    binary += String.fromCharCode(...compressed.subarray(i, i + 0x8000));
+  }
+  const base64 = btoa(binary)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');

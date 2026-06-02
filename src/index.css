@@ -432,6 +432,11 @@ body {
   user-select: none;
   font-family: var(--font-body);
   transition: none; /* Instant feedback on pointerdown */
+  /* PERF-01: let the browser skip rendering/layout work for off-screen cards
+     on long boards — cheap virtualization with no library. `auto` remembers
+     the real size once a card has been painted. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100px;
 }
 
 /* Remove ::before — top stripe is now border-top on the card itself */

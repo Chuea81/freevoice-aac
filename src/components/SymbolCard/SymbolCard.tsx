@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
+import { memo, useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useTTS } from '../../hooks/useTTS';
 import { getArasaacImageUrl, resolveArasaacUrl } from '../../services/arasaac';
@@ -40,7 +40,10 @@ interface Props {
   isParentMode?: boolean;
 }
 
-export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
+// PERF-01: memoized so toggling a setting (or any parent re-render) doesn't
+// re-render every card. onTap from the grid is a stable useCallback and the
+// symbol object identity only changes when the board actually reloads.
+export const SymbolCard = memo(function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const auditoryTouch = useSettingsStore((s) => s.auditoryTouch);
@@ -52,6 +55,9 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
   const [previewed, setPreviewed] = useState(false);
   const dwellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointerStartRef = useRef<{x: number, y: number} | null>(null);
+  // A11Y-01: suppress the synthetic click that follows a dwell-mode activation
+  // so the symbol isn't spoken twice.
+  const suppressClickRef = useRef(false);
 
   // Check for custom character image (emotions only for now)
   const category = boardToCategory(symbol.boardId);
@@ -126,15 +132,21 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     ? FITZGERALD_COLORS[symbol.wordType]
     : getCardColor(symbol.id);
 
-  // Track pointer start position for scroll detection
+  // Pointer handlers are affordance-only (ripple, auditory preview, dwell).
+  // Canonical activation is onClick (see handleClick) so keyboard, switch
+  // access, and screen readers can all activate the symbol.
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLButtonElement>) => {
+      suppressClickRef.current = false;
       pointerStartRef.current = { x: e.clientX, y: e.clientY };
 
-      // If dwell time is enabled, just start the timer
+      // If dwell time is enabled, activate after holding for dwellTime.
       if (dwellTime > 0) {
         dwellTimerRef.current = setTimeout(() => {
           onTap(symbol);
+          // Don't let the trailing synthetic click fire a second activation.
+          suppressClickRef.current = true;
+          setTimeout(() => { suppressClickRef.current = false; }, 1000);
         }, dwellTime);
         return;
       }
@@ -166,37 +178,32 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
         setTimeout(() => btn.classList.remove('speaking'), 300);
       }
     },
-    [symbol, auditoryTouch, previewed, speakPreview, dwellTime],
+    [symbol, auditoryTouch, previewed, speakPreview, dwellTime, onTap],
   );
 
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+  // Releasing before the dwell timer cancels the pending activation. Real
+  // activation happens in handleClick; the browser already suppresses click
+  // after a touch-scroll, so no manual scroll guard is needed here.
+  const handlePointerUp = useCallback(() => {
     if (dwellTimerRef.current) {
       clearTimeout(dwellTimerRef.current);
       dwellTimerRef.current = null;
-      return; // Dwell mode — tap already fired or cancelled
     }
+    pointerStartRef.current = null;
+  }, []);
 
-    // Only fire tap on explicit pointer up, not on leave
-    if (e.type !== 'pointerup') {
-      pointerStartRef.current = null;
+  // A11Y-01: canonical activation. Works for mouse, touch (synthetic click),
+  // keyboard (Enter/Space → click), and switch access / AT (ACTION_CLICK).
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
       return;
     }
-
-    // Check if pointer moved more than 10px (scroll guard)
-    const start = pointerStartRef.current;
-    if (start) {
-      const dx = Math.abs(e.clientX - start.x);
-      const dy = Math.abs(e.clientY - start.y);
-      if (dx > 10 || dy > 10) {
-        pointerStartRef.current = null;
-        return; // Treat as scroll — don't fire the tap
-      }
-    }
-
-    // True tap — fire the action
-    pointerStartRef.current = null;
+    // In dwell mode the dwell timer handles pointer activation (detail > 0);
+    // still let keyboard / assistive-tech clicks (detail === 0) through.
+    if (dwellTime > 0 && e.detail !== 0) return;
     onTap(symbol);
-  }, [symbol, onTap]);
+  }, [dwellTime, onTap, symbol]);
 
   if (symbol.hidden && !isParentMode) return null;
 
@@ -212,11 +219,12 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
     <button
       className={`symbol-card${symbol.hidden ? ' symbol-hidden' : ''}${previewed ? ' symbol-previewed' : ''}`}
       style={cardStyle}
+      type="button"
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       aria-label={symbol.isCategory ? `${symbol.label} category` : `Speak ${symbol.phrase}`}
-      role="button"
     >
       {symbol.isCategory && (
         <span className="symbol-card-nav-indicator" aria-hidden="true">▶</span>
@@ -262,4 +270,4 @@ export function SymbolCard({ symbol, onTap, isParentMode }: Props) {
       {labelPosition !== 'above' && labelEl}
     </button>
   );
-}
+});

@@ -10,6 +10,13 @@
     "home": "HOME",
     "feelings": "GEVOELENS",
     "food": "ETEN",
+    "activities": "SPELEN",
+    "social": "SOCIAAL",
+    "body": "LICHAAM",
+    "school": "SCHOOL",
+    "places": "PLAATSEN",
+    "routines": "ROUTINES",
+    "custom": "MIJN WOORDEN",
     "play": "SPELEN",
     "myWords": "MIJN WOORDEN"
   },

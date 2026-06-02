@@ -23,22 +23,12 @@ interface Props {
 export function Board({ onOpenParentMode }: Props) {
   const seedDatabase = useBoardStore((s) => s.seedDatabase);
   const isSeeded = useBoardStore((s) => s.isSeeded);
+  const symbolsError = useBoardStore((s) => s.symbolsError);
   const currentBoardId = useBoardStore((s) => s.currentBoardId);
   const onboardingDone = useSettingsStore((s) => s.onboardingDone);
   const loaded = useSettingsStore((s) => s.loaded);
   const [searchOpen, setSearchOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // Force unregister old service workers on load
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (const reg of registrations) {
-          reg.unregister();
-        }
-      });
-    }
-  }, []);
 
   // useTTS handles iOS unlock internally via useEffect
   useTTS();
@@ -98,6 +88,35 @@ export function Board({ onOpenParentMode }: Props) {
         height: '100dvh', background: '#FFF9F0',
       }}>
         <p style={{ fontSize: 20, fontWeight: 700, color: '#BDB5A8' }}>Loading...</p>
+      </div>
+    );
+  }
+
+  // OFF-03: symbols failed to load (e.g. offline first launch). Offer a retry
+  // instead of silently showing an empty board.
+  if (symbolsError) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        gap: 16, height: '100dvh', background: '#FFF9F0', padding: 24, textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 48 }}>📡</div>
+        <p style={{ fontSize: 20, fontWeight: 800, color: '#5A5247', margin: 0 }}>
+          Couldn't load symbols
+        </p>
+        <p style={{ fontSize: 15, color: '#8A8275', margin: 0, maxWidth: 320 }}>
+          Check your connection and try again. If you've used FreeVoice before, it should work offline once it loads.
+        </p>
+        <button
+          onClick={() => { seedDatabase(); }}
+          style={{
+            marginTop: 8, padding: '14px 28px', fontSize: 17, fontWeight: 800,
+            color: '#fff', background: '#F59E0B', border: 'none', borderRadius: 14,
+            minHeight: 48, cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }

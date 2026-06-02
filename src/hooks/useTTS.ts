@@ -10,6 +10,19 @@ import { useEffect, useCallback } from 'react';
 import { useTTSStore } from '../store/ttsStore';
 import { useBoardStore } from '../store/boardStore';
 import { unlockIOSSpeech } from '../utils/voiceDetection';
+import i18n from '../i18n';
+
+// I18N-02: Kokoro only has English voices. For any other UI language we must
+// route to the OS Web Speech engine AND tell it which language to speak, or a
+// Spanish/Arabic/Chinese sentence gets read aloud in an American accent.
+function speechLangFor(uiLang: string): string {
+  const base = (uiLang || 'en').split('-')[0];
+  const map: Record<string, string> = {
+    en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR',
+    it: 'it-IT', nl: 'nl-NL', ar: 'ar-SA', zh: 'zh-CN', ja: 'ja-JP',
+  };
+  return map[base] || base;
+}
 
 // Singleton worker — one instance for the app lifetime
 let worker: Worker | null = null;
@@ -81,9 +94,20 @@ function isSamsungOldAndroid(): boolean {
   return isSamsung && androidVersion < 12;
 }
 
+// Kokoro renders audio at 24 kHz. Creating the context at the same rate avoids
+// the browser resampling 24→48 kHz on desktop (TTS-03), which smeared
+// high-frequency consonant detail and made speech sound muffled. The Samsung
+// warmup buffer below keys off ctx.sampleRate, so it stays correct.
+const KOKORO_SAMPLE_RATE = 24000;
+
 function getAudioContext(): AudioContext {
   if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
-    sharedAudioCtx = new AudioContext();
+    try {
+      sharedAudioCtx = new AudioContext({ sampleRate: KOKORO_SAMPLE_RATE });
+    } catch {
+      // Some devices reject a forced sample rate — fall back to the default.
+      sharedAudioCtx = new AudioContext();
+    }
     audioCtxWarmed = false;
   }
   return sharedAudioCtx;
@@ -123,7 +147,7 @@ async function playArrayBuffer(buffer: ArrayBuffer, volume: number): Promise<voi
   if (currentAudioSource) {
     try {
       currentAudioSource.stop(0);
-    } catch (e) {
+    } catch {
       // Source may already be stopped, ignore
     }
   }
@@ -156,7 +180,8 @@ function speakWithWebSpeech(
   voiceURI: string | null,
   rate: number,
   pitch: number,
-  volume: number
+  volume: number,
+  lang?: string
 ): Promise<void> {
   return new Promise((resolve) => {
     // Interrupt mode: cancel any currently playing Web Speech immediately
@@ -167,7 +192,7 @@ function speakWithWebSpeech(
       try {
         currentAudioSource.stop(0);
         currentAudioSource = null;
-      } catch (e) {
+      } catch {
         // Source may already be stopped, ignore
       }
     }
@@ -176,10 +201,16 @@ function speakWithWebSpeech(
     utterance.rate = rate;
     utterance.pitch = pitch;
     utterance.volume = volume;
+    if (lang) utterance.lang = lang;
 
+    const voices = window.speechSynthesis.getVoices();
     if (voiceURI) {
-      const voices = window.speechSynthesis.getVoices();
       const match = voices.find((v) => v.voiceURI === voiceURI);
+      if (match) utterance.voice = match;
+    } else if (lang) {
+      // I18N-02: pick an installed voice for the target language.
+      const base = lang.slice(0, 2).toLowerCase();
+      const match = voices.find((v) => v.lang?.toLowerCase().startsWith(base));
       if (match) utterance.voice = match;
     }
 
@@ -266,8 +297,15 @@ export function useTTS() {
     // Pass voice to getPronunciation so British voice overrides apply
     const processed = getPronunciation(text, voice);
 
-    // Tier 1: Kokoro (best quality)
-    if (tier === 'kokoro' && status === 'ready') {
+    // I18N-02: Kokoro is English-only. Non-English UI must use the OS voice for
+    // the content language, not an American accent (and not the English
+    // web-speech voice the user picked for English).
+    const uiLang = i18n.language || 'en';
+    const isEnglish = uiLang.toLowerCase().startsWith('en');
+    const speechLang = speechLangFor(uiLang);
+
+    // Tier 1: Kokoro (best quality) — English only
+    if (tier === 'kokoro' && status === 'ready' && isEnglish) {
       return new Promise<void>((resolve) => {
         const id = String(++callbackIdCounter);
 
@@ -276,7 +314,7 @@ export function useTTS() {
           try {
             await playArrayBuffer(buffer, volume);
           } catch {
-            await speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume);
+            await speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume, speechLang);
           }
           resolve();
         });
@@ -289,29 +327,28 @@ export function useTTS() {
           id,
         });
 
-        // Background-cache the sentence words for next time
-        const words = processed.split(/\s+/).filter(w => w.length > 1);
-        for (const word of words) {
-          getWorker().postMessage({
-            type: 'SPEAK_AND_CACHE',
-            text: word,
-            voice,
-            speed: rate,
-          });
-        }
+        // TTS-05: no per-word SPEAK_AND_CACHE fan-out. It enqueued a full ONNX
+        // inference for every word of every sentence behind the serial worker,
+        // so the next real tap waited 1–5s on low-end devices (plus battery/
+        // heat). Whole phrases are cached by the SPEAK above, single-symbol taps
+        // cache themselves, and the core vocabulary is covered by PRECACHE_LIST.
 
-        // Hard timeout: if Kokoro doesn't respond in 15s, fall back to Web Speech
+        // TTS-06: a non-verbal user must not sit in silence. If Kokoro hasn't
+        // produced audio quickly (cached words return in <100ms; this only
+        // trips on a cold/slow synthesis), bridge to Web Speech now. Kokoro
+        // keeps synthesizing in the background and caches the result, so the
+        // same phrase is instant and full-quality next time.
         setTimeout(() => {
           if (pendingCallbacks.has(id)) {
             pendingCallbacks.delete(id);
-            speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume).then(resolve);
+            speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume, speechLang).then(resolve);
           }
-        }, 15000);
+        }, 2500);
       });
     }
 
-    // Tier 2 & 3: Web Speech API
-    return speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume);
+    // Tier 2 & 3: Web Speech API (with content-language voice for non-English)
+    return speakWithWebSpeech(processed, isEnglish ? wsVoiceURI : null, rate, pitch, volume, speechLang);
   }, [getPronunciation]);
 
   // Auditory Touch preview — always Web Speech, slightly quieter/faster
@@ -325,7 +362,7 @@ export function useTTS() {
       try {
         currentAudioSource.stop(0);
         currentAudioSource = null;
-      } catch (e) {
+      } catch {
         // Source may already be stopped, ignore
       }
     }
@@ -333,6 +370,7 @@ export function useTTS() {
     u.rate = speechRate * 1.05;
     u.pitch = speechPitch;
     u.volume = speechVolume * 0.85;
+    u.lang = speechLangFor(i18n.language || 'en');
     window.speechSynthesis.speak(u);
   }, [speechRate, speechPitch, speechVolume, getPronunciation]);
 
@@ -343,7 +381,7 @@ export function useTTS() {
       try {
         currentAudioSource.stop(0);
         currentAudioSource = null;
-      } catch (e) {
+      } catch {
         // Source may already be stopped, ignore
       }
     }

@@ -12,7 +12,7 @@ export function buildCharacterImagePath(
   category: string,
   label: string
 ): string {
-  return `${BASE}characters/symbols/${characterId}/${category}/${labelToFileName(label)}.png`;
+  return `${BASE}characters/symbols/${characterId}/${category}/${labelToFileName(label)}.webp`;
 }
 
 export function buildKnownPaths(

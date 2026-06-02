@@ -30,6 +30,11 @@ i18n
       ja: { translation: ja },
     },
     fallbackLng: 'en',
+    // I18N-09: map region variants (pt-BR, zh-CN, en-GB…) onto our base
+    // languages instead of silently falling back to English.
+    supportedLngs: ['en', 'es', 'fr', 'de', 'pt', 'it', 'nl', 'ar', 'zh', 'ja'],
+    load: 'languageOnly',
+    nonExplicitSupportedLngs: true,
     interpolation: { escapeValue: false },
     detection: {
       order: ['localStorage', 'navigator'],

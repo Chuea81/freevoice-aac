@@ -7,6 +7,10 @@ import { db } from '../db';
 const API_BASE = 'https://api.arasaac.org/v1';
 const IMAGE_BASE = 'https://static.arasaac.org/pictograms';
 const CACHE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+// PERF-03: pictograms render at ~40–110px in the grid, so the 500px variant
+// wasted cross-origin bytes and decode time on every symbol. 300px is the
+// smallest standard ARASAAC size that still looks crisp on hi-dpi phones.
+const IMAGE_SIZE = 300;
 
 interface ArasaacSearchResult {
   _id: number;
@@ -48,7 +52,7 @@ export async function searchArasaacImage(
     );
     const best = exact || results[0];
     const pictId = best._id;
-    const imageUrl = `${IMAGE_BASE}/${pictId}/${pictId}_500.png`;
+    const imageUrl = `${IMAGE_BASE}/${pictId}/${pictId}_${IMAGE_SIZE}.png`;
 
     // 3. Cache in symbolCache table (NOT in symbols table)
     await db.symbolCache.put({
@@ -68,7 +72,7 @@ export async function searchArasaacImage(
  * Used when we already know the arasaacId (hardcoded in defaultBoards).
  */
 export function getArasaacImageUrl(arasaacId: number): string {
-  return `${IMAGE_BASE}/${arasaacId}/${arasaacId}_500.png`;
+  return `${IMAGE_BASE}/${arasaacId}/${arasaacId}_${IMAGE_SIZE}.png`;
 }
 
 /**

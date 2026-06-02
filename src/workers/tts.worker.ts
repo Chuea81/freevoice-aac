@@ -252,6 +252,14 @@ async function loadModel(dtypeHint = 'q8') {
 // ── Audio cache ──
 const audioCache = new Map<string, ArrayBuffer>();
 
+// TTS-01: the cache key MUST include speed. Keying on voice:text only meant
+// that after the speed slider changed, already-cached words (the core
+// vocabulary) kept playing at the old rate — inconsistent, wrong speech.
+// Pitch/volume don't affect Kokoro synthesis, so only speed matters here.
+function audioKey(voice: string, speed: number | undefined, text: string): string {
+  return `${voice}:${Number(speed ?? 1).toFixed(2)}:${text}`;
+}
+
 const PRECACHE_LIST = [
   // Core words (immediate recognition)
   'I', 'want', 'go', 'more', 'stop', 'help', 'no', 'yes', 'done',
@@ -279,6 +287,25 @@ const PRECACHE_LIST = [
   'one', 'two', 'three', 'four', 'five',
 ];
 
+// TTS-04: bound the cache so long sessions don't accumulate tens of MB and get
+// the worker killed on low-memory devices. Core/precache words are pinned.
+const PRECACHE_SET = new Set(PRECACHE_LIST);
+const MAX_CACHE_ENTRIES = 250;
+
+function cacheAudio(key: string, buf: ArrayBuffer): void {
+  // Refresh LRU position.
+  if (audioCache.has(key)) audioCache.delete(key);
+  audioCache.set(key, buf);
+  if (audioCache.size <= MAX_CACHE_ENTRIES) return;
+  // Evict oldest entries first, but never the pinned core vocabulary.
+  for (const k of audioCache.keys()) {
+    if (audioCache.size <= MAX_CACHE_ENTRIES) break;
+    const text = k.split(':').slice(2).join(':'); // key = voice:speed:text
+    if (PRECACHE_SET.has(text)) continue;
+    audioCache.delete(k);
+  }
+}
+
 let precachePaused = false;
 
 async function preCacheCommonWords(voice: string, speed: number): Promise<void> {
@@ -286,13 +313,13 @@ async function preCacheCommonWords(voice: string, speed: number): Promise<void> 
   for (const word of PRECACHE_LIST) {
     // Pause precaching if a SPEAK request came in — don't block the user
     if (precachePaused) break;
-    const key = `${voice}:${word}`;
+    const key = audioKey(voice, speed, word);
     if (audioCache.has(key)) continue;
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const audio = await tts!.generate(word, { voice: voice as any, speed });
       const wav = audio.toWav();
-      audioCache.set(key, wav);
+      cacheAudio(key, wav);
     } catch {
       // Non-fatal
     }
@@ -377,18 +404,20 @@ ctx.onmessage = async (e: MessageEvent) => {
       }
       // Pause any background precaching so this request gets priority
       precachePaused = true;
-      const cacheKey = `${msg.voice}:${msg.text}`;
+      const cacheKey = audioKey(msg.voice, msg.speed, msg.text);
       try {
         let wav: ArrayBuffer;
         if (audioCache.has(cacheKey)) {
-          wav = audioCache.get(cacheKey)!.slice(0);
+          const hit = audioCache.get(cacheKey)!;
+          cacheAudio(cacheKey, hit); // refresh LRU position
+          wav = hit.slice(0);
         } else {
           const audio = await tts.generate(msg.text, {
             voice: msg.voice,
             speed: msg.speed,
           });
           wav = audio.toWav();
-          audioCache.set(cacheKey, wav.slice(0));
+          cacheAudio(cacheKey, wav.slice(0));
         }
         post({ type: 'AUDIO_READY', id: msg.id, buffer: wav }, [wav]);
       } catch (err) {
@@ -399,12 +428,12 @@ ctx.onmessage = async (e: MessageEvent) => {
 
     case 'SPEAK_AND_CACHE': {
       if (!tts) return;
-      const ck = `${msg.voice}:${msg.text}`;
+      const ck = audioKey(msg.voice, msg.speed, msg.text);
       if (audioCache.has(ck)) return;
       try {
         const audio = await tts.generate(msg.text, { voice: msg.voice, speed: msg.speed });
         const wav = audio.toWav();
-        audioCache.set(ck, wav);
+        cacheAudio(ck, wav);
       } catch {
         // Non-fatal
       }

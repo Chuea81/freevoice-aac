@@ -25,5 +25,5 @@ export function useCharacterImage(
   if (!character.supportedCategories.includes(category)) return null;
 
   const fileName = labelToFileName(label);
-  return `${BASE}characters/symbols/${selectedCharacterId}/${category}/${fileName}.png`;
+  return `${BASE}characters/symbols/${selectedCharacterId}/${category}/${fileName}.webp`;
 }

@@ -24,8 +24,13 @@ const config: CapacitorConfig = {
     },
   },
   android: {
-    allowMixedContent: true,
-    webContentsDebuggingEnabled: true,
+    // SEC-04: app is HTTPS-only (cleartext:false), so mixed content is never
+    // needed and only opens a MITM vector on public/school Wi-Fi.
+    allowMixedContent: false,
+    // SEC-02: remote WebView debugging (chrome://inspect) makes the release
+    // build fully inspectable and the parent PIN trivially bypassable.
+    // Re-enable temporarily for local debugging only.
+    webContentsDebuggingEnabled: false,
     backgroundColor: '#000000',
     overScrollMode: 'never',
     buildOptions: {

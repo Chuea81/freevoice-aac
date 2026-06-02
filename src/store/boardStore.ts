@@ -22,6 +22,7 @@ interface BoardState {
   outputTokens: SpeechToken[];
   symbols: DbSymbol[];
   isSeeded: boolean;
+  symbolsError: boolean;
 
   // Persistent strips
   quickFireSymbols: DbSymbol[];
@@ -89,6 +90,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   outputTokens: [],
   symbols: [],
   isSeeded: false,
+  symbolsError: false,
   quickFireSymbols: [],
   coreWordSymbols: [],
   searchResults: [],
@@ -125,28 +127,37 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   loadSymbols: async (boardId: string) => {
-    const { symbols: defaultSymbols } = await fetchDefaultSymbols();
+    try {
+      const { symbols: defaultSymbols } = await fetchDefaultSymbols();
 
-    // Get defaults for this board
-    const defaults = defaultSymbols.filter(s => s.boardId === boardId);
+      // Get defaults for this board
+      const defaults = defaultSymbols.filter(s => s.boardId === boardId);
 
-    // Get hidden overrides for default symbols
-    const hiddenIds = new Set(
-      (await db.symbolHidden.toArray()).filter(h => h.hidden).map(h => h.id)
-    );
+      // Get hidden overrides for default symbols
+      const hiddenIds = new Set(
+        (await db.symbolHidden.toArray()).filter(h => h.hidden).map(h => h.id)
+      );
 
-    // Apply hidden overrides to default symbols
-    const defaultsWithHidden = defaults.map(s => ({
-      ...s,
-      hidden: hiddenIds.has(s.id) ? true : s.hidden,
-    }));
+      // Apply hidden overrides to default symbols
+      const defaultsWithHidden = defaults.map(s => ({
+        ...s,
+        hidden: hiddenIds.has(s.id) ? true : s.hidden,
+      }));
 
-    // Get user-created symbols for this board
-    const userSymbols = await db.symbols.where('boardId').equals(boardId).sortBy('order');
+      // Get user-created symbols for this board
+      const userSymbols = await db.symbols.where('boardId').equals(boardId).sortBy('order');
 
-    // Merge: defaults first (preserving order), then user symbols
-    const merged = [...defaultsWithHidden, ...userSymbols];
-    set({ symbols: merged });
+      // Merge: defaults first (preserving order), then user symbols
+      const merged = [...defaultsWithHidden, ...userSymbols];
+      set({ symbols: merged, symbolsError: false });
+    } catch (err) {
+      // OFF-03: never silently render an empty board. Surface the failure so
+      // the UI can show a "Couldn't load symbols — Retry" screen instead of a
+      // normal-looking empty state.
+      console.error('Failed to load symbols:', err);
+      set({ symbolsError: true });
+      throw err;
+    }
   },
 
   addToken: (emoji: string, text: string) => {
@@ -166,12 +177,18 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   seedDatabase: async () => {
-    // No seeding needed — default symbols come from symbols.json
-    set({ isSeeded: true });
-    get().loadSymbols('home');
-    get().loadQuickFires();
-    get().loadCoreWords();
-    get().loadPronunciations();
+    // No seeding needed — default symbols come from symbols.json.
+    // OFF-03: await the first load so a failure flips symbolsError instead of
+    // marking the app "seeded" with an empty board.
+    try {
+      await get().loadSymbols('home');
+      set({ isSeeded: true, symbolsError: false });
+    } catch {
+      set({ isSeeded: true, symbolsError: true });
+    }
+    get().loadQuickFires().catch((e) => console.error('loadQuickFires failed:', e));
+    get().loadCoreWords().catch((e) => console.error('loadCoreWords failed:', e));
+    get().loadPronunciations().catch((e) => console.error('loadPronunciations failed:', e));
   },
 
   // Add symbol to ANY board (TDSnap: not just My Words)
@@ -211,6 +228,17 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   deleteCustomSymbol: async (id) => {
+    // COR-01: default symbols live in symbols.json, NOT db.symbols, so
+    // db.symbols.delete(id) silently no-ops (0 rows) and the UI falsely reports
+    // success. Deleting a built-in symbol means hiding it from the board.
+    if (id.startsWith('default-')) {
+      const existing = await db.symbolHidden.get(id);
+      if (!existing || !existing.hidden) {
+        await db.symbolHidden.put({ id, hidden: true });
+      }
+      get().loadSymbols(get().currentBoardId);
+      return;
+    }
     await db.symbols.delete(id);
     const { currentBoardId } = get();
     get().loadSymbols(currentBoardId);

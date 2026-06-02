@@ -127,8 +127,16 @@ export function SymbolGrid({ isParentMode }: Props) {
   }, [contextSymbol]);
 
   const handleDelete = useCallback(async () => {
-    if (contextSymbol && confirm(`Remove "${contextSymbol.label}"?`)) {
-      await deleteCustomSymbol(contextSymbol.id);
+    if (contextSymbol) {
+      // COR-01: built-in symbols are hidden, not deleted (they can't be removed
+      // from symbols.json). Use wording that matches what actually happens.
+      const isDefault = contextSymbol.id.startsWith('default-');
+      const prompt = isDefault
+        ? `Hide "${contextSymbol.label}" from this board?`
+        : `Remove "${contextSymbol.label}"?`;
+      if (confirm(prompt)) {
+        await deleteCustomSymbol(contextSymbol.id);
+      }
     }
     setContextOpen(false);
     setContextSymbol(null);
@@ -243,6 +251,7 @@ export function SymbolGrid({ isParentMode }: Props) {
         open={contextOpen}
         label={contextSymbol?.label || ''}
         isCategory={contextSymbol?.isCategory}
+        isDefault={contextSymbol?.id.startsWith('default-')}
         onEdit={handleEdit}
         onMove={handleMove}
         onAddInside={handleAddInside}

@@ -22,10 +22,34 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json}'],
-        globIgnores: ['**/tts.worker-*.js', '**/kokoroWorker-*.js', '**/*.wasm', '**/*.onnx'],
+        // webp included so the core symbol vocabulary (now WebP) is available
+        // offline. The large character art is kept OUT of precache via the
+        // '**/characters/**' ignore below and served on demand instead.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2,json}'],
+        // PAY-01: do NOT precache the character art (~148 MB of emotion PNGs +
+        // sprite sheets). Precaching forced every device to download all of it
+        // on first load — catastrophic on metered mobile data. These are now
+        // fetched on demand and kept via the CacheFirst runtime rule below.
+        globIgnores: [
+          '**/tts.worker-*.js',
+          '**/kokoroWorker-*.js',
+          '**/*.wasm',
+          '**/*.onnx',
+          '**/characters/**',
+        ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
+          {
+            // PAY-01: character art is downloaded only when actually shown,
+            // then cached so it works offline thereafter.
+            urlPattern: /\/characters\/.*\.(?:png|webp|jpe?g)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'character-art',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'StaleWhileRevalidate',
@@ -69,7 +93,9 @@ export default defineConfig({
           // progress reporting (stuck at 0%).
         ],
         navigateFallback: '/app/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/admin\//, /^\/terms/],
+        // OFF-11: the app is served under /app/, so deny the real data/route
+        // paths (data fetches must never fall back to index.html).
+        navigateFallbackDenylist: [/^\/app\/api\//, /^\/api\//, /^\/admin\//, /^\/terms/],
         skipWaiting: true,
         clientsClaim: true,
       },
