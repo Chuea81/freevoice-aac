@@ -10,7 +10,7 @@ import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dir, '..', 'public', 'characters');
+const PUBLIC = join(__dir, '..', 'public');
 const QUALITY = 80;
 
 function walk(dir) {
@@ -24,7 +24,12 @@ function walk(dir) {
   return out;
 }
 
-const pngs = [...walk(join(ROOT, 'symbols')), ...walk(join(ROOT, 'preview'))];
+const pngs = [
+  ...walk(join(PUBLIC, 'characters', 'symbols')),
+  ...walk(join(PUBLIC, 'characters', 'preview')),
+  ...walk(join(PUBLIC, 'symbols', 'custom')),
+  ...walk(join(PUBLIC, 'symbols', 'drinks')),
+];
 console.log(`Converting ${pngs.length} PNGs to WebP (q${QUALITY})...`);
 
 let before = 0, after = 0, done = 0, failed = 0;
