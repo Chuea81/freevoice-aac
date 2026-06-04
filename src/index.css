@@ -366,11 +366,21 @@ body {
 }
 .quickfires-strip::-webkit-scrollbar { display: none; }
 
+/* A11Y-10: visible focus for keyboard / switch-access users. There were no
+   focus indicators before — switch users couldn't see where they were. */
+:focus-visible {
+  outline: 3px solid var(--sky, #2196F3);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 .quickfire-btn {
   background: var(--green-glow);
   border: 1px solid var(--border-accent);
   border-radius: var(--radius-full);
   padding: 6px 16px;
+  /* A11Y-06: speaks on tap — meet the 44px touch-target minimum. */
+  min-height: 44px;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 800;
@@ -409,6 +419,10 @@ body {
 .coreword-btn {
   border-radius: 8px;
   padding: 5px 11px;
+  /* A11Y-06: speaks on tap — meet the 44px touch-target minimum. */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 900;
@@ -452,6 +466,10 @@ body {
 .crumb {
   border-radius: 8px;
   padding: 4px 10px;
+  /* A11Y-06: larger navigation hit target. */
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 800;
