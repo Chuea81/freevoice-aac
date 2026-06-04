@@ -18,16 +18,6 @@ function post(msg: Record<string, unknown>, transfer?: Transferable[]) {
   }
 }
 
-async function detectWebGPU(): Promise<boolean> {
-  try {
-    if (!('gpu' in navigator)) return false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const adapter = await (navigator as any).gpu.requestAdapter();
-    return !!adapter;
-  } catch {
-    return false;
-  }
-}
 
 // ── IndexedDB model cache (Android-safe, won't be evicted) ──
 const IDB_NAME = 'FreeVoiceModelCache';
@@ -186,8 +176,12 @@ async function loadModel(dtypeHint = 'q8') {
     try {
       await requestPersistentStorage();
 
-      const hasWebGPU = await detectWebGPU();
-      const device = hasWebGPU ? 'webgpu' : 'wasm';
+      // WebGPU is intentionally disabled. The onnxruntime jsep (WebGPU) backend
+      // produces muffled, low-passed Kokoro audio on some GPUs — confirmed on
+      // desktop Chrome + AMD RDNA-4, where the output rolled off at ~1.1kHz
+      // ("Kenny" effect). The WASM (q8) path is correct and is what mobile
+      // already uses successfully, so force WASM everywhere.
+      const device = 'wasm';
       // Restore model from IndexedDB → Cache Storage if Android evicted it
       const restoredFromIDB = await restoreCacheFromIDB();
       const cached = restoredFromIDB || await isModelCached();
@@ -211,32 +205,13 @@ async function loadModel(dtypeHint = 'q8') {
         });
       };
 
-      // Try WebGPU first if available, fall back to WASM on any error
-      let loadDevice = device;
-      if (hasWebGPU) {
-        try {
-          tts = await KokoroTTS.from_pretrained(MODEL_ID, {
-            dtype: 'fp32',
-            device: 'webgpu',
-            progress_callback: progressCb,
-          });
-        } catch {
-          // WebGPU failed (e.g. "No available adapters") — fall back to WASM
-          tts = null;
-          loadDevice = 'wasm';
-        }
-      }
+      tts = await KokoroTTS.from_pretrained(MODEL_ID, {
+        dtype: (dtypeHint as 'q8') as 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16',
+        device: 'wasm',
+        progress_callback: progressCb,
+      });
 
-      if (!tts) {
-        tts = await KokoroTTS.from_pretrained(MODEL_ID, {
-          dtype: (dtypeHint as 'q8') as 'fp32' | 'fp16' | 'q8' | 'q4' | 'q4f16',
-          device: 'wasm',
-          progress_callback: progressCb,
-        });
-        loadDevice = 'wasm';
-      }
-
-      post({ type: 'LOAD_COMPLETE', device: loadDevice });
+      post({ type: 'LOAD_COMPLETE', device: 'wasm' });
 
       // Backup model to IndexedDB so Android can't evict it
       backupCacheToIDB().catch(() => {});
