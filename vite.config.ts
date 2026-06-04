@@ -22,6 +22,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
+        // Cross-origin isolation shim — adds COOP/COEP to the app-shell so
+        // SharedArrayBuffer (and thus the Kokoro neural voices) work on desktop
+        // web. Imported first so it can header-stamp navigations before Workbox.
+        importScripts: ['/app/coi.js'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
         // Do NOT precache the character art (~148MB of emotion PNGs + sprite
         // sheets). Precaching forced every device to download all of it on
