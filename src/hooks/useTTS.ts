@@ -10,6 +10,19 @@ import { useEffect, useCallback, useState } from 'react';
 import { useTTSStore, type KokoroVoice } from '../store/ttsStore';
 import { useBoardStore } from '../store/boardStore';
 import { unlockIOSSpeech } from '../utils/voiceDetection';
+import i18n from '../i18n';
+
+// I18N-02: Kokoro only has English voices. For any other UI language, route to
+// the OS Web Speech engine AND tell it the language (BCP-47), or a Spanish/
+// Arabic/Chinese sentence gets read aloud in an American accent.
+function speechLangFor(uiLang: string): string {
+  const base = (uiLang || 'en').split('-')[0];
+  const map: Record<string, string> = {
+    en: 'en-US', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-BR',
+    it: 'it-IT', nl: 'nl-NL', ar: 'ar-SA', zh: 'zh-CN', ja: 'ja-JP',
+  };
+  return map[base] || base;
+}
 
 // Singleton worker — one instance for the app lifetime
 let worker: Worker | null = null;
@@ -387,6 +400,31 @@ function speakWithWebSpeech(
   });
 }
 
+// I18N-02: speak non-English text via the OS voice for that language. Kept
+// separate from the English speakWithWebSpeech so the tuned English/Kokoro path
+// is untouched. Picks an installed voice matching the language; if none, sets
+// utterance.lang and lets the OS choose rather than skipping (silence).
+function speakWithWebSpeechLang(text: string, lang: string, rate: number, pitch: number, volume: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.speechSynthesis.cancel();
+    if (currentAudioSource) {
+      try { currentAudioSource.stop(0); currentAudioSource = null; } catch { /* noop */ }
+    }
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = volume;
+    u.lang = lang;
+    const base = lang.slice(0, 2).toLowerCase();
+    const match = window.speechSynthesis.getVoices().find((v) => v.lang && v.lang.toLowerCase().startsWith(base));
+    if (match) u.voice = match;
+    u.onend = () => { setIsSpeaking(false); resolve(); };
+    u.onerror = () => { setIsSpeaking(false); resolve(); };
+    try { window.speechSynthesis.resume(); } catch { /* noop */ }
+    window.speechSynthesis.speak(u);
+  });
+}
+
 export function useTTS() {
   // Note: speak()/speakPreview() read speechRate/Pitch/Volume from the store
   // at call time via getState(), so we don't subscribe to them here — that
@@ -510,6 +548,14 @@ export function useTTS() {
 
     // Pass voice to getPronunciation so British voice overrides apply
     const processed = getPronunciation(text, voice);
+
+    // I18N-02: Kokoro voices are English-only, so for any non-English UI language
+    // speak via the OS Web Speech voice in that language (correct accent) rather
+    // than reading foreign text with an American Kokoro voice.
+    const uiLang = i18n.language || 'en';
+    if (!uiLang.toLowerCase().startsWith('en')) {
+      return speakWithWebSpeechLang(processed, speechLangFor(uiLang), rate, pitch, volume);
+    }
 
     // Tier 1: Kokoro (best quality). Once the user has selected an AI voice,
     // we NEVER silently fall back to Web Speech — a sudden robotic voice is

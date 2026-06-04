@@ -10,6 +10,13 @@
     "home": "START",
     "feelings": "GEFÜHLE",
     "food": "ESSEN",
+    "activities": "SPIELEN",
+    "social": "SOZIALES",
+    "body": "KÖRPER",
+    "school": "SCHULE",
+    "places": "ORTE",
+    "routines": "ROUTINEN",
+    "custom": "MEINE WÖRTER",
     "play": "SPIELEN",
     "myWords": "MEINE WÖRTER"
   },

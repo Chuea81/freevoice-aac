@@ -10,6 +10,13 @@
     "home": "HOME",
     "feelings": "FEELINGS",
     "food": "FOOD",
+    "activities": "PLAY",
+    "social": "SOCIAL",
+    "body": "BODY",
+    "school": "SCHOOL",
+    "places": "PLACES",
+    "routines": "ROUTINES",
+    "custom": "MY WORDS",
     "play": "PLAY",
     "myWords": "MY WORDS"
   },
