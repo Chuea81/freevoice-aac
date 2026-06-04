@@ -506,11 +506,13 @@ export function useTTS() {
     // which is a loud failure the user will notice.
     if (tier === 'kokoro') {
       if (status !== 'ready') {
-        // Model still downloading or initializing — drop the request rather
-        // than speak in the browser default voice. The Settings panel already
-        // surfaces the download progress, so the user isn't left in the dark.
-        console.warn('[TTS] Kokoro not ready (status=' + status + ') — dropping speak:', processed);
-        return;
+        // Kokoro isn't ready — either still downloading, or it can't run on this
+        // platform at all (desktop web has no SharedArrayBuffer, so the threaded
+        // WASM model never initializes). Fall back to the OS Web Speech voice so
+        // the user ALWAYS gets clear, immediate speech instead of silence. Once
+        // Kokoro becomes ready, later taps use it automatically.
+        console.warn('[TTS] Kokoro not ready (status=' + status + ') — using Web Speech:', processed);
+        return speakWithWebSpeech(processed, wsVoiceURI, rate, pitch, volume).finally(() => setIsSpeaking(false));
       }
       return new Promise<void>((resolve) => {
         const id = String(++callbackIdCounter);
