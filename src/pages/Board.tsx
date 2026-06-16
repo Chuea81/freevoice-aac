@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBoardStore } from '../store/boardStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { useTTS } from '../hooks/useTTS';
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function Board({ onOpenParentMode, onOpenProfile }: Props) {
+  const { t } = useTranslation();
   const seedDatabase = useBoardStore((s) => s.seedDatabase);
   const isSeeded = useBoardStore((s) => s.isSeeded);
   const currentBoardId = useBoardStore((s) => s.currentBoardId);
@@ -87,7 +89,7 @@ export function Board({ onOpenParentMode, onOpenProfile }: Props) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         height: '100dvh', background: '#FFF9F0',
       }}>
-        <p style={{ fontSize: 20, fontWeight: 700, color: '#BDB5A8' }}>Loading...</p>
+        <p style={{ fontSize: 20, fontWeight: 700, color: '#BDB5A8' }}>{t('common.loading', 'Loading...')}</p>
       </div>
     );
   }

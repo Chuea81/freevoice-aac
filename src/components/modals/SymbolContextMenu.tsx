@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function SymbolContextMenu({ open, label, isCategory, onEdit, onMove, onDelete, onAddInside, onClose }: Props) {
+  const { t } = useTranslation();
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   }, [onClose]);
@@ -27,20 +29,20 @@ export function SymbolContextMenu({ open, label, isCategory, onEdit, onMove, onD
         <h3 className="context-menu-title">{label}</h3>
         {isCategory && onAddInside && (
           <button className="context-menu-btn edit" onClick={onAddInside}>
-            ➕ Add symbol inside
+            {t('contextMenu.addInside', '➕ Add symbol inside')}
           </button>
         )}
         <button className="context-menu-btn edit" onClick={onEdit}>
-          ✏️ Edit
+          {t('contextMenu.edit', '✏️ Edit')}
         </button>
         <button className="context-menu-btn edit" onClick={onMove}>
-          📂 Move to Board...
+          {t('contextMenu.move', '📂 Move to Board...')}
         </button>
         <button className="context-menu-btn delete" onClick={onDelete}>
-          🗑️ Delete
+          {t('contextMenu.delete', '🗑️ Delete')}
         </button>
         <button className="context-menu-btn cancel-btn" onClick={onClose}>
-          Cancel
+          {t('contextMenu.cancel', 'Cancel')}
         </button>
       </div>
     </div>

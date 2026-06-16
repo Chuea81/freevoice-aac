@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useBoardStore } from '../../store/boardStore';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -17,6 +18,7 @@ export function SymbolSearch({ open, onClose }: Props) {
   const navigateToBoard = useBoardStore((s) => s.navigateToBoard);
   const autoSpeak = useSettingsStore((s) => s.autoSpeak);
   const { speak } = useTTS();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -59,7 +61,7 @@ export function SymbolSearch({ open, onClose }: Props) {
             ref={inputRef}
             className="search-input"
             type="text"
-            placeholder="Search symbols..."
+            placeholder={t('search.placeholder', 'Search symbols...')}
             value={query}
             onChange={(e) => handleInput(e.target.value)}
             aria-label="Search symbols"
@@ -68,7 +70,7 @@ export function SymbolSearch({ open, onClose }: Props) {
         </div>
         <div className="search-results">
           {searchResults.length === 0 && query.length > 0 && (
-            <p className="search-empty">No symbols found for "{query}"</p>
+            <p className="search-empty">{t('search.noResults', 'No symbols found for "{{query}}"', { query })}</p>
           )}
           {searchResults.map((s) => (
             <button

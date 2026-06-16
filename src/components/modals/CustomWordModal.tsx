@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useBoardStore } from '../../store/boardStore';
 import type { Board } from '../../db';
@@ -22,6 +23,7 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
   const addSymbolToBoard = useBoardStore((s) => s.addSymbolToBoard);
   const updateCustomSymbol = useBoardStore((s) => s.updateCustomSymbol);
   const getAllBoards = useBoardStore((s) => s.getAllBoards);
+  const { t } = useTranslation();
 
   const [selectedEmoji, setSelectedEmoji] = useState('⭐');
   const [label, setLabel] = useState('');
@@ -91,13 +93,13 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal" ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1}>
         <h2 className="modal-title">
-          {editSymbol ? '✏️ Edit Symbol' : '✨ Add Symbol'}
+          {editSymbol ? `✏️ ${t('addSymbol.editTitle', 'Edit Symbol')}` : `✨ ${t('addSymbol.title', 'Add Symbol')}`}
         </h2>
 
         {/* Board picker — only for new symbols */}
         {!editSymbol && selectableBoards.length > 0 && (
           <div className="modal-field">
-            <label>Add to Board</label>
+            <label>{t('addSymbol.addToBoard', 'Add to Board')}</label>
             <select
               value={targetBoard}
               onChange={(e) => setTargetBoard(e.target.value)}
@@ -119,7 +121,7 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
 
         {/* Photo upload — first and most prominent */}
         <div className="modal-field">
-          <label>📷 Add a Photo (or emoji below)</label>
+          <label>{t('addSymbol.addPhotoLabel', '📷 Add a Photo (or emoji below)')}</label>
           <div className="photo-upload-area">
             {photoPreview ? (
               <div className="photo-preview-container">
@@ -133,7 +135,7 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
               </div>
             ) : (
               <button className="photo-upload-btn" onClick={() => fileInputRef.current?.click()}>
-                📷 Choose Photo from Device
+                {t('addSymbol.choosePhotoDevice', '📷 Choose Photo from Device')}
               </button>
             )}
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
@@ -141,7 +143,7 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
         </div>
 
         <div className="modal-field">
-          <label>Or Choose an Emoji</label>
+          <label>{t('addSymbol.orChooseEmoji', 'Or Choose an Emoji')}</label>
           <div className="emoji-picker">
             {EMOJI_OPTIONS.map((e) => (
               <div
@@ -156,19 +158,19 @@ export function CustomWordModal({ open, onClose, editSymbol, boardId = 'custom' 
         </div>
 
         <div className="modal-field">
-          <label>Word or Label (short)</label>
-          <input ref={labelInputRef} type="text" placeholder="e.g. Grandma" maxLength={20} value={label} onChange={(e) => setLabel(e.target.value)} />
+          <label>{t('addSymbol.labelField', 'Word or Label (short)')}</label>
+          <input ref={labelInputRef} type="text" placeholder={t('addSymbol.labelPlaceholder', 'e.g. Grandma')} maxLength={20} value={label} onChange={(e) => setLabel(e.target.value)} />
         </div>
 
         <div className="modal-field">
-          <label>Full Phrase to Speak</label>
-          <input type="text" placeholder="e.g. I want to call Grandma" value={phrase} onChange={(e) => setPhrase(e.target.value)} />
+          <label>{t('addSymbol.phraseField', 'Full Phrase to Speak')}</label>
+          <input type="text" placeholder={t('addSymbol.phrasePlaceholder', 'e.g. I want to call Grandma')} value={phrase} onChange={(e) => setPhrase(e.target.value)} />
         </div>
 
         <div className="modal-actions">
-          <button className="modal-btn cancel" onClick={onClose}>Cancel</button>
+          <button className="modal-btn cancel" onClick={onClose}>{t('addSymbol.cancel', 'Cancel')}</button>
           <button className="modal-btn primary" onClick={handleSave}>
-            {editSymbol ? 'Update' : 'Save'}
+            {editSymbol ? t('addSymbol.update', 'Update') : t('addSymbol.save', 'Save')}
           </button>
         </div>
       </div>

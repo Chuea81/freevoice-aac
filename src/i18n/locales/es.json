@@ -4,7 +4,12 @@
     "undo": "DESHACER",
     "clear": "BORRAR",
     "type": "ESCRIBIR",
-    "placeholder": "Toca símbolos para hablar…"
+    "placeholder": "Toca símbolos para hablar…",
+    "stop": "PARAR",
+    "clearAll": "Limpiar",
+    "delete": "Borrar",
+    "highlight": "Resaltar",
+    "typePlaceholder": "Escribir..."
   },
   "nav": {
     "home": "INICIO",
@@ -109,7 +114,30 @@
     "off2": "NO",
     "add": "Agregar",
     "back": "← Volver",
-    "lock": "🔒 Bloquear"
+    "lock": "🔒 Bloquear",
+    "boardEditing": "Edición de tableros",
+    "editMode": "Modo de edición",
+    "editModeHint": "Cuando está activado, tocar cualquier botón (predeterminado o personalizado) abre su formulario de edición en lugar de hablar. Un aviso permanece en la parte superior con un botón Listo. Mantén pulsado (2,5 segundos) cualquier botón para editarlo sin activar el modo de edición.",
+    "changeAvatar": "Cambiar avatar",
+    "done": "Listo",
+    "communicationMode": "Modo de comunicación",
+    "firstThenMode": "Modo Primero, Después",
+    "firstThenHint": "Construye frases con una estructura PRIMERO/DESPUÉS. Un panel de dos casillas reemplaza la caja de voz y dice automáticamente \"Primero X, después Y\".",
+    "wordPlaceholder": "Palabra",
+    "soundsLike": "Suena como...",
+    "emoji": "Emoji",
+    "touchDelay": "Retardo táctil",
+    "touchDelayHint": "Mantén pulsado cada botón durante el tiempo seleccionado antes de que se active. Ayuda a frenar los toques rápidos.",
+    "pinLock": "Bloqueo con PIN",
+    "requirePin": "Pedir PIN para acceder a Ajustes",
+    "pinLockHint": "Cuando está activado, tocar el botón de Ajustes pedirá un PIN de 4 dígitos. Déjalo desactivado para que Ajustes esté abierto para todos.",
+    "removePin": "Quitar PIN",
+    "pinForgotHint": "⚠️ Si olvidas tu PIN, tendrás que borrar los datos de la app para restablecerlo: no hay recuperación.",
+    "factoryReset": "Restablecer de fábrica",
+    "resetEverything": "⚠️ Restablecer todo",
+    "factoryResetHint": "Elimina todos los tableros, símbolos, ajustes y voces de IA. Mantiene la preferencia de idioma. No se puede deshacer.",
+    "translateHelp": "¿Quieres ayudar a traducir FreeVoice a tu idioma?",
+    "translateGuide": "Consulta la guía de traducción en GitHub"
   },
   "onboarding": {
     "welcome": "¡Bienvenido a FreeVoice!",
@@ -127,7 +155,8 @@
     "tip3": "🔒 Triple toque arriba-derecha para ajustes",
     "startWith": "Comenzar con {{name}}",
     "startApp": "Comenzar FreeVoice",
-    "skipCharacter": "Omitir — usar símbolos estándar"
+    "skipCharacter": "Omitir — usar símbolos estándar",
+    "yourChild": "tu hijo/a"
   },
   "addSymbol": {
     "title": "Agregar Símbolo",
@@ -142,7 +171,10 @@
     "phrasePlaceholder": "ej. Quiero llamar a la abuela",
     "cancel": "Cancelar",
     "save": "Guardar",
-    "update": "Actualizar"
+    "update": "Actualizar",
+    "orChooseEmoji": "O elige un emoji",
+    "addPhotoLabel": "📷 Añade una foto (o emoji abajo)",
+    "choosePhotoDevice": "📷 Elegir foto del dispositivo"
   },
   "contextMenu": {
     "addInside": "➕ Agregar símbolo adentro",
@@ -157,7 +189,8 @@
   },
   "empty": {
     "nothing": "¡Nada aquí todavía!",
-    "addSymbols": "Toca ➕ para agregar símbolos a este tablero!"
+    "addSymbols": "Toca ➕ para agregar símbolos a este tablero!",
+    "noButtons": "¡Aún no hay botones! Toca + para añadir tu primer botón."
   },
   "voicePrompt": {
     "title": "Mejores voces disponibles",
@@ -183,6 +216,44 @@
     "confirmSubtitle": "Confirma tu PIN",
     "wrong": "PIN incorrecto — intenta de nuevo",
     "mismatch": "Los PINs no coinciden — intenta de nuevo",
+    "cancel": "Cancelar",
+    "unlockSubtitle": "Introduce tu PIN de 4 dígitos",
+    "removeTitle": "Quitar bloqueo con PIN",
+    "removeSubtitle": "Introduce tu PIN actual para desactivar el bloqueo",
+    "createTitle": "Crear un PIN",
+    "createSubtitle": "Elige un PIN de 4 dígitos para bloquear Ajustes",
+    "confirmTitle": "Confirmar PIN",
+    "confirmSubtitleNew": "Introduce el mismo PIN de nuevo",
+    "changeVerifySubtitle": "Introduce tu PIN actual",
+    "newTitle": "Nuevo PIN",
+    "newSubtitle": "Elige un nuevo PIN de 4 dígitos",
+    "confirmNewTitle": "Confirmar nuevo PIN",
+    "confirmNewSubtitle": "Introduce el nuevo PIN de nuevo",
+    "forgotWarning": "⚠️ Si olvidas tu PIN, tendrás que borrar los datos de la app para restablecerlo."
+  },
+  "install": {
+    "iosSub": "Toca ⎙ y luego \"Añadir a pantalla de inicio\" para la mejor experiencia",
+    "androidTitle": "Instala FreeVoice como app",
+    "androidSub": "Funciona sin conexión y carga más rápido. Añádelo a la pantalla de inicio con un toque.",
+    "androidInstall": "Instalar app",
+    "notNow": "Ahora no",
+    "title": "Añade FreeVoice a tu pantalla de inicio",
+    "instructions": "Toca Compartir (⎙) y luego Añadir a pantalla de inicio. Funciona sin conexión una vez instalado."
+  },
+  "boardModal": {
+    "newBoard": "Nuevo tablero",
+    "newBoardInside": "NUEVO TABLERO DENTRO",
+    "createTitle": "Crear un tablero nuevo",
+    "namePlaceholder": "p. ej. Favoritos",
+    "create": "Crear tablero"
+  },
+  "common": {
+    "loading": "Cargando...",
     "cancel": "Cancelar"
+  },
+  "update": {
+    "title": "Actualización disponible",
+    "subtitle": "Nuevos símbolos y mejoras disponibles",
+    "button": "Actualizar"
   }
 }

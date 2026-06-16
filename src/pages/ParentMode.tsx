@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParentStore } from '../store/parentStore';
 import { Settings } from './Settings';
 import { PinModal } from '../components/modals/PinModal';
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function ParentMode({ onBack }: Props) {
+  const { t } = useTranslation();
   const isUnlocked = useParentStore((s) => s.isUnlocked);
   const pinSet = useParentStore((s) => s.pinSet);
   const pinEnabled = useParentStore((s) => s.pinEnabled);
@@ -38,13 +40,13 @@ export function ParentMode({ onBack }: Props) {
       ) : (
         <div className="settings-page">
           <div className="settings-header">
-            <button className="settings-back-btn" onClick={onBack}>← Back</button>
-            <h1 className="settings-title">Settings</h1>
+            <button className="settings-back-btn" onClick={onBack}>{t('settings.back', '← Back')}</button>
+            <h1 className="settings-title">{t('settings.title', 'Settings')}</h1>
             <div />
           </div>
           <div className="empty-state" style={{ paddingTop: 80 }}>
             <div className="empty-state-icon">🔒</div>
-            <p>Enter PIN to access settings</p>
+            <p>{t('parentMode.locked', 'Enter PIN to access settings')}</p>
           </div>
         </div>
       )}

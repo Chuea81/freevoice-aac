@@ -1,6 +1,8 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useTranslation } from 'react-i18next';
 
 export function UpdatePrompt() {
+  const { t } = useTranslation();
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
@@ -37,14 +39,14 @@ export function UpdatePrompt() {
           fontWeight: 900, fontSize: '14px',
           color: 'rgba(0,0,0,0.87)', marginBottom: '2px',
         }}>
-          Update available
+          {t('update.title', 'Update available')}
         </p>
         <p style={{
           fontFamily: "'Nunito', sans-serif",
           fontWeight: 700, fontSize: '12px',
           color: 'rgba(0,0,0,0.50)',
         }}>
-          New symbols and improvements ready
+          {t('update.subtitle', 'New symbols and improvements ready')}
         </p>
       </div>
       <button
@@ -58,7 +60,7 @@ export function UpdatePrompt() {
           cursor: 'pointer', flexShrink: 0,
         }}
       >
-        Update
+        {t('update.button', 'Update')}
       </button>
     </div>
   );

@@ -4,7 +4,12 @@
     "undo": "RÜCKGÄNGIG",
     "clear": "LÖSCHEN",
     "type": "TIPPEN",
-    "placeholder": "Tippe auf Symbole zum Sprechen…"
+    "placeholder": "Tippe auf Symbole zum Sprechen…",
+    "stop": "STOPP",
+    "clearAll": "Leeren",
+    "delete": "Löschen",
+    "highlight": "Markieren",
+    "typePlaceholder": "Tippen..."
   },
   "nav": {
     "home": "START",
@@ -109,7 +114,30 @@
     "off2": "AUS",
     "add": "Hinzufügen",
     "back": "← Zurück",
-    "lock": "🔒 Sperren"
+    "lock": "🔒 Sperren",
+    "boardEditing": "Tafel bearbeiten",
+    "editMode": "Bearbeitungsmodus",
+    "editModeHint": "Wenn aktiviert, öffnet das Tippen auf eine Schaltfläche (integriert oder benutzerdefiniert) deren Bearbeitungsformular, statt zu sprechen. Oben bleibt ein Banner mit der Schaltfläche „Fertig\". Halte eine Schaltfläche lange gedrückt (2,5 Sekunden), um sie zu bearbeiten, ohne den Bearbeitungsmodus zu aktivieren.",
+    "changeAvatar": "Avatar ändern",
+    "done": "Fertig",
+    "communicationMode": "Kommunikationsmodus",
+    "firstThenMode": "Modus Erst, Dann",
+    "firstThenHint": "Bilde Sätze mit einer ERST/DANN-Struktur. Ein Feld mit zwei Plätzen ersetzt das Sprechfeld und sagt automatisch „Erst X, dann Y\".",
+    "wordPlaceholder": "Wort",
+    "soundsLike": "Klingt wie...",
+    "emoji": "Emoji",
+    "touchDelay": "Berührungsverzögerung",
+    "touchDelayHint": "Halte jede Schaltfläche für die gewählte Dauer gedrückt, bevor sie aktiviert wird. Hilft, schnelles Tippen zu verlangsamen.",
+    "pinLock": "PIN-Sperre",
+    "requirePin": "PIN für Einstellungen verlangen",
+    "pinLockHint": "Wenn aktiviert, fragt die Schaltfläche „Einstellungen\" nach einer 4-stelligen PIN. Lass es aus, damit die Einstellungen für alle zugänglich bleiben.",
+    "removePin": "PIN entfernen",
+    "pinForgotHint": "⚠️ Wenn du deine PIN vergisst, musst du die App-Daten löschen, um sie zurückzusetzen – eine Wiederherstellung ist nicht möglich.",
+    "factoryReset": "Werkseinstellungen",
+    "resetEverything": "⚠️ Alles zurücksetzen",
+    "factoryResetHint": "Löscht alle Tafeln, Symbole, Einstellungen und KI-Stimmen. Behält die Spracheinstellung. Kann nicht rückgängig gemacht werden.",
+    "translateHelp": "Möchtest du helfen, FreeVoice in deine Sprache zu übersetzen?",
+    "translateGuide": "Sieh dir die Übersetzungsanleitung auf GitHub an"
   },
   "onboarding": {
     "welcome": "Willkommen bei FreeVoice!",
@@ -127,7 +155,8 @@
     "tip3": "🔒 Dreimal oben rechts tippen für Einstellungen",
     "startWith": "Starten mit {{name}}",
     "startApp": "FreeVoice Starten",
-    "skipCharacter": "Überspringen — Standardsymbole verwenden"
+    "skipCharacter": "Überspringen — Standardsymbole verwenden",
+    "yourChild": "dein Kind"
   },
   "addSymbol": {
     "title": "Symbol Hinzufügen",
@@ -142,7 +171,10 @@
     "phrasePlaceholder": "z.B. Ich möchte Oma anrufen",
     "cancel": "Abbrechen",
     "save": "Speichern",
-    "update": "Aktualisieren"
+    "update": "Aktualisieren",
+    "orChooseEmoji": "Oder wähle ein Emoji",
+    "addPhotoLabel": "📷 Foto hinzufügen (oder Emoji unten)",
+    "choosePhotoDevice": "📷 Foto vom Gerät wählen"
   },
   "contextMenu": {
     "addInside": "➕ Symbol hinzufügen",
@@ -157,7 +189,8 @@
   },
   "empty": {
     "nothing": "Hier ist noch nichts!",
-    "addSymbols": "Tippe auf ➕, um Symbole zu dieser Tafel hinzuzufügen!"
+    "addSymbols": "Tippe auf ➕, um Symbole zu dieser Tafel hinzuzufügen!",
+    "noButtons": "Noch keine Schaltflächen! Tippe auf +, um deine erste hinzuzufügen."
   },
   "voicePrompt": {
     "title": "Bessere Stimmen verfügbar",
@@ -172,7 +205,12 @@
   },
   "install": {
     "title": "FreeVoice zum Startbildschirm hinzufügen",
-    "instructions": "Tippe auf Teilen (⎙) und dann auf Zum Startbildschirm. Funktioniert offline nach Installation."
+    "instructions": "Tippe auf Teilen (⎙) und dann auf Zum Startbildschirm. Funktioniert offline nach Installation.",
+    "iosSub": "Tippe auf ⎙ und dann „Zum Home-Bildschirm\" für das beste Erlebnis",
+    "androidTitle": "FreeVoice als App installieren",
+    "androidSub": "Funktioniert offline und lädt schneller. Mit einem Tippen zum Startbildschirm hinzufügen.",
+    "androidInstall": "App installieren",
+    "notNow": "Jetzt nicht"
   },
   "update": {
     "title": "Update verfügbar",
@@ -192,6 +230,30 @@
     "confirmSubtitle": "Bestätige deine PIN",
     "wrong": "Falsche PIN — versuche es erneut",
     "mismatch": "PINs stimmen nicht überein — versuche es erneut",
+    "cancel": "Abbrechen",
+    "unlockSubtitle": "Gib deine 4-stellige PIN ein",
+    "removeTitle": "PIN-Sperre entfernen",
+    "removeSubtitle": "Gib deine aktuelle PIN ein, um die Sperre zu deaktivieren",
+    "createTitle": "PIN erstellen",
+    "createSubtitle": "Wähle eine 4-stellige PIN, um die Einstellungen zu sperren",
+    "confirmTitle": "PIN bestätigen",
+    "confirmSubtitleNew": "Gib dieselbe PIN erneut ein",
+    "changeVerifySubtitle": "Gib deine aktuelle PIN ein",
+    "newTitle": "Neue PIN",
+    "newSubtitle": "Wähle eine neue 4-stellige PIN",
+    "confirmNewTitle": "Neue PIN bestätigen",
+    "confirmNewSubtitle": "Gib die neue PIN erneut ein",
+    "forgotWarning": "⚠️ Wenn du deine PIN vergisst, musst du die App-Daten löschen, um sie zurückzusetzen."
+  },
+  "boardModal": {
+    "newBoard": "Neue Tafel",
+    "newBoardInside": "NEUE TAFEL DARIN",
+    "createTitle": "Neue Tafel erstellen",
+    "namePlaceholder": "z. B. Favoriten",
+    "create": "Tafel erstellen"
+  },
+  "common": {
+    "loading": "Wird geladen...",
     "cancel": "Abbrechen"
   }
 }

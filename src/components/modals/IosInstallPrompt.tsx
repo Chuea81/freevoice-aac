@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function isIosSafari(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -17,6 +18,7 @@ function isStandalone(): boolean {
 const STORAGE_KEY = 'fv_ios_prompt';
 
 export function IosInstallPrompt() {
+  const { t } = useTranslation();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -49,9 +51,9 @@ export function IosInstallPrompt() {
       <div className="ios-install-content">
         <span className="ios-install-icon">📲</span>
         <div className="ios-install-text">
-          <strong>Add FreeVoice to Home Screen</strong>
+          <strong>{t('install.title', 'Add FreeVoice to Home Screen')}</strong>
           <span className="ios-install-sub">
-            Tap <span className="ios-share-icon">⎙</span> then "Add to Home Screen" for the best experience
+            {t('install.iosSub', 'Tap ⎙ then "Add to Home Screen" for the best experience')}
           </span>
         </div>
       </div>

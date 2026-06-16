@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../../store/settingsStore';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -7,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function AndroidInstallPrompt() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const androidInstallDismissed = useSettingsStore((s) => s.androidInstallDismissed);
@@ -57,18 +59,18 @@ export function AndroidInstallPrompt() {
       <div className="android-install-content">
         <span className="android-install-icon">📱</span>
         <div className="android-install-text">
-          <strong>Install FreeVoice as an app</strong>
+          <strong>{t('install.androidTitle', 'Install FreeVoice as an app')}</strong>
           <span className="android-install-sub">
-            Works offline and loads faster. Add to home screen in one tap.
+            {t('install.androidSub', 'Works offline and loads faster. Add to home screen in one tap.')}
           </span>
         </div>
       </div>
       <div className="android-install-actions">
         <button className="android-install-btn primary" onClick={handleInstall}>
-          Install App
+          {t('install.androidInstall', 'Install App')}
         </button>
         <button className="android-install-btn dismiss" onClick={handleDismiss}>
-          Not Now
+          {t('install.notNow', 'Not Now')}
         </button>
       </div>
     </div>

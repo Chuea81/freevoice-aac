@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useParentStore } from '../../store/parentStore';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
@@ -21,6 +23,7 @@ export function PinModal() {
   const setPin = useParentStore((s) => s.setPin);
   const verifyPin = useParentStore((s) => s.verifyPin);
   const clearPin = useParentStore((s) => s.clearPin);
+  const { t } = useTranslation();
 
   const [step, setStep] = useState<Step>('verify');
   const [digits, setDigits] = useState('');
@@ -58,7 +61,7 @@ export function PinModal() {
     if (step === 'verify') {
       verifyPin(digits).then((ok) => {
         if (!ok) {
-          setError('Wrong PIN');
+          setError(t('pin.wrong', 'Wrong PIN'));
           setDigits('');
           return;
         }
@@ -84,19 +87,19 @@ export function PinModal() {
 
     if (step === 'confirm') {
       if (digits !== savedNewPin) {
-        setError('PINs do not match');
+        setError(t('pin.mismatch', 'PINs do not match'));
         setDigits('');
         return;
       }
       setPin(savedNewPin);
     }
-  }, [digits, step, pinMode, verifyPin, clearPin, setPin, savedNewPin]);
+  }, [digits, step, pinMode, verifyPin, clearPin, setPin, savedNewPin, t]);
 
   const dialogRef = useModalA11y(showPinModal, closePinModal);
 
   if (!showPinModal) return null;
 
-  const { title, subtitle } = titles(pinMode, step);
+  const { title, subtitle } = titles(t, pinMode, step);
   // Only show the "no recovery" warning on the first step of creating a new
   // PIN — that's where the user is actually making the commitment.
   const showForgotWarning = pinMode === 'set' && step === 'enter';
@@ -118,7 +121,7 @@ export function PinModal() {
 
         {showForgotWarning && (
           <p className="pin-subtitle" style={{ marginTop: 8, fontSize: 12, color: '#b45309' }}>
-            ⚠️ If you forget your PIN, you will need to clear the app data to reset it.
+            {t('pin.forgotWarning', '⚠️ If you forget your PIN, you will need to clear the app data to reset it.')}
           </p>
         )}
 
@@ -139,22 +142,22 @@ export function PinModal() {
           ))}
         </div>
 
-        <button className="pin-cancel" onClick={closePinModal}>Cancel</button>
+        <button className="pin-cancel" onClick={closePinModal}>{t('pin.cancel', 'Cancel')}</button>
       </div>
     </div>
   );
 }
 
-function titles(mode: 'unlock' | 'set' | 'change' | 'remove', step: Step): { title: string; subtitle: string } {
-  if (mode === 'unlock') return { title: 'Enter PIN', subtitle: 'Enter your 4-digit PIN' };
-  if (mode === 'remove') return { title: 'Remove PIN Lock', subtitle: 'Enter your current PIN to disable the lock' };
+function titles(t: TFunction, mode: 'unlock' | 'set' | 'change' | 'remove', step: Step): { title: string; subtitle: string } {
+  if (mode === 'unlock') return { title: t('pin.title', 'Enter PIN'), subtitle: t('pin.unlockSubtitle', 'Enter your 4-digit PIN') };
+  if (mode === 'remove') return { title: t('pin.removeTitle', 'Remove PIN Lock'), subtitle: t('pin.removeSubtitle', 'Enter your current PIN to disable the lock') };
   if (mode === 'set') {
     return step === 'enter'
-      ? { title: 'Create a PIN', subtitle: 'Choose a 4-digit PIN to lock Settings' }
-      : { title: 'Confirm PIN', subtitle: 'Enter the same PIN again' };
+      ? { title: t('pin.createTitle', 'Create a PIN'), subtitle: t('pin.createSubtitle', 'Choose a 4-digit PIN to lock Settings') }
+      : { title: t('pin.confirmTitle', 'Confirm PIN'), subtitle: t('pin.confirmSubtitleNew', 'Enter the same PIN again') };
   }
   // change
-  if (step === 'verify') return { title: 'Change PIN', subtitle: 'Enter your current PIN' };
-  if (step === 'enter')  return { title: 'New PIN', subtitle: 'Choose a new 4-digit PIN' };
-  return { title: 'Confirm New PIN', subtitle: 'Enter the new PIN again' };
+  if (step === 'verify') return { title: t('pin.changeTitle', 'Change PIN'), subtitle: t('pin.changeVerifySubtitle', 'Enter your current PIN') };
+  if (step === 'enter')  return { title: t('pin.newTitle', 'New PIN'), subtitle: t('pin.newSubtitle', 'Choose a new 4-digit PIN') };
+  return { title: t('pin.confirmNewTitle', 'Confirm New PIN'), subtitle: t('pin.confirmNewSubtitle', 'Enter the new PIN again') };
 }

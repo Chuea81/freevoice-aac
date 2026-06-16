@@ -88,7 +88,7 @@ export function TabBar({ isParentMode }: Props) {
         {/* Create Board tab — Parent Mode only */}
         {isParentMode && (
           <TabButton
-            label="New Board"
+            label={t('boardModal.newBoard', 'New Board')}
             emoji="➕"
             ariaLabel="Create a new board"
             onActivate={() => setShowCreateDialog(true)}
@@ -100,13 +100,13 @@ export function TabBar({ isParentMode }: Props) {
       {showCreateDialog && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateDialog(false); }}>
           <div className="modal">
-            <h2 className="modal-title">Create a new board</h2>
+            <h2 className="modal-title">{t('boardModal.createTitle', 'Create a new board')}</h2>
 
             <div className="modal-field">
-              <label>Board name</label>
+              <label>{t('settings.boardName', 'Board name')}</label>
               <input
                 type="text"
-                placeholder="e.g. Favorites"
+                placeholder={t('boardModal.namePlaceholder', 'e.g. Favorites')}
                 maxLength={30}
                 value={newBoardName}
                 onChange={(e) => setNewBoardName(e.target.value)}
@@ -116,7 +116,7 @@ export function TabBar({ isParentMode }: Props) {
             </div>
 
             <div className="modal-field">
-              <label>Emoji</label>
+              <label>{t('settings.emoji', 'Emoji')}</label>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -151,14 +151,14 @@ export function TabBar({ isParentMode }: Props) {
                 className="modal-btn cancel"
                 onClick={() => setShowCreateDialog(false)}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </button>
               <button
                 className="modal-btn primary"
                 onClick={handleCreateTopLevelBoard}
                 disabled={!newBoardName.trim()}
               >
-                Create Board
+                {t('boardModal.create', 'Create Board')}
               </button>
             </div>
           </div>

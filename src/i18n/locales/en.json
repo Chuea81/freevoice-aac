@@ -1,9 +1,14 @@
 {
   "speech": {
     "speak": "SPEAK",
+    "stop": "STOP",
     "undo": "CLEAR",
     "clear": "CLEAR",
+    "clearAll": "Clear",
+    "delete": "Delete",
+    "highlight": "Highlight",
     "type": "TYPE",
+    "typePlaceholder": "Type...",
     "placeholder": "Tap symbols to speak…"
   },
   "nav": {
@@ -109,15 +114,51 @@
     "off2": "OFF",
     "add": "Add",
     "back": "← Back",
-    "lock": "🔒 Lock"
+    "lock": "🔒 Lock",
+    "boardEditing": "Board Editing",
+    "editMode": "Edit Mode",
+    "editModeHint": "When on, tapping any button (built-in or custom) opens its edit form instead of speaking. A banner stays at the top with a Done Editing button. Long-press (2.5 seconds) any button to edit it without turning Edit Mode on.",
+    "changeAvatar": "Change Avatar",
+    "done": "Done",
+    "communicationMode": "Communication Mode",
+    "firstThenMode": "First, Then Mode",
+    "firstThenHint": "Build sentences using a FIRST/THEN structure. A two-slot panel replaces the speech box and auto-speaks \"First X, then Y\".",
+    "wordPlaceholder": "Word",
+    "soundsLike": "Sounds like...",
+    "emoji": "Emoji",
+    "touchDelay": "Touch Delay",
+    "touchDelayHint": "Press and hold every button for the selected duration before it activates. Helps slow down rapid tapping.",
+    "pinLock": "PIN Lock",
+    "requirePin": "Require PIN to access Settings",
+    "pinLockHint": "When on, tapping the Settings button will ask for a 4-digit PIN. Leave off to keep Settings open for everyone.",
+    "removePin": "Remove PIN",
+    "pinForgotHint": "⚠️ If you forget your PIN, you will need to clear the app data to reset it — there is no recovery.",
+    "factoryReset": "Factory Reset",
+    "resetEverything": "⚠️ Reset Everything",
+    "factoryResetHint": "Deletes all boards, symbols, settings, and AI voices. Keeps language preference. Cannot be undone.",
+    "translateHelp": "Want to help translate FreeVoice into your language?",
+    "translateGuide": "See the translation guide on GitHub"
   },
   "pin": {
     "title": "Enter PIN",
     "setTitle": "Set PIN",
     "changeTitle": "Change PIN",
     "subtitle": "Enter your 4-digit PIN",
+    "unlockSubtitle": "Enter your 4-digit PIN",
     "setSubtitle": "Choose a 4-digit PIN",
     "confirmSubtitle": "Confirm your PIN",
+    "removeTitle": "Remove PIN Lock",
+    "removeSubtitle": "Enter your current PIN to disable the lock",
+    "createTitle": "Create a PIN",
+    "createSubtitle": "Choose a 4-digit PIN to lock Settings",
+    "confirmTitle": "Confirm PIN",
+    "confirmSubtitleNew": "Enter the same PIN again",
+    "changeVerifySubtitle": "Enter your current PIN",
+    "newTitle": "New PIN",
+    "newSubtitle": "Choose a new 4-digit PIN",
+    "confirmNewTitle": "Confirm New PIN",
+    "confirmNewSubtitle": "Enter the new PIN again",
+    "forgotWarning": "⚠️ If you forget your PIN, you will need to clear the app data to reset it.",
     "wrong": "Wrong PIN — try again",
     "mismatch": "PINs don't match — try again",
     "cancel": "Cancel"
@@ -138,15 +179,19 @@
     "tip3": "🔒 Triple-tap top-right for settings",
     "startWith": "Start with {{name}}",
     "startApp": "Start FreeVoice",
-    "skipCharacter": "Skip — use standard symbols"
+    "skipCharacter": "Skip — use standard symbols",
+    "yourChild": "your child"
   },
   "addSymbol": {
     "title": "Add Symbol",
     "editTitle": "Edit Symbol",
     "addToBoard": "Add to Board",
     "chooseEmoji": "Choose an Emoji",
+    "orChooseEmoji": "Or Choose an Emoji",
     "uploadPhoto": "Or Upload a Photo",
+    "addPhotoLabel": "📷 Add a Photo (or emoji below)",
     "choosePhoto": "📷 Choose Photo",
+    "choosePhotoDevice": "📷 Choose Photo from Device",
     "labelField": "Word or Label (short)",
     "labelPlaceholder": "e.g. Grandma",
     "phraseField": "Full Phrase to Speak",
@@ -168,7 +213,8 @@
   },
   "empty": {
     "nothing": "Nothing here yet!",
-    "addSymbols": "Tap ➕ to add symbols to this board!"
+    "addSymbols": "Tap ➕ to add symbols to this board!",
+    "noButtons": "No buttons yet! Tap + to add your first button."
   },
   "voicePrompt": {
     "title": "Better voices available",
@@ -183,7 +229,12 @@
   },
   "install": {
     "title": "Add FreeVoice to your Home Screen",
-    "instructions": "Tap Share (⎙) then Add to Home Screen. Works offline once installed."
+    "instructions": "Tap Share (⎙) then Add to Home Screen. Works offline once installed.",
+    "iosSub": "Tap ⎙ then \"Add to Home Screen\" for the best experience",
+    "androidTitle": "Install FreeVoice as an app",
+    "androidSub": "Works offline and loads faster. Add to home screen in one tap.",
+    "androidInstall": "Install App",
+    "notNow": "Not Now"
   },
   "update": {
     "title": "Update available",
@@ -193,5 +244,16 @@
   "parentMode": {
     "title": "Parent Mode",
     "locked": "Enter PIN to access settings"
+  },
+  "boardModal": {
+    "newBoard": "New Board",
+    "newBoardInside": "NEW BOARD INSIDE",
+    "createTitle": "Create a new board",
+    "namePlaceholder": "e.g. Favorites",
+    "create": "Create Board"
+  },
+  "common": {
+    "loading": "Loading...",
+    "cancel": "Cancel"
   }
 }

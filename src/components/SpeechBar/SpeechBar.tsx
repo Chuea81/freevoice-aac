@@ -177,7 +177,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
             title="First, Then mode is on (tap to exit)"
           >
             <span className="firstthen-indicator-dot" aria-hidden="true"></span>
-            First, Then Mode
+            {t('settings.firstThenMode', 'First, Then Mode')}
             <span className="firstthen-indicator-close" aria-hidden="true">✕</span>
           </button>
         )}
@@ -212,7 +212,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
                 value={keyboardInput}
                 onChange={(e) => setKeyboardInput(e.target.value)}
                 onKeyDown={handleKeyboardSubmit}
-                placeholder="Type..."
+                placeholder={t('speech.typePlaceholder', 'Type...')}
                 aria-label="Type words to add to message"
                 onClick={(e) => e.stopPropagation()}
               />
@@ -241,7 +241,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
           title={isSpeaking ? 'Stop (tap)' : 'Speak (tap)'}
         >
           <span className="btn-icon" aria-hidden="true">{isSpeaking ? '⏹️' : '🔊'}</span>
-          {isSpeaking ? 'STOP' : t('speech.speak')}
+          {isSpeaking ? t('speech.stop', 'STOP') : t('speech.speak')}
         </button>
 
         <button
@@ -260,7 +260,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
           aria-label="Delete last word"
           title="Delete last word (one word at a time)"
         >
-          <span className="btn-icon" aria-hidden="true">⌫</span>Delete
+          <span className="btn-icon" aria-hidden="true">⌫</span>{t('speech.delete', 'Delete')}
         </button>
 
         <button
@@ -270,7 +270,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
           aria-label="Clear entire message"
           title="Clear all words in the speech box"
         >
-          <span className="btn-icon" aria-hidden="true">🧹</span>Clear
+          <span className="btn-icon" aria-hidden="true">🧹</span>{t('speech.clearAll', 'Clear')}
         </button>
 
         <div className="highlight-btn-wrap">
@@ -283,7 +283,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
             aria-pressed={highlightMode}
             title="Highlight buttons with a color"
           >
-            <span className="btn-icon" aria-hidden="true">🎨</span>Highlight
+            <span className="btn-icon" aria-hidden="true">🎨</span>{t('speech.highlight', 'Highlight')}
           </button>
           {highlightMode && (
             <div
@@ -308,7 +308,7 @@ export function SpeechBar({ onOpenSettings, onOpenSearch, onOpenProfile }: Props
 
         {onOpenSettings && (
           <button className="bar-btn" id="btn-settings" {...settingsProps} aria-label="Settings">
-            <span className="btn-icon" aria-hidden="true">⚙️</span>Settings
+            <span className="btn-icon" aria-hidden="true">⚙️</span>{t('settings.title', 'Settings')}
           </button>
         )}
       </div>

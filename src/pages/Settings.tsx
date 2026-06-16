@@ -218,10 +218,10 @@ export function Settings({ onBack }: { onBack: () => void }) {
   return (
     <div className="settings-page">
       <div className="settings-header">
-        <button className="settings-back-btn" onClick={onBack}>← Back</button>
-        <h1 className="settings-title">Settings</h1>
+        <button className="settings-back-btn" onClick={onBack}>{t('settings.back', '← Back')}</button>
+        <h1 className="settings-title">{t('settings.title', 'Settings')}</h1>
         {parentStore.pinEnabled ? (
-          <button className="settings-lock-btn" onClick={() => parentStore.lock()}>🔒 Lock</button>
+          <button className="settings-lock-btn" onClick={() => parentStore.lock()}>{t('settings.lock', '🔒 Lock')}</button>
         ) : (
           <div />
         )}
@@ -234,7 +234,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
 
         {/* ── YOUR CHARACTER ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Your Character</h2>
+          <h2 className="settings-section-title">{t('settings.yourCharacter', 'Your Character')}</h2>
           <div className="settings-avatar-display">
             {selectedCharacterId ? (
               <>
@@ -248,7 +248,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
                 <div className="settings-avatar-name">{selectedCharacter?.name ?? 'Custom'}</div>
               </>
             ) : (
-              <p className="settings-hint" style={{ margin: 0 }}>Using standard emoji symbols</p>
+              <p className="settings-hint" style={{ margin: 0 }}>{t('settings.usingStandard', 'Using standard emoji symbols')}</p>
             )}
             <button
               type="button"
@@ -256,7 +256,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
               onClick={() => setShowCharacterPicker((v) => !v)}
               aria-expanded={showCharacterPicker}
             >
-              {showCharacterPicker ? 'Done' : 'Change Avatar'}
+              {showCharacterPicker ? t('settings.done', 'Done') : t('settings.changeAvatar', 'Change Avatar')}
             </button>
           </div>
           {showCharacterPicker && (
@@ -274,19 +274,19 @@ export function Settings({ onBack }: { onBack: () => void }) {
 
         {/* ── BOARD EDITING — toggle Edit Mode for tap-to-edit ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Board Editing</h2>
+          <h2 className="settings-section-title">{t('settings.boardEditing', 'Board Editing')}</h2>
           <div className="settings-row">
-            <label>Edit Mode</label>
+            <label>{t('settings.editMode', 'Edit Mode')}</label>
             <button
               className={`settings-toggle${editModeActive ? ' on' : ''}`}
               onClick={() => setEditModeActive(!editModeActive)}
               aria-pressed={editModeActive}
             >
-              {editModeActive ? 'ON' : 'OFF'}
+              {editModeActive ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
           <p className="settings-hint">
-            When on, tapping any button (built-in or custom) opens its edit form instead of speaking. A banner stays at the top with a Done Editing button. Long-press (2.5 seconds) any button to edit it without turning Edit Mode on.
+            {t('settings.editModeHint', 'When on, tapping any button (built-in or custom) opens its edit form instead of speaking. A banner stays at the top with a Done Editing button. Long-press (2.5 seconds) any button to edit it without turning Edit Mode on.')}
           </p>
         </section>
 
@@ -295,39 +295,39 @@ export function Settings({ onBack }: { onBack: () => void }) {
 
         {/* ── AUTO-SPEAK ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Behavior</h2>
+          <h2 className="settings-section-title">{t('settings.behavior', 'Behavior')}</h2>
           <div className="settings-row">
-            <label>Auto-speak on tap</label>
+            <label>{t('settings.autoSpeak', 'Auto-speak on tap')}</label>
             <button className={`settings-toggle${settings.autoSpeak ? ' on' : ''}`} onClick={() => settings.setAutoSpeak(!settings.autoSpeak)}>
-              {settings.autoSpeak ? 'ON' : 'OFF'}
+              {settings.autoSpeak ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
         </section>
 
         {/* ── COMMUNICATION MODE ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Communication Mode</h2>
+          <h2 className="settings-section-title">{t('settings.communicationMode', 'Communication Mode')}</h2>
           <div className="settings-row">
-            <label>First, Then Mode</label>
+            <label>{t('settings.firstThenMode', 'First, Then Mode')}</label>
             <button
               className={`settings-toggle${firstThenMode ? ' on' : ''}`}
               onClick={() => setFirstThenMode(!firstThenMode)}
               aria-pressed={firstThenMode}
             >
-              {firstThenMode ? 'ON' : 'OFF'}
+              {firstThenMode ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
-          <p className="settings-hint">Build sentences using a FIRST/THEN structure. A two-slot panel replaces the speech box and auto-speaks "First X, then Y".</p>
+          <p className="settings-hint">{t('settings.firstThenHint', 'Build sentences using a FIRST/THEN structure. A two-slot panel replaces the speech box and auto-speaks "First X, then Y".')}</p>
         </section>
 
         {/* ── PRONUNCIATION EXCEPTIONS ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Pronunciation</h2>
-          <p className="settings-hint">Override how specific words are spoken (e.g. names).</p>
+          <h2 className="settings-section-title">{t('settings.pronunciation', 'Pronunciation')}</h2>
+          <p className="settings-hint">{t('settings.pronHint', 'Override how specific words are spoken (e.g. names).')}</p>
           <div className="settings-row">
-            <input className="settings-input-sm" type="text" placeholder="Word" value={pronWord} onChange={(e) => setPronWord(e.target.value)} />
-            <input className="settings-input-sm" type="text" placeholder="Sounds like..." value={pronPhonetic} onChange={(e) => setPronPhonetic(e.target.value)} />
-            <button className="settings-action-btn" onClick={handleAddPronunciation}>Add</button>
+            <input className="settings-input-sm" type="text" placeholder={t('settings.wordPlaceholder', 'Word')} value={pronWord} onChange={(e) => setPronWord(e.target.value)} />
+            <input className="settings-input-sm" type="text" placeholder={t('settings.soundsLike', 'Sounds like...')} value={pronPhonetic} onChange={(e) => setPronPhonetic(e.target.value)} />
+            <button className="settings-action-btn" onClick={handleAddPronunciation}>{t('settings.add', 'Add')}</button>
           </div>
           {boardStore.pronunciations.size > 0 && (
             <div className="settings-pron-list">
@@ -343,59 +343,59 @@ export function Settings({ onBack }: { onBack: () => void }) {
 
         {/* ── DISPLAY ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Display</h2>
+          <h2 className="settings-section-title">{t('settings.display', 'Display')}</h2>
           <div className="settings-row">
-            <label>Grid Columns</label>
+            <label>{t('settings.gridColumns', 'Grid Columns')}</label>
             <div className="settings-btn-group">
               {[0, 3, 4, 5, 6, 7, 8].map((n) => (
                 <button key={n} className={`settings-btn-option${settings.gridColumns === n ? ' active' : ''}`} onClick={() => settings.setGridColumns(n)}>
-                  {n === 0 ? 'Auto' : n}
+                  {n === 0 ? t('settings.auto', 'Auto') : n}
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-row">
-            <label>Symbol Size</label>
+            <label>{t('settings.symbolSize', 'Symbol Size')}</label>
             <div className="settings-btn-group">
               {(['small', 'medium', 'large'] as const).map((s) => (
                 <button key={s} className={`settings-btn-option${settings.symbolSize === s ? ' active' : ''}`} onClick={() => settings.setSymbolSize(s)}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                  {t(`settings.${s}`, s.charAt(0).toUpperCase() + s.slice(1))}
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-row">
-            <label>Card Style</label>
+            <label>{t('settings.cardStyle', 'Card Style')}</label>
             <div className="settings-btn-group">
-              {([{ value: 'colors', label: 'Colors' }, { value: 'pastel', label: 'Pastel' }, { value: 'high-contrast', label: 'High Contrast' }] as const).map((s) => (
+              {([{ value: 'colors', tkey: 'colors', label: 'Colors' }, { value: 'pastel', tkey: 'pastel', label: 'Pastel' }, { value: 'high-contrast', tkey: 'highContrast', label: 'High Contrast' }] as const).map((s) => (
                 <button key={s.value} className={`settings-btn-option${settings.cardStyle === s.value ? ' active' : ''}`} onClick={() => settings.setCardStyle(s.value)}>
-                  {s.label}
+                  {t(`settings.${s.tkey}`, s.label)}
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-row">
-            <label>Label Position</label>
+            <label>{t('settings.labelPosition', 'Label Position')}</label>
             <div className="settings-btn-group">
               {([{ value: 'below', label: 'Below' }, { value: 'above', label: 'Above' }, { value: 'hidden', label: 'Hidden' }] as const).map((s) => (
                 <button key={s.value} className={`settings-btn-option${settings.labelPosition === (s.value as LabelPosition) ? ' active' : ''}`} onClick={() => settings.setLabelPosition(s.value as LabelPosition)}>
-                  {s.label}
+                  {t(`settings.${s.value}`, s.label)}
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-row">
-            <label>Color Scheme</label>
+            <label>{t('settings.colorScheme', 'Color Scheme')}</label>
             <div className="settings-btn-group">
-              {([{ value: 'default', label: 'Default' }, { value: 'fitzgerald', label: 'Fitzgerald Key' }] as const).map((s) => (
+              {([{ value: 'default', tkey: 'default', label: 'Default' }, { value: 'fitzgerald', tkey: 'fitzgeraldKey', label: 'Fitzgerald Key' }] as const).map((s) => (
                 <button key={s.value} className={`settings-btn-option${settings.colorScheme === (s.value as ColorScheme) ? ' active' : ''}`} onClick={() => settings.setColorScheme(s.value as ColorScheme)}>
-                  {s.label}
+                  {t(`settings.${s.tkey}`, s.label)}
                 </button>
               ))}
             </div>
           </div>
           <div className="settings-row">
-            <label>Skin Tone</label>
+            <label>{t('settings.skinTone', 'Skin Tone')}</label>
             <div className="settings-btn-group">
               {SKIN_TONES.map((t) => (
                 <button key={t.value} className={`settings-btn-option skin-tone-btn${settings.skinTone === t.value ? ' active' : ''}`} onClick={() => settings.setSkinTone(t.value)}>
@@ -405,36 +405,36 @@ export function Settings({ onBack }: { onBack: () => void }) {
             </div>
           </div>
           <div className="settings-row">
-            <label>Show Fast Phrases Strip</label>
+            <label>{t('settings.showFastPhrases', 'Show Fast Phrases Strip')}</label>
             <button className={`settings-toggle${settings.showFastPhrases ? ' on' : ''}`} onClick={() => settings.setShowFastPhrases(!settings.showFastPhrases)}>
-              {settings.showFastPhrases ? 'ON' : 'OFF'}
+              {settings.showFastPhrases ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
           <div className="settings-row">
-            <label>Show Core Words Bar</label>
+            <label>{t('settings.showCoreWords', 'Show Core Words Bar')}</label>
             <button className={`settings-toggle${settings.showCoreWords ? ' on' : ''}`} onClick={() => settings.setShowCoreWords(!settings.showCoreWords)}>
-              {settings.showCoreWords ? 'ON' : 'OFF'}
+              {settings.showCoreWords ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
         </section>
 
         {/* ── ACCESSIBILITY ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Accessibility</h2>
+          <h2 className="settings-section-title">{t('settings.accessibility', 'Accessibility')}</h2>
           <div className="settings-row">
-            <label>Auditory Touch</label>
+            <label>{t('settings.auditoryTouch', 'Auditory Touch')}</label>
             <button className={`settings-toggle${settings.auditoryTouch ? ' on' : ''}`} onClick={() => settings.setAuditoryTouch(!settings.auditoryTouch)}>
-              {settings.auditoryTouch ? 'ON' : 'OFF'}
+              {settings.auditoryTouch ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
-          <p className="settings-hint">First tap speaks the label. Second tap activates.</p>
+          <p className="settings-hint">{t('settings.auditoryTouchHint', 'First tap speaks the label. Second tap activates.')}</p>
           <div className="settings-row">
-            <label>Dwell Time: {settings.dwellTime === 0 ? 'Off' : `${settings.dwellTime}ms`}</label>
+            <label>{t('settings.dwellTime', 'Dwell Time')}: {settings.dwellTime === 0 ? t('settings.off', 'Off') : `${settings.dwellTime}ms`}</label>
             <input type="range" min="0" max="2000" step="100" value={settings.dwellTime} onChange={(e) => settings.setDwellTime(parseInt(e.target.value))} />
           </div>
-          <p className="settings-hint">Hold to activate instead of tap. For users with motor tremors.</p>
+          <p className="settings-hint">{t('settings.dwellHint', 'Hold to activate instead of tap. For users with motor tremors.')}</p>
           <div className="settings-row">
-            <label>Touch Delay: {formatTouchDelay(settings.touchDelay)}</label>
+            <label>{t('settings.touchDelay', 'Touch Delay')}: {formatTouchDelay(settings.touchDelay)}</label>
             <input
               type="range"
               min={TOUCH_DELAY_STEPS[0]}
@@ -445,47 +445,47 @@ export function Settings({ onBack }: { onBack: () => void }) {
               aria-label="Touch delay duration"
             />
           </div>
-          <p className="settings-hint">Press and hold every button for the selected duration before it activates. Helps slow down rapid tapping.</p>
+          <p className="settings-hint">{t('settings.touchDelayHint', 'Press and hold every button for the selected duration before it activates. Helps slow down rapid tapping.')}</p>
         </section>
 
         {/* ── BOARD MANAGEMENT ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Board Management</h2>
+          <h2 className="settings-section-title">{t('settings.boardManagement', 'Board Management')}</h2>
           <div className="settings-row">
-            <label>Sort Current Board</label>
-            <button className="settings-action-btn" onClick={handleSortCurrentBoard}>Sort A-Z</button>
+            <label>{t('settings.sortCurrentBoard', 'Sort Current Board')}</label>
+            <button className="settings-action-btn" onClick={handleSortCurrentBoard}>{t('settings.sortAZ', 'Sort A-Z')}</button>
           </div>
           <div className="settings-row">
-            <label>Create New Board</label>
+            <label>{t('settings.createNewBoard', 'Create New Board')}</label>
           </div>
           <div className="settings-row">
-            <input className="settings-input-sm" type="text" placeholder="Board name" value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} />
-            <input className="settings-input-sm" type="text" placeholder="Emoji" value={newBoardEmoji} onChange={(e) => setNewBoardEmoji(e.target.value)} maxLength={2} style={{ width: 50 }} />
-            <button className="settings-action-btn" onClick={handleCreateBoard}>Create</button>
+            <input className="settings-input-sm" type="text" placeholder={t('settings.boardName', 'Board name')} value={newBoardName} onChange={(e) => setNewBoardName(e.target.value)} />
+            <input className="settings-input-sm" type="text" placeholder={t('settings.emoji', 'Emoji')} value={newBoardEmoji} onChange={(e) => setNewBoardEmoji(e.target.value)} maxLength={2} style={{ width: 50 }} />
+            <button className="settings-action-btn" onClick={handleCreateBoard}>{t('settings.create', 'Create')}</button>
           </div>
         </section>
 
         {/* ── BACKUP & RESTORE ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">Backup & Restore</h2>
+          <h2 className="settings-section-title">{t('settings.backup', 'Backup & Restore')}</h2>
           <div className="settings-row">
-            <label>Export All Data</label>
-            <button className="settings-action-btn" onClick={handleExport}>Export JSON</button>
+            <label>{t('settings.exportAll', 'Export All Data')}</label>
+            <button className="settings-action-btn" onClick={handleExport}>{t('settings.exportJSON', 'Export JSON')}</button>
           </div>
           <div className="settings-row">
-            <label>Import (Replace All)</label>
-            <button className="settings-action-btn" onClick={handleImportReplace}>Import JSON</button>
+            <label>{t('settings.importReplace', 'Import (Replace All)')}</label>
+            <button className="settings-action-btn" onClick={handleImportReplace}>{t('settings.importJSON', 'Import JSON')}</button>
           </div>
           <div className="settings-row">
-            <label>Import (Merge)</label>
-            <button className="settings-action-btn" onClick={handleImportMerge}>Merge JSON</button>
+            <label>{t('settings.importMerge', 'Import (Merge)')}</label>
+            <button className="settings-action-btn" onClick={handleImportMerge}>{t('settings.mergeJSON', 'Merge JSON')}</button>
           </div>
           <div className="settings-row">
-            <label>Share Current Board</label>
-            <button className="settings-action-btn" onClick={handleShareBoard}>Share Link</button>
+            <label>{t('settings.shareCurrentBoard', 'Share Current Board')}</label>
+            <button className="settings-action-btn" onClick={handleShareBoard}>{t('settings.shareLink', 'Share Link')}</button>
           </div>
           <div className="settings-row">
-            <label>Reset Symbol Images</label>
+            <label>{t('settings.resetSymbolImages', 'Reset Symbol Images')}</label>
             <button className="settings-action-btn" onClick={async () => {
               await db.symbolCache.clear();
               await db.symbols.toCollection().modify((sym) => {
@@ -494,7 +494,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
                 }
               });
               window.location.reload();
-            }}>Reset & Reload</button>
+            }}>{t('settings.resetReload', 'Reset & Reload')}</button>
           </div>
         </section>
 
@@ -519,7 +519,7 @@ export function Settings({ onBack }: { onBack: () => void }) {
             ))}
           </div>
           <p style={{ marginTop: '16px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-            Want to help translate FreeVoice into your language?{' '}
+            {t('settings.translateHelp', 'Want to help translate FreeVoice into your language?')}{' '}
             <a
               href="https://github.com/Chuea81/freevoice-aac/blob/main/TRANSLATING.md"
               target="_blank"
@@ -530,43 +530,43 @@ export function Settings({ onBack }: { onBack: () => void }) {
                 fontWeight: 600,
               }}
             >
-              See the translation guide on GitHub
+              {t('settings.translateGuide', 'See the translation guide on GitHub')}
             </a>
           </p>
         </section>
 
         {/* ── PIN LOCK ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">PIN Lock</h2>
+          <h2 className="settings-section-title">{t('settings.pinLock', 'PIN Lock')}</h2>
           <div className="settings-row">
-            <label>Require PIN to access Settings</label>
+            <label>{t('settings.requirePin', 'Require PIN to access Settings')}</label>
             <button
               className={`settings-toggle${parentStore.pinEnabled ? ' on' : ''}`}
               onClick={handleTogglePinLock}
               aria-pressed={parentStore.pinEnabled}
             >
-              {parentStore.pinEnabled ? 'ON' : 'OFF'}
+              {parentStore.pinEnabled ? t('settings.on', 'ON') : t('settings.off2', 'OFF')}
             </button>
           </div>
           <p className="settings-hint">
-            When on, tapping the Settings button will ask for a 4-digit PIN. Leave off to keep Settings open for everyone.
+            {t('settings.pinLockHint', 'When on, tapping the Settings button will ask for a 4-digit PIN. Leave off to keep Settings open for everyone.')}
           </p>
           {parentStore.pinEnabled && (
             <>
               <div className="settings-row">
-                <label>Change PIN</label>
+                <label>{t('settings.changePin', 'Change PIN')}</label>
                 <button className="settings-action-btn" onClick={() => parentStore.openPinModal('change')}>
-                  Change PIN
+                  {t('settings.changePin', 'Change PIN')}
                 </button>
               </div>
               <div className="settings-row">
-                <label>Remove PIN</label>
+                <label>{t('settings.removePin', 'Remove PIN')}</label>
                 <button className="settings-action-btn" onClick={() => parentStore.openPinModal('remove')}>
-                  Remove PIN
+                  {t('settings.removePin', 'Remove PIN')}
                 </button>
               </div>
               <p className="settings-hint">
-                ⚠️ If you forget your PIN, you will need to clear the app data to reset it — there is no recovery.
+                {t('settings.pinForgotHint', '⚠️ If you forget your PIN, you will need to clear the app data to reset it — there is no recovery.')}
               </p>
             </>
           )}
@@ -576,20 +576,20 @@ export function Settings({ onBack }: { onBack: () => void }) {
         <section className="settings-section">
           <h2 className="settings-section-title">{t('settings.security')}</h2>
           <div className="settings-row">
-            <label>Factory Reset</label>
+            <label>{t('settings.factoryReset', 'Factory Reset')}</label>
             <button className="settings-action-btn" style={{ background: '#ef4444', color: 'white' }} onClick={handleFactoryReset}>
-              ⚠️ Reset Everything
+              {t('settings.resetEverything', '⚠️ Reset Everything')}
             </button>
           </div>
-          <p className="settings-hint">Deletes all boards, symbols, settings, and AI voices. Keeps language preference. Cannot be undone.</p>
+          <p className="settings-hint">{t('settings.factoryResetHint', 'Deletes all boards, symbols, settings, and AI voices. Keeps language preference. Cannot be undone.')}</p>
         </section>
 
         {/* ── ABOUT ── */}
         <section className="settings-section">
-          <h2 className="settings-section-title">About</h2>
-          <p className="settings-about"><strong>FreeVoice AAC</strong> — Free, open-source communication for every child.</p>
-          <p className="settings-about">Shellcraft Labs LLC · MIT License · v1.2.1</p>
-          <p className="settings-about" style={{ marginTop: 8 }}>Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón</p>
+          <h2 className="settings-section-title">{t('settings.about', 'About')}</h2>
+          <p className="settings-about"><strong>FreeVoice AAC</strong> — {t('settings.aboutText', 'Free, open-source communication for every child.')}</p>
+          <p className="settings-about">{t('settings.aboutCredits', 'Shellcraft Labs LLC · MIT License · v{{version}}', { version: '1.2.1' })}</p>
+          <p className="settings-about" style={{ marginTop: 8 }}>{t('settings.aboutArasaac', 'Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón')}</p>
           <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
           <p className="settings-about" style={{ marginTop: 8, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Running from: {window.location.href}</p>
           <p style={{fontSize: '10px', opacity: 0.4, fontFamily: 'monospace'}}>

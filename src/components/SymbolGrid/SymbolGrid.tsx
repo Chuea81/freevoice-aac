@@ -1,4 +1,5 @@
 import { useCallback, useState, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBoardStore } from '../../store/boardStore';
 import { useTTS } from '../../hooks/useTTS';
 import { useSettingsStore } from '../../store/settingsStore';
@@ -45,6 +46,7 @@ export function SymbolGrid({ isParentMode }: Props) {
   const fillFirstThen = useFirstThenStore((s) => s.fillActive);
   const editMode = useEditModeStore((s) => s.active);
   const { speak, playRecording } = useTTS();
+  const { t } = useTranslation();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [customButtonModalOpen, setCustomButtonModalOpen] = useState(false);
@@ -299,7 +301,7 @@ export function SymbolGrid({ isParentMode }: Props) {
       <div id="grid-area" className="scroll-thin">
         <div className="empty-state">
           <div className="empty-state-icon">😕</div>
-          <p>Nothing here yet!</p>
+          <p>{t('empty.nothing', 'Nothing here yet!')}</p>
         </div>
       </div>
     );
@@ -460,13 +462,13 @@ export function SymbolGrid({ isParentMode }: Props) {
               }}
             >
               <span className="symbol-emoji">📁</span>
-              <span className="symbol-label">NEW BOARD INSIDE</span>
+              <span className="symbol-label">{t('boardModal.newBoardInside', 'NEW BOARD INSIDE')}</span>
             </button>
           )}
 
           {showAddButton && symbols.length === 0 && (
             <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
-              <p>Tap ➕ to add symbols to this board!</p>
+              <p>{t('empty.addSymbols', 'Tap ➕ to add symbols to this board!')}</p>
             </div>
           )}
 
@@ -474,7 +476,7 @@ export function SymbolGrid({ isParentMode }: Props) {
           {!showAddButton && showQuickAddCard && symbols.length === 0 && currentBoardId.startsWith('board-') && (
             <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
               <div className="empty-state-icon">✨</div>
-              <p>No buttons yet! Tap + to add your first button.</p>
+              <p>{t('empty.noButtons', 'No buttons yet! Tap + to add your first button.')}</p>
             </div>
           )}
         </div>

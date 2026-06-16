@@ -4,7 +4,12 @@
     "undo": "DESFAZER",
     "clear": "LIMPAR",
     "type": "DIGITAR",
-    "placeholder": "Toque nos símbolos para falar…"
+    "placeholder": "Toque nos símbolos para falar…",
+    "stop": "PARAR",
+    "clearAll": "Limpar",
+    "delete": "Apagar",
+    "highlight": "Destacar",
+    "typePlaceholder": "Digitar..."
   },
   "nav": {
     "home": "INÍCIO",
@@ -109,7 +114,30 @@
     "off2": "NÃO",
     "add": "Adicionar",
     "back": "← Voltar",
-    "lock": "🔒 Bloquear"
+    "lock": "🔒 Bloquear",
+    "boardEditing": "Edição do quadro",
+    "editMode": "Modo de edição",
+    "editModeHint": "Quando ativado, tocar em qualquer botão (integrado ou personalizado) abre o formulário de edição em vez de falar. Um aviso permanece no topo com um botão Concluir. Mantenha pressionado (2,5 segundos) qualquer botão para editá-lo sem ativar o modo de edição.",
+    "changeAvatar": "Alterar avatar",
+    "done": "Concluído",
+    "communicationMode": "Modo de comunicação",
+    "firstThenMode": "Modo Primeiro, Depois",
+    "firstThenHint": "Construa frases com uma estrutura PRIMEIRO/DEPOIS. Um painel de duas casas substitui a caixa de fala e diz automaticamente \"Primeiro X, depois Y\".",
+    "wordPlaceholder": "Palavra",
+    "soundsLike": "Soa como...",
+    "emoji": "Emoji",
+    "touchDelay": "Atraso ao toque",
+    "touchDelayHint": "Mantenha cada botão pressionado pela duração selecionada antes de ativar. Ajuda a reduzir toques rápidos.",
+    "pinLock": "Bloqueio por PIN",
+    "requirePin": "Exigir PIN para acessar as Configurações",
+    "pinLockHint": "Quando ativado, tocar no botão Configurações pedirá um PIN de 4 dígitos. Deixe desativado para manter as Configurações abertas para todos.",
+    "removePin": "Remover PIN",
+    "pinForgotHint": "⚠️ Se você esquecer seu PIN, precisará apagar os dados do app para redefini-lo — não há recuperação.",
+    "factoryReset": "Restauração de fábrica",
+    "resetEverything": "⚠️ Redefinir tudo",
+    "factoryResetHint": "Exclui todos os quadros, símbolos, configurações e vozes de IA. Mantém a preferência de idioma. Não pode ser desfeito.",
+    "translateHelp": "Quer ajudar a traduzir o FreeVoice para o seu idioma?",
+    "translateGuide": "Veja o guia de tradução no GitHub"
   },
   "onboarding": {
     "welcome": "Bem-vindo ao FreeVoice!",
@@ -127,7 +155,8 @@
     "tip3": "🔒 Toque triplo no canto superior direito para configurações",
     "startWith": "Começar com {{name}}",
     "startApp": "Iniciar FreeVoice",
-    "skipCharacter": "Pular — usar símbolos padrão"
+    "skipCharacter": "Pular — usar símbolos padrão",
+    "yourChild": "seu filho(a)"
   },
   "addSymbol": {
     "title": "Adicionar Símbolo",
@@ -142,7 +171,10 @@
     "phrasePlaceholder": "ex. Eu quero ligar para a Vovó",
     "cancel": "Cancelar",
     "save": "Salvar",
-    "update": "Atualizar"
+    "update": "Atualizar",
+    "orChooseEmoji": "Ou escolha um emoji",
+    "addPhotoLabel": "📷 Adicione uma foto (ou emoji abaixo)",
+    "choosePhotoDevice": "📷 Escolher foto do dispositivo"
   },
   "contextMenu": {
     "addInside": "➕ Adicionar símbolo dentro",
@@ -157,7 +189,8 @@
   },
   "empty": {
     "nothing": "Nada aqui ainda!",
-    "addSymbols": "Toque em ➕ para adicionar símbolos a este quadro!"
+    "addSymbols": "Toque em ➕ para adicionar símbolos a este quadro!",
+    "noButtons": "Ainda não há botões! Toque em + para adicionar o seu primeiro botão."
   },
   "voicePrompt": {
     "title": "Vozes melhores disponíveis",
@@ -172,7 +205,12 @@
   },
   "install": {
     "title": "Adicionar FreeVoice à Tela Inicial",
-    "instructions": "Toque em Compartilhar (⎙) e depois em Adicionar à Tela Inicial. Funciona offline após instalação."
+    "instructions": "Toque em Compartilhar (⎙) e depois em Adicionar à Tela Inicial. Funciona offline após instalação.",
+    "iosSub": "Toque em ⎙ e depois em \"Adicionar à Tela de Início\" para a melhor experiência",
+    "androidTitle": "Instale o FreeVoice como app",
+    "androidSub": "Funciona offline e carrega mais rápido. Adicione à tela inicial com um toque.",
+    "androidInstall": "Instalar app",
+    "notNow": "Agora não"
   },
   "update": {
     "title": "Atualização disponível",
@@ -192,6 +230,30 @@
     "confirmSubtitle": "Confirme seu PIN",
     "wrong": "PIN incorreto — tente novamente",
     "mismatch": "Os PINs não coincidem — tente novamente",
+    "cancel": "Cancelar",
+    "unlockSubtitle": "Digite seu PIN de 4 dígitos",
+    "removeTitle": "Remover bloqueio por PIN",
+    "removeSubtitle": "Digite seu PIN atual para desativar o bloqueio",
+    "createTitle": "Criar um PIN",
+    "createSubtitle": "Escolha um PIN de 4 dígitos para bloquear as Configurações",
+    "confirmTitle": "Confirmar PIN",
+    "confirmSubtitleNew": "Digite o mesmo PIN novamente",
+    "changeVerifySubtitle": "Digite seu PIN atual",
+    "newTitle": "Novo PIN",
+    "newSubtitle": "Escolha um novo PIN de 4 dígitos",
+    "confirmNewTitle": "Confirmar novo PIN",
+    "confirmNewSubtitle": "Digite o novo PIN novamente",
+    "forgotWarning": "⚠️ Se você esquecer seu PIN, precisará apagar os dados do app para redefini-lo."
+  },
+  "boardModal": {
+    "newBoard": "Novo quadro",
+    "newBoardInside": "NOVO QUADRO DENTRO",
+    "createTitle": "Criar um novo quadro",
+    "namePlaceholder": "ex.: Favoritos",
+    "create": "Criar quadro"
+  },
+  "common": {
+    "loading": "Carregando...",
     "cancel": "Cancelar"
   }
 }
