@@ -10,6 +10,7 @@ import { VoiceSelector } from '../components/VoiceSelector/VoiceSelector';
 import { CharacterPicker } from '../components/CharacterPicker/CharacterPicker';
 import { Avatar } from '../components/Avatar/Avatar';
 import { CustomContentManager } from '../components/settings/CustomContentManager';
+import { About } from './About';
 import { db } from '../db';
 import { exportProfile, importProfile, mergeImport, shareBoardAsUrl } from '../utils/backup';
 import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS, SPRINT_2_LANGUAGES } from '../i18n/index';
@@ -26,6 +27,7 @@ const SKIN_TONES: { value: SkinTone; label: string; swatch: string }[] = [
 
 export function Settings({ onBack }: { onBack: () => void }) {
   const { t, i18n } = useTranslation();
+  const [showAbout, setShowAbout] = useState(false);
   const settings = useSettingsStore();
   const parentStore = useParentStore();
   const boardStore = useBoardStore();
@@ -137,13 +139,10 @@ export function Settings({ onBack }: { onBack: () => void }) {
     setPronPhonetic('');
   }, [pronWord, pronPhonetic, boardStore]);
 
-  const handleFactoryReset = useCallback(async () => {
-    if (!confirm('⚠️ Factory Reset will:\n\n• Delete ALL custom boards and symbols\n• Delete ALL settings and preferences\n• Clear all caches\n• Delete the AI voice model\n\nYou will start with a fresh app.\n\nThis CANNOT be undone. Continue?')) {
-      return;
-    }
-    if (!confirm('Are you absolutely sure? This will delete everything.')) {
-      return;
-    }
+  // The actual destructive work. Only reached after authorization
+  // (handleFactoryReset below): a parent PIN when one is set, or an explicit
+  // double-confirm when no PIN exists.
+  const doFactoryReset = useCallback(async () => {
     try {
       // Clear all databases
       await db.boards.clear();
@@ -214,6 +213,24 @@ export function Settings({ onBack }: { onBack: () => void }) {
       alert('An error occurred during factory reset. Please try again.');
     }
   }, []);
+
+  // Authorize the reset before running it. With a parent PIN set, require the
+  // PIN — this protects against a child wandering into Settings (which is open
+  // by default) and wiping every board the family built. Without a PIN, fall
+  // back to an explicit double-confirmation.
+  const handleFactoryReset = useCallback(() => {
+    if (parentStore.pinSet) {
+      parentStore.requirePin(() => { void doFactoryReset(); });
+      return;
+    }
+    if (!confirm('⚠️ Factory Reset will permanently delete ALL boards, symbols, settings, and the AI voice model.\n\nThis CANNOT be undone.\n\nTip: set a Parent PIN (below) to lock this. Continue?')) {
+      return;
+    }
+    if (!confirm('Are you absolutely sure? This will delete everything.')) {
+      return;
+    }
+    void doFactoryReset();
+  }, [parentStore, doFactoryReset]);
 
   return (
     <div className="settings-page">
@@ -588,16 +605,18 @@ export function Settings({ onBack }: { onBack: () => void }) {
         <section className="settings-section">
           <h2 className="settings-section-title">{t('settings.about', 'About')}</h2>
           <p className="settings-about"><strong>FreeVoice AAC</strong> — {t('settings.aboutText', 'Free, open-source communication for every child.')}</p>
-          <p className="settings-about">{t('settings.aboutCredits', 'Shellcraft Labs LLC · MIT License · v{{version}}', { version: '1.2.1' })}</p>
+          <button className="settings-action-btn" onClick={() => setShowAbout(true)} style={{ marginTop: 8, marginBottom: 4 }}>
+            {t('settings.readOurStory', '📖 Why FreeVoice Exists — Our Story')}
+          </button>
+          <p className="settings-about">{t('settings.aboutCredits', 'Shellcraft Labs LLC · MIT License · v{{version}}', { version: __APP_VERSION__ })}</p>
           <p className="settings-about" style={{ marginTop: 8 }}>{t('settings.aboutArasaac', 'Symbols: ARASAAC (CC BY-NC-SA 4.0) · Gobierno de Aragón')}</p>
           <p className="settings-about" style={{ marginTop: 12, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Data v9 · App cached</p>
           <p className="settings-about" style={{ marginTop: 8, fontSize: '11px', color: 'rgba(0,0,0,0.35)', fontFamily: 'monospace' }}>Running from: {window.location.href}</p>
-          <p style={{fontSize: '10px', opacity: 0.4, fontFamily: 'monospace'}}>
-            Running from: {window.location.href}
-          </p>
         </section>
 
       </div>
+
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </div>
   );
 }

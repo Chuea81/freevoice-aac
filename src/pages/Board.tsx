@@ -100,6 +100,7 @@ export function Board({ onOpenParentMode, onOpenProfile }: Props) {
 
   return (
     <>
+      <h1 className="sr-only">{t('app.title', 'FreeVoice AAC — communication board')}</h1>
       <SpeechBar onOpenSettings={onOpenParentMode} onOpenSearch={() => setSearchOpen(true)} onOpenProfile={onOpenProfile} />
       <div className="parent-tap-zone" onClick={handleTripleTap} aria-hidden="true" />
       <IosInstallPrompt />

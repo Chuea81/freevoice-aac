@@ -169,7 +169,11 @@ export function SymbolGrid({ isParentMode }: Props) {
             speak(symbol.phrase);
           }
         }
-        addToken(symbol.emoji, symbol.phrase);
+        // A single tap SPEAKS the full phrase ("Drink water please") for instant,
+        // natural feedback, but only the bare WORD goes into the sentence bar so
+        // composed messages stay grammatical ("I want water", not "I want drink
+        // water please"). `word` defaults to the label when not overridden.
+        addToken(symbol.emoji, symbol.word?.trim() || symbol.label);
       }
     },
     [navigateToBoard, addToken, speak, playRecording, autoSpeak, highlightMode, highlightColor, setSymbolHighlight, firstThenMode, fillFirstThen, editMode, openButtonEditor],
@@ -311,7 +315,7 @@ export function SymbolGrid({ isParentMode }: Props) {
 
   return (
     <>
-      <div id="grid-area" className={`scroll-thin${sizeClass}${reorderMode ? ' reorder-mode' : ''}`}>
+      <div id="grid-area" role="main" aria-label="Communication board" className={`scroll-thin${sizeClass}${reorderMode ? ' reorder-mode' : ''}`}>
         {/* Reorder toolbar — only available when there is something to reorder
             and the grid is not in parent mode (which has its own tools). */}
         {!isParentMode && hasCustomToReorder && (

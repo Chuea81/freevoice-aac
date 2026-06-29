@@ -34,7 +34,8 @@
   /* ── TEXT ── */
   --text-primary:   rgba(0,0,0,0.87);
   --text-secondary: rgba(0,0,0,0.60);
-  --text-tertiary:  rgba(0,0,0,0.38);
+  /* A11Y: was 0.38 (~2.6:1, fails WCAG AA). 0.55 ≈ 4.5:1 on the light surface. */
+  --text-tertiary:  rgba(0,0,0,0.55);
   --text-label:     rgba(0,0,0,0.80);
 
   /* ── BORDERS ── */
@@ -67,6 +68,17 @@
   padding: 0;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+}
+
+/* A11Y: visually hidden but exposed to screen readers (page heading, labels). */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 html, body {
@@ -419,8 +431,11 @@ body {
 .coreword-btn {
   border-radius: 8px;
   padding: 5px 11px;
-  /* A11Y-06: speaks on tap — meet the 44px touch-target minimum. */
+  /* A11Y-06: speaks on tap — meet the 44px touch-target minimum (both axes, so
+     short words like "I"/"It" stay tappable). The bar scrolls horizontally. */
   min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
   display: inline-flex;
   align-items: center;
   font-family: var(--font-body);
@@ -440,12 +455,14 @@ body {
 }
 .coreword-btn:active { transform: scale(0.91); }
 
-/* Fitzgerald Key color classes — adjusted for light background */
-.coreword-btn.cw-pronoun    { background: rgba(249,168,37,0.10); color: #E65100; border: 1px solid rgba(249,168,37,0.25); }
+/* Fitzgerald Key color classes — adjusted for light background.
+   A11Y: pronoun/noun oranges darkened to clear WCAG AA (4.5:1) on the tinted bg
+   (was #E65100 ≈ 3.8:1 and #D84315 ≈ 4.4:1 at this 11px size). */
+.coreword-btn.cw-pronoun    { background: rgba(249,168,37,0.10); color: #B45309; border: 1px solid rgba(249,168,37,0.25); }
 .coreword-btn.cw-verb       { background: rgba(67,160,71,0.08); color: #2E7D32; border: 1px solid rgba(67,160,71,0.22); }
 .coreword-btn.cw-descriptor { background: rgba(33,150,243,0.08); color: #1565C0; border: 1px solid rgba(33,150,243,0.20); }
 .coreword-btn.cw-social     { background: rgba(92,107,192,0.08); color: #3F51B5; border: 1px solid rgba(92,107,192,0.20); }
-.coreword-btn.cw-noun       { background: rgba(255,138,101,0.10); color: #D84315; border: 1px solid rgba(255,138,101,0.22); }
+.coreword-btn.cw-noun       { background: rgba(255,138,101,0.10); color: #BF360A; border: 1px solid rgba(255,138,101,0.22); }
 
 /* ═══════════════════════════════════════════════════
    4. BREADCRUMB NAVIGATION
@@ -466,8 +483,8 @@ body {
 .crumb {
   border-radius: 8px;
   padding: 4px 10px;
-  /* A11Y-06: larger navigation hit target. */
-  min-height: 40px;
+  /* A11Y-06: navigation hit target — WCAG 2.5.5 minimum. */
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   font-family: var(--font-body);
@@ -476,7 +493,9 @@ body {
   white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  color: var(--text-tertiary);
+  /* A11Y: functional nav text — use the darker secondary so 12px crumbs clear
+     WCAG AA (tertiary was only ~4:1 here). */
+  color: var(--text-secondary);
   background: transparent;
   border: 1px solid transparent;
   transition: background 120ms ease-out;
@@ -487,7 +506,9 @@ body {
 }
 .crumb.active {
   background: var(--green-glow);
-  color: var(--green-dark);
+  /* A11Y: deeper green so the active crumb clears WCAG AA on the green-glow bg
+     (--green-dark was ~4:1 here). */
+  color: #1B5E20;
   border: 1px solid rgba(67,160,71,0.28);
 }
 
@@ -1179,7 +1200,8 @@ body {
   top: 50%;
   right: 10px;
   transform: translateY(-50%);
-  width: 36px; height: 36px;
+  /* A11Y: meet the 44px WCAG 2.5.5 minimum touch target. */
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: none;
   background: rgba(0,0,0,0.05);
@@ -1940,8 +1962,9 @@ body {
 }
 
 .palette-swatch {
-  width: 36px;
-  height: 36px;
+  /* A11Y: 44px WCAG 2.5.5 minimum touch target. */
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 3px solid transparent;
   padding: 0;
@@ -1961,7 +1984,7 @@ body {
 }
 
 @media (max-width: 400px) {
-  .palette-swatch { width: 32px; height: 32px; }
+  .palette-swatch { width: 44px; height: 44px; }
 }
 
 /* ════════════════════════════════════════════════════════════

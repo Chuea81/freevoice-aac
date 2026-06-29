@@ -39,12 +39,14 @@ export function SymbolSearch({ open, onClose }: Props) {
     }, 200);
   }, [searchSymbols]);
 
-  const handleTap = useCallback((symbol: { emoji: string; phrase: string; label: string; isCategory: boolean; targetBoardId?: string }) => {
+  const handleTap = useCallback((symbol: { emoji: string; phrase: string; label: string; word?: string; isCategory: boolean; targetBoardId?: string }) => {
     if (symbol.isCategory && symbol.targetBoardId) {
       navigateToBoard(symbol.targetBoardId, symbol.label, symbol.emoji);
       onClose();
     } else {
-      addToken(symbol.emoji, symbol.phrase);
+      // Add the bare word to the sentence bar (grammatical composition) but speak
+      // the full phrase for instant feedback — mirrors the board-grid behavior.
+      addToken(symbol.emoji, symbol.word?.trim() || symbol.label);
       if (autoSpeak) speak(symbol.phrase);
     }
   }, [addToken, navigateToBoard, speak, autoSpeak, onClose]);

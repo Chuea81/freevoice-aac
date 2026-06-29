@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { useParentStore } from '../../store/parentStore';
+import { useParentStore, type PinMode } from '../../store/parentStore';
 import { useModalA11y } from '../../hooks/useModalA11y';
 
 // Step machine across modes:
@@ -11,7 +11,7 @@ import { useModalA11y } from '../../hooks/useModalA11y';
 //   remove: [verify]                       (old PIN, then clear)
 type Step = 'verify' | 'enter' | 'confirm';
 
-function initialStep(mode: 'unlock' | 'set' | 'change' | 'remove'): Step {
+function initialStep(mode: PinMode): Step {
   if (mode === 'set') return 'enter';
   return 'verify';
 }
@@ -23,6 +23,7 @@ export function PinModal() {
   const setPin = useParentStore((s) => s.setPin);
   const verifyPin = useParentStore((s) => s.verifyPin);
   const clearPin = useParentStore((s) => s.clearPin);
+  const runPendingAction = useParentStore((s) => s.runPendingAction);
   const { t } = useTranslation();
 
   const [step, setStep] = useState<Step>('verify');
@@ -68,11 +69,14 @@ export function PinModal() {
         // unlock: verifyPin already closed the modal via isUnlocked.
         // remove: wipe PIN + disable lock.
         // change: advance to enter-new-PIN step.
+        // confirm: authorize one queued sensitive action (e.g. Factory Reset).
         if (pinMode === 'remove') {
           clearPin();
         } else if (pinMode === 'change') {
           setDigits('');
           setStep('enter');
+        } else if (pinMode === 'confirm') {
+          runPendingAction();
         }
       });
       return;
@@ -93,7 +97,7 @@ export function PinModal() {
       }
       setPin(savedNewPin);
     }
-  }, [digits, step, pinMode, verifyPin, clearPin, setPin, savedNewPin, t]);
+  }, [digits, step, pinMode, verifyPin, clearPin, setPin, runPendingAction, savedNewPin, t]);
 
   const dialogRef = useModalA11y(showPinModal, closePinModal);
 
@@ -148,8 +152,9 @@ export function PinModal() {
   );
 }
 
-function titles(t: TFunction, mode: 'unlock' | 'set' | 'change' | 'remove', step: Step): { title: string; subtitle: string } {
+function titles(t: TFunction, mode: PinMode, step: Step): { title: string; subtitle: string } {
   if (mode === 'unlock') return { title: t('pin.title', 'Enter PIN'), subtitle: t('pin.unlockSubtitle', 'Enter your 4-digit PIN') };
+  if (mode === 'confirm') return { title: t('pin.confirmActionTitle', 'Parent PIN Required'), subtitle: t('pin.confirmActionSubtitle', 'Enter your PIN to confirm this action') };
   if (mode === 'remove') return { title: t('pin.removeTitle', 'Remove PIN Lock'), subtitle: t('pin.removeSubtitle', 'Enter your current PIN to disable the lock') };
   if (mode === 'set') {
     return step === 'enter'

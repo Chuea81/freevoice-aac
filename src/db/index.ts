@@ -16,7 +16,8 @@ export interface Symbol {
   boardId: string;
   emoji: string;
   label: string;
-  phrase: string;
+  phrase: string;            // Full utterance spoken on a single tap (e.g. "Drink water please")
+  word?: string;             // Composable word added to the sentence bar (defaults to label). Keeps multi-word sentences grammatical: "I want water" instead of "I want drink water please".
   imageUrl?: string;         // User-uploaded photos ONLY (data: or blob: URLs)
   arasaacId?: number;        // Hardcoded ARASAAC pictogram ID — resolved at render time
   color: string;

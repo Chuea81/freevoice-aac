@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { db } from '../db';
 
-export type PinMode = 'unlock' | 'set' | 'change' | 'remove';
+export type PinMode = 'unlock' | 'set' | 'change' | 'remove' | 'confirm';
 
 interface ParentState {
   isUnlocked: boolean;
@@ -9,6 +9,9 @@ interface ParentState {
   pinEnabled: boolean;
   showPinModal: boolean;
   pinMode: PinMode;
+  // Action queued behind a one-off PIN check (e.g. Factory Reset). Run once the
+  // parent enters a correct PIN, then cleared. Null when nothing is pending.
+  pendingAction: (() => void) | null;
 
   // Actions
   openPinModal: (mode: PinMode) => void;
@@ -18,6 +21,11 @@ interface ParentState {
   verifyPin: (pin: string) => Promise<boolean>;
   clearPin: () => Promise<void>;
   lock: () => void;
+  // Gate a sensitive action behind the parent PIN. If a PIN exists, prompts for
+  // it and runs `action` only on success; if no PIN is set, runs immediately so
+  // families who never set one aren't locked out of their own app.
+  requirePin: (action: () => void) => void;
+  runPendingAction: () => void;
 }
 
 async function hashPin(pin: string): Promise<string> {
@@ -27,19 +35,22 @@ async function hashPin(pin: string): Promise<string> {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export const useParentStore = create<ParentState>((set) => ({
+export const useParentStore = create<ParentState>((set, get) => ({
   isUnlocked: false,
   pinSet: false,
   pinEnabled: false,
   showPinModal: false,
   pinMode: 'unlock',
+  pendingAction: null,
 
   openPinModal: (mode) => {
     set({ showPinModal: true, pinMode: mode });
   },
 
   closePinModal: () => {
-    set({ showPinModal: false });
+    // Cancelling the modal must also drop any queued action so a later,
+    // unrelated PIN entry can't accidentally trigger it.
+    set({ showPinModal: false, pendingAction: null });
   },
 
   checkPinSet: async () => {
@@ -87,5 +98,20 @@ export const useParentStore = create<ParentState>((set) => ({
 
   lock: () => {
     set({ isUnlocked: false });
+  },
+
+  requirePin: (action) => {
+    if (!get().pinSet) {
+      // No parent PIN configured — nothing to verify against, so run directly.
+      action();
+      return;
+    }
+    set({ pendingAction: action, showPinModal: true, pinMode: 'confirm' });
+  },
+
+  runPendingAction: () => {
+    const action = get().pendingAction;
+    set({ pendingAction: null, showPinModal: false });
+    if (action) action();
   },
 }));

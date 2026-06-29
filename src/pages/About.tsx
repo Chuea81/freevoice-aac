@@ -1,13 +1,34 @@
 import type { ReactNode } from 'react';
 
-export function About() {
+export function About({ onClose }: { onClose?: () => void }) {
   return (
     <div style={{
-      flex: 1,
+      position: 'fixed',
+      inset: 0,
+      zIndex: 1000,
       overflowY: 'auto',
       background: '#F2F5F2',
       padding: '24px 20px 40px',
     }}>
+
+      {onClose && (
+        <button
+          onClick={onClose}
+          aria-label="Back"
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid rgba(0,0,0,0.08)',
+            borderRadius: '12px',
+            padding: '10px 16px',
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: '14px', fontWeight: 800,
+            color: '#43A047', cursor: 'pointer',
+            marginBottom: '16px',
+          }}
+        >
+          ← Back
+        </button>
+      )}
 
       {/* App identity */}
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -59,10 +80,13 @@ export function About() {
 
       <Section title="AI Voice">
         <p>
-          AI voices are powered by{' '}
+          On the FreeVoice app (phone or tablet), natural AI voices powered by{' '}
           <Link href="https://github.com/hexgrad/kokoro">Kokoro TTS</Link>
-          {' '}(Apache 2.0), running entirely on your device.
-          Your speech is never sent to any server.
+          {' '}(Apache 2.0) run entirely on your device.
+        </p>
+        <p style={{ marginTop: '10px' }}>
+          This web version uses your device's built-in voice instead — also fully
+          on-device. Either way, your speech is never sent to any server.
         </p>
       </Section>
 
@@ -80,28 +104,13 @@ export function About() {
           FreeVoice is open source (MIT license). View the source code,
           report bugs, request symbols, or contribute at:
         </p>
-        {/* 🧑 MANUAL: Update to your actual GitHub repo URL */}
-        <Link href="https://github.com/shellcraftlabs/freevoice" block>
-          github.com/shellcraftlabs/freevoice
-        </Link>
-      </Section>
-
-      <Section title="Support Development">
-        <p>
-          FreeVoice is free and always will be. If it helps your family,
-          you can support ongoing development through GitHub Sponsors.
-          No pressure — the app never changes based on donations.
-        </p>
-        {/* 🧑 MANUAL: Update to your actual GitHub Sponsors URL */}
-        <Link href="https://github.com/sponsors/shellcraftlabs" block>
-          github.com/sponsors/shellcraftlabs
+        <Link href="https://github.com/Chuea81/freevoice-aac" block>
+          github.com/Chuea81/freevoice-aac
         </Link>
       </Section>
 
       <Section title="Legal">
-        {/* 🧑 MANUAL: Create a terms page at freevoice.app/terms */}
-        <Link href="https://freevoice.app/terms">Terms of Use & Disclaimers</Link>
-        <p style={{ marginTop: '10px', fontSize: '12px', color: 'rgba(0,0,0,0.35)' }}>
+        <p style={{ fontSize: '12px', color: 'rgba(0,0,0,0.35)' }}>
           FreeVoice is not affiliated with Tobii Dynavox, Mayer-Johnson,
           AssistiveWare, or any other AAC vendor.
         </p>
