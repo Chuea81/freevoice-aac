@@ -34,6 +34,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        env:
+          # The static web build does not use the native Linux GPU runtime.
+          ONNXRUNTIME_NODE_INSTALL_CUDA: skip
         run: npm ci
 
       - name: Build web app
